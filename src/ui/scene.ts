@@ -75,6 +75,7 @@ export class CubeView {
   /** Rebuild meshes for an n x n cube. */
   build(n: number) {
     this.n = n;
+    this.lit = null;
     this.root.clear();
     this.pieces = [];
     this.stickerMeshes = [];
@@ -111,8 +112,32 @@ export class CubeView {
     this.pieces.push({ mesh, grid: grid.clone(), home: mesh.matrix.clone() });
   }
 
+  private lastState: State | null = null;
+  private lit: Set<number> | null = null;
+
   setState(state: State) {
-    this.stickerMeshes.forEach((m, i) => (m.material as THREE.MeshStandardMaterial).color.set(COLORS[state[i]]));
+    this.lastState = state;
+    const dim = new THREE.Color('#3a3946');
+    this.stickerMeshes.forEach((m, i) => {
+      const mat = m.material as THREE.MeshStandardMaterial;
+      mat.color.set(COLORS[state[i]]);
+      if (this.lit && !this.lit.has(i)) mat.color.lerp(dim, 0.72);
+      mat.emissive.set(this.lit?.has(i) ? 0x222222 : 0x000000);
+    });
+  }
+
+  /**
+   * Spotlight the stickers of the layers a turn moves (dimming the rest), or
+   * clear the spotlight with null. Used by the notation lessons.
+   */
+  highlight(turn: Turn | null) {
+    if (!turn) this.lit = null;
+    else {
+      const layers = new Set(turn.layers);
+      this.lit = new Set();
+      model(this.n).stickers.forEach((st, i) => { if (layers.has(st.pos[turn.axis])) this.lit!.add(i); });
+    }
+    if (this.lastState) this.setState(this.lastState);
   }
 
   /**
