@@ -12,6 +12,7 @@ import { METHODS, type MethodId, type Step } from './solver/methods/index';
 import { History, inverseMove } from './app/history';
 import { fromHash, importText, toFaceletString, toHash, toJSON } from './app/share';
 import { checkForUpdate } from './app/update';
+import { Tutorial } from './tutorial/tutorial';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const qtmOf = (ms: string[]) => ms.reduce((a, m) => a + (m.endsWith('2') ? 2 : 1), 0);
@@ -262,11 +263,13 @@ function animateMove(m: string) {
 }
 
 function playMove(m: string, analyze = true) {
+  if (tutorial?.blocksInput) return;
   history.push(m);
   animateMove(m);
   net.setState(state, n);
   renderHistory();
   if (analyze && !followingSolution) requestAnalysis();
+  tutorial?.onMove(m);
 }
 
 function playSequence(moves: string[]) {
@@ -511,7 +514,8 @@ window.addEventListener('hashchange', () => { const f = fromHash(location.hash);
 window.addEventListener('keydown', (e) => {
   const tag = (e.target as HTMLElement).tagName;
   if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-  if ($<HTMLDialogElement>('help-dialog').open) return;
+  if ($<HTMLDialogElement>('help-dialog').open || $<HTMLDialogElement>('tutorial-dialog').open) return;
+  if (tutorial.capturesKeys) return;
   const k = e.key;
   if ((e.ctrlKey || e.metaKey) && k.toLowerCase() === 'z') { e.preventDefault(); return e.shiftKey ? redo() : undo(); }
   if ((e.ctrlKey || e.metaKey) && k.toLowerCase() === 'y') { e.preventDefault(); return redo(); }
@@ -541,28 +545,53 @@ function openHelp() { $<HTMLDialogElement>('help-dialog').showModal(); }
 $('help').onclick = openHelp;
 $('help-close').onclick = () => $<HTMLDialogElement>('help-dialog').close();
 
-const TOUR = [
-  ['Turn the cube', 'Drag any sticker to turn its layer. Drag the background to look around; scroll or pinch to zoom.'],
-  ['Copy your own cube', 'Open the Paint tab, pick a colour and click stickers on the cube or the flat net. It tells you if a state is impossible.'],
-  ['Get the solution', 'The solution, ranked next moves and method breakdowns appear on the right. Press Space to play, ← → to step, ? for all shortcuts.'],
-];
-function showTour(i = 0) {
-  const el = $('onboarding');
-  if (i >= TOUR.length) { el.classList.add('hidden'); localStorage.setItem('cube-solver-toured', '1'); return; }
-  el.innerHTML = `<b>${TOUR[i][0]}</b><p>${TOUR[i][1]}</p><div class="row"><span class="muted">${i + 1}/${TOUR.length}</span></div>`;
-  const next = document.createElement('button');
-  next.className = 'primary';
-  next.textContent = i + 1 < TOUR.length ? 'Next' : 'Got it';
-  next.onclick = () => showTour(i + 1);
-  const skip = document.createElement('button');
-  skip.textContent = 'Skip';
-  skip.onclick = () => showTour(TOUR.length);
-  el.querySelector('.row')!.append(skip, next);
-  el.classList.remove('hidden');
-  next.focus();
+// ---------- tutorial ----------
+/** The cube the user had before the notation lessons took over the view. */
+let beforeLessons: { state: State; n: 2 | 3; moves: string[] } | null = null;
+const tutorial: Tutorial = new Tutorial({
+  view,
+  enterLessons() {
+    if (!beforeLessons) beforeLessons = { state, n, moves: history.list.slice(0, history.position) };
+    selectTab('turn');
+    setBaseline(solved(3), 3);
+  },
+  resetCube() {
+    setBaseline(solved(3), 3);
+    // A turn may still be animating; show the reset once it lands.
+    void view.idle().then(() => view.setState(state));
+  },
+  exitLessons() {
+    if (!beforeLessons) return;
+    const b = beforeLessons;
+    beforeLessons = null;
+    setBaseline(b.state, b.n);
+    void view.idle().then(() => view.setState(state));
+  },
+  playMove: (m) => playMove(m),
+  selectTab,
+  turnMs,
+});
+
+function openTutorialMenu() {
+  $<HTMLDialogElement>('help-dialog').close();
+  const p = tutorial.progress;
+  $('tut-summary').textContent = tutorial.summary();
+  $('tut-lessons').textContent = p.lessonsDone.length && p.lesson > 0 ? `Resume lessons (lesson ${p.lesson + 1})` : 'Start the notation lessons';
+  $('tut-tour').textContent = !p.tourDone && p.tour > 0 ? `Resume the app tour (step ${p.tour + 1})` : 'Take the app tour';
+  $<HTMLDialogElement>('tutorial-dialog').showModal();
 }
-$('tour').onclick = () => { $<HTMLDialogElement>('help-dialog').close(); showTour(0); };
-if (!localStorage.getItem('cube-solver-toured')) showTour(0);
+const fromMenu = (f: () => void) => () => { $<HTMLDialogElement>('tutorial-dialog').close(); f(); };
+$('tutorial').onclick = openTutorialMenu;
+$('tour').onclick = openTutorialMenu;
+$('tut-lessons').onclick = fromMenu(() => tutorial.startLessons());
+$('tut-restart').onclick = fromMenu(() => tutorial.startLessons(0));
+$('tut-quiz').onclick = fromMenu(() => { tutorial.startLessons(); tutorial.startQuiz(); });
+$('tut-tour').onclick = fromMenu(() => tutorial.startTour());
+$('tut-tour-restart').onclick = fromMenu(() => tutorial.startTour(0));
+$('tut-reset').onclick = () => { tutorial.resetProgress(); $('tut-summary').textContent = tutorial.summary(); };
+$('tut-close').onclick = () => $<HTMLDialogElement>('tutorial-dialog').close();
+// Offer the tutorial on first launch, but not over a cube opened from a share link.
+if (!fromUrl) tutorial.offer($('onboarding'));
 
 // ---------- theme ----------
 const theme = localStorage.getItem('cube-solver-theme');

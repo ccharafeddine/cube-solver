@@ -26,6 +26,7 @@
       <label class="check" title="Rank next moves by distance blended with ease by hand"><input type="checkbox" id="beginner" /> Beginner</label>
       <label class="think">Think <select id="think" aria-label="Think time"><option value="1000">1s</option><option value="2000">2s</option><option value="5000">5s</option><option value="10000">10s</option><option value="30000">30s</option><option value="60000">60s</option></select></label>
       <div class="hdr-icons">
+        <button id="tutorial" class="icon" aria-label="Tutorial: notation lessons and app tour" title="Tutorial">🎓</button>
         <button id="help" class="icon" aria-label="Keyboard shortcuts and help" title="Shortcuts and help (?)">?</button>
         <button id="theme" class="icon" aria-label="Toggle light or dark theme" title="Light/dark theme">◐</button>
         <button id="check-update" class="icon" aria-label="Check for updates" title="Check for updates">⟳</button>
@@ -122,7 +123,18 @@
         <tr><td><kbd>?</kbd></td><td>This help</td></tr>
       </table>
       <p class="muted">Move counts use the quarter-turn metric: a half turn (U2) counts as two.</p>
-      <div class="row"><button id="tour">Show the intro again</button><button id="help-close" class="primary">Close</button></div>
+      <div class="row"><button id="tour">Tutorial…</button><button id="help-close" class="primary">Close</button></div>
+    </dialog>
+    <dialog id="tutorial-dialog" aria-labelledby="tut-title">
+      <h2 id="tut-title">Tutorial</h2>
+      <p id="tut-summary" class="muted"></p>
+      <h3>Cube notation</h3>
+      <p class="muted">Faces, prime and double turns, slices, wide moves, rotations and quarter-turn counting, each shown on the cube and then played by you. Ends with a short quiz.</p>
+      <div class="row"><button id="tut-lessons" class="primary">Start the notation lessons</button><button id="tut-restart">Start over</button><button id="tut-quiz">Just the quiz</button></div>
+      <h3>App tour</h3>
+      <p class="muted">A guided spotlight tour of every part of the app.</p>
+      <div class="row"><button id="tut-tour" class="primary">Take the app tour</button><button id="tut-tour-restart">From the start</button></div>
+      <div class="row spread"><button id="tut-reset" class="link">Reset tutorial progress</button><button id="tut-close">Close</button></div>
     </dialog>
     <script type="module" src="./src/main.ts"></script>
   </body>
