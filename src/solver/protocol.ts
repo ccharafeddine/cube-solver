@@ -1,5 +1,5 @@
 import type { Candidate } from './rank';
-import type { Step } from './lbl';
+import type { Step, MethodId } from './methods';
 
 export type Mode = 'fast' | 'optimal';
 
@@ -11,10 +11,15 @@ export interface AnalyzeRequest {
   beginner: boolean;
   /** Think time for the main solve, ms. */
   timeMs: number;
+  method: MethodId;
 }
 
 export type AnalyzeResponse =
   | { id: number; kind: 'invalid'; error: string }
+  /** Optimal search progress: proven no solution shorter than `depth`. */
+  | { id: number; kind: 'progress'; depth: number; nodes: number; elapsedMs: number }
+  /** Tables are being built or loaded. */
+  | { id: number; kind: 'status'; text: string }
   | {
       id: number;
       kind: 'result';

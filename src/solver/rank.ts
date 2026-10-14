@@ -24,11 +24,13 @@ export interface Candidate {
   /** Change versus the current distance (-1 = progress). */
   delta: number;
   score: number;
+  /** Proven lower bound on the distance (pattern databases), used to break ties. */
+  bound?: number;
 }
 
 export function rankCandidates(
   current: number,
-  distances: { move: string; distance: number; exact: boolean }[],
+  distances: { move: string; distance: number; exact: boolean; bound?: number }[],
   beginner: boolean,
 ): Candidate[] {
   return distances
@@ -37,5 +39,10 @@ export function rankCandidates(
       delta: d.distance - current,
       score: d.distance + (beginner ? ERGONOMIC_WEIGHT * ergonomicCost(d.move) : 0),
     }))
-    .sort((a, b) => a.score - b.score || a.move.localeCompare(b.move));
+    .sort((a, b) =>
+      a.score - b.score ||
+      // Among equal estimates, a lower proven bound means more room to be short.
+      (a.bound ?? a.distance) - (b.bound ?? b.distance) ||
+      ergonomicCost(a.move) - ergonomicCost(b.move) ||
+      a.move.localeCompare(b.move));
 }

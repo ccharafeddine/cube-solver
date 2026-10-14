@@ -9,7 +9,8 @@ import { parseMoves } from '../cube/notation';
 import { solve2, distance2, parse2 } from './solver2';
 import { solveTwoPhase } from './twophase';
 import { solveOptimal, mergeQuarterTurns, QUARTER } from './optimal3';
-import { solveLBL } from './lbl';
+import { lowerBound, pieceStates } from './pdb';
+import { solveMethod } from './methods';
 import { rankCandidates, QUARTER_NAMES } from './rank';
 import type { AnalyzeRequest, AnalyzeResponse } from './protocol';
 
@@ -53,38 +54,43 @@ export function analyze(req: AnalyzeRequest, emit: (r: AnalyzeResponse) => void,
   let optimal = solution.length === 0;
   let note: string | undefined;
 
-  if (req.mode === 'optimal' && solution.length) {
-    const r = solveOptimal(c, req.timeMs, shouldStop);
+  // Short positions get a proven optimum even in Fast mode: it costs milliseconds.
+  const rootBound = (() => { const p = pieceStates(c); return lowerBound(p.cs, p.es); })();
+  const wantOptimal = req.mode === 'optimal' || rootBound <= 12;
+  if (wantOptimal && solution.length) {
+    const r = solveOptimal(c, req.mode === 'optimal' ? req.timeMs : 300, shouldStop, (p) =>
+      emit({ id: req.id, kind: 'progress', depth: p.depth, nodes: p.nodes, elapsedMs: p.elapsedMs }));
     if (r.ok) {
       solution = mergeQuarterTurns(r.moves).map(moveName);
       optimal = true;
-    } else {
+    } else if (req.mode === 'optimal') {
       note = `Optimal search proved no solution of ${r.searchedTo ?? '?'} quarter turns or fewer exists before time ran out; showing the fast (two-phase) solution.`;
     }
   }
 
   const current = qtmOf(solution);
-  // Candidates: exact optimal distances while short enough to prove quickly, else two-phase estimates.
   // The solution's first move as a quarter turn (U2 starts with U).
   const firstQuarter = solution.length ? (() => { const i = MOVE_NAMES.indexOf(solution[0]); return i - (i % 3) + (i % 3 === 2 ? 2 : 0); })() : -1;
-  const exactMode = req.mode === 'optimal' && optimal && current <= 11;
   const dists = QUARTER.map((m, k) => {
     const child: Cubie = applyCubieMove(c, m);
-    if (exactMode) {
-      const r = solveOptimal(child, 1500, shouldStop);
-      if (r.ok) return { move: QUARTER_NAMES[k], distance: r.moves.length, exact: true };
+    const ps = pieceStates(child);
+    // Lower bound from the pattern databases; one move changes distance by one.
+    const bound = Math.max(lowerBound(ps.cs, ps.es), optimal ? current - 1 : 0);
+    if (optimal && current <= 13) {
+      const r = solveOptimal(child, 400, shouldStop);
+      if (r.ok) return { move: QUARTER_NAMES[k], distance: r.moves.length, exact: true, bound: r.moves.length };
     }
-    // A quick two-phase solve gives an upper bound. One move can change the
-    // distance by at most one, and the main solution's first quarter turn is
-    // known to make progress, so clamp the estimate to what is certain.
-    const r = solveTwoPhase(child, { timeMs: 60, shouldStop });
+    // Upper bound from a quick two-phase solve, clamped to what is certain:
+    // at most one more than now, and the solution's own first turn makes progress.
+    const r = solveTwoPhase(child, { timeMs: 50, shouldStop });
     let est = r.ok ? qtmOf(r.moves.map(moveName)) : current + 1;
     est = Math.min(est, current + 1);
     if (firstQuarter === m) est = current - 1;
-    return { move: QUARTER_NAMES[k], distance: est, exact: false };
+    // Upper bound meeting lower bound means the distance is proven.
+    return { move: QUARTER_NAMES[k], distance: est, exact: est === bound, bound };
   });
   const candidates = rankCandidates(current, dists, req.beginner);
-  const lbl = solveLBL(c);
+  const lbl = solveMethod(req.method ?? 'lbl', c);
   emit({
     id: req.id, kind: 'result', final: true, solution, qtm: current, optimal, note, candidates,
     method: lbl.ok ? lbl.steps : undefined,
