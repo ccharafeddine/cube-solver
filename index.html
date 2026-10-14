@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#863bff" />
+    <meta name="description" content="Set up any 2x2 or 3x3 Rubik's cube and get optimal or fast solutions, ranked next moves and a layer-by-layer breakdown." />
+    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <title>Cube Solver</title>
+  </head>
+  <body>
+    <header>
+      <h1><img src="./icon.svg" alt="" width="28" height="28" /> Cube Solver <small id="version"></small></h1>
+      <div class="group" aria-label="Cube size">
+        <button data-size="2">2x2</button><button data-size="3">3x3</button>
+      </div>
+      <div class="group" id="mode-group" aria-label="Solver mode">
+        <button data-mode="fast" title="Kociemba two-phase: near-optimal in milliseconds">Fast</button>
+        <button data-mode="optimal" title="Proven shortest in quarter turns; slow on deep scrambles">Optimal</button>
+      </div>
+      <label class="check"><input type="checkbox" id="beginner" /> Beginner mode</label>
+      <label>Think <select id="think"><option value="1000">1s</option><option value="2000">2s</option><option value="5000">5s</option><option value="10000">10s</option><option value="30000">30s</option></select></label>
+      <button id="theme" title="Toggle light/dark">◐</button>
+    </header>
+    <main>
+      <section class="left">
+        <div id="viewport"></div>
+        <div class="bar">
+          <button id="reset">Reset</button>
+          <button id="scramble">Scramble</button>
+          <button id="undo">Undo</button>
+          <button id="view-reset">Reset view</button>
+          <label>Speed <input type="range" id="speed" min="60" max="600" value="220" /></label>
+        </div>
+        <div class="card">
+          <div class="row"><b>Paint</b><div id="palette"></div></div>
+          <p id="paint-hint" class="muted"></p>
+        </div>
+        <div class="card">
+          <b>Turn</b> <span class="muted">(keys U R F D L B, Shift for prime)</span>
+          <div id="movepad"></div>
+          <div class="row"><input id="alg" class="mono" placeholder="Type moves, e.g. R U R' U'" /><button id="apply">Apply</button></div>
+        </div>
+      </section>
+      <section class="right">
+        <div id="status" class="status">Loading…</div>
+        <div class="card">
+          <div class="row spread"><b>Solution</b><span id="sol-count" class="muted"></span></div>
+          <div id="solution" class="mono"></div>
+          <div class="row"><button id="play">▶ Play</button><button id="step">Step ›</button><button id="stop">Stop search</button></div>
+        </div>
+        <div class="card">
+          <div class="row spread"><b>Next moves</b><select id="topn"><option value="3">Top 3</option><option value="5" selected>Top 5</option><option value="0">All</option></select></div>
+          <div id="candidates"></div>
+          <p id="cand-note" class="muted"></p>
+        </div>
+        <div class="card" id="method-card">
+          <div class="row spread"><b>Method</b>
+            <select id="method-select">
+              <option value="lbl" selected>Layer by layer</option>
+              <option disabled>CFOP (planned)</option>
+              <option disabled>Roux (planned)</option>
+              <option disabled>ZZ (planned)</option>
+            </select>
+          </div>
+          <div id="method"></div>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>
