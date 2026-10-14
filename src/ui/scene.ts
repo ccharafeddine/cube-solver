@@ -9,7 +9,8 @@
  */
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { model, type State, type Turn } from '../cube/facelets';
+import { model, type State, type Turn, type Vec3 } from '../cube/facelets';
+import { dragToTurn } from '../app/drag';
 
 export const COLORS = ['#ffffff', '#c41e3a', '#009e60', '#ffd500', '#ff5800', '#0051ba'];
 export const COLOR_NAMES = ['White', 'Red', 'Green', 'Yellow', 'Orange', 'Blue'];
@@ -26,7 +27,12 @@ export class CubeView {
   private stickerMeshes: THREE.Mesh[] = [];
   private n = 3;
   private busy: Promise<void> = Promise.resolve();
+  private pending = 0;
+  /** When true, clicks paint stickers instead of turning layers. */
+  paintMode = false;
   onStickerClick: (index: number) => void = () => {};
+  /** A drag on a sticker asked for this turn. */
+  onDragTurn: (turn: Turn) => void = () => {};
 
   constructor(private host: HTMLElement) {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -61,6 +67,8 @@ export class CubeView {
     if (!w || !h) return;
     this.renderer.setSize(w, h);
     this.camera.aspect = w / h;
+    // Portrait screens: zoom out so the whole cube fits the narrow width.
+    this.camera.zoom = Math.min(1, (w / h) * 1.15);
     this.camera.updateProjectionMatrix();
   }
 
@@ -107,11 +115,25 @@ export class CubeView {
     this.stickerMeshes.forEach((m, i) => (m.material as THREE.MeshStandardMaterial).color.set(COLORS[state[i]]));
   }
 
-  /** Animate one turn, then show `after`. Turns queue up and play in order. */
+  /**
+   * Animate one turn, then show `after`. Turns queue up and play in order;
+   * a long queue (fast typing, playing a whole solution) speeds up so the
+   * cube never lags far behind the model.
+   */
   animate(turn: Turn, after: State, ms = 220): Promise<void> {
-    this.busy = this.busy.then(() => this.play(turn, after, ms));
+    this.pending++;
+    this.busy = this.busy.then(() => {
+      const speedUp = Math.min(4, 1 + (this.pending - 1) * 0.5);
+      const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      return this.play(turn, after, reduced ? 0 : ms / speedUp);
+    }).finally(() => { this.pending--; });
     return this.busy;
   }
+
+  get animating() { return this.pending > 0; }
+
+  /** Resolves when every queued turn has finished animating. */
+  idle(): Promise<void> { return this.busy; }
 
   private play(turn: Turn, after: State, ms: number): Promise<void> {
     const axis = new THREE.Vector3(...([0, 1, 2].map((a) => (a === turn.axis ? 1 : 0)) as [number, number, number]));
@@ -146,19 +168,74 @@ export class CubeView {
 
   get size() { return this.n; }
 
-  private listenForClicks() {
+  private hitSticker(e: PointerEvent): number | null {
     const el = this.renderer.domElement;
-    let down: { x: number; y: number } | null = null;
-    el.addEventListener('pointerdown', (e) => (down = { x: e.clientX, y: e.clientY }));
-    el.addEventListener('pointerup', (e) => {
-      // A drag rotates the view; only a near-stationary click paints.
-      if (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 5) return;
-      const r = el.getBoundingClientRect();
-      const ndc = new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
-      const ray = new THREE.Raycaster();
-      ray.setFromCamera(ndc, this.camera);
-      const hit = ray.intersectObjects(this.stickerMeshes)[0];
-      if (hit) this.onStickerClick(hit.object.userData.sticker as number);
-    });
+    const r = el.getBoundingClientRect();
+    const ndc = new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+    const ray = new THREE.Raycaster();
+    ray.setFromCamera(ndc, this.camera);
+    const hit = ray.intersectObjects(this.root.children, false)[0];
+    if (!hit) return null;
+    if (hit.object.userData.sticker !== undefined) return hit.object.userData.sticker as number;
+    // Hit the black plastic between stickers: use the nearest sticker, so
+    // grabbing a seam still turns a layer instead of spinning the camera.
+    let best: number | null = null, bestD = Infinity;
+    for (const m of this.stickerMeshes) {
+      const d = m.getWorldPosition(new THREE.Vector3()).distanceToSquared(hit.point);
+      if (d < bestD) { bestD = d; best = m.userData.sticker as number; }
+    }
+    return best;
+  }
+
+  /** Grid coordinates -> screen pixels (relative to the canvas). */
+  private project = (p: Vec3): [number, number] => {
+    const v = new THREE.Vector3(...p).applyMatrix4(this.root.matrixWorld).project(this.camera);
+    const el = this.renderer.domElement;
+    return [((v.x + 1) / 2) * el.clientWidth, ((1 - v.y) / 2) * el.clientHeight];
+  };
+
+  /**
+   * Pointer input: a drag that starts on a sticker turns that layer; a drag
+   * on the background orbits the camera; a tap on a sticker paints it in
+   * paint mode. Works the same for mouse, pen and touch.
+   */
+  private listenForClicks() {
+    // Listen on the host in the capture phase so a press on a sticker can be
+    // claimed before OrbitControls (on the canvas) starts spinning the camera.
+    const host = this.host;
+    let start: { x: number; y: number; sticker: number; id: number } | null = null;
+    let turned = false;
+    host.addEventListener('pointerdown', (e) => {
+      const sticker = this.hitSticker(e);
+      if (sticker === null) return; // background: let OrbitControls orbit
+      e.stopPropagation();
+      start = { x: e.clientX, y: e.clientY, sticker, id: e.pointerId };
+      turned = false;
+      host.setPointerCapture(e.pointerId);
+    }, { capture: true });
+    host.addEventListener('pointermove', (e) => {
+      if (!start || start.id !== e.pointerId) {
+        if (e.buttons === 0) this.renderer.domElement.style.cursor = this.hitSticker(e) !== null ? (this.paintMode ? 'crosshair' : 'grab') : 'default';
+        return;
+      }
+      e.stopPropagation();
+      if (turned || this.paintMode) return;
+      const dx = e.clientX - start.x, dy = e.clientY - start.y;
+      if (Math.hypot(dx, dy) < 12) return;
+      const st = model(this.n).stickers[start.sticker];
+      const turn = dragToTurn(st.pos, st.normal, [dx, dy], this.project);
+      if (turn) {
+        turned = true;
+        this.onDragTurn(turn);
+      }
+    }, { capture: true });
+    const end = (e: PointerEvent) => {
+      if (!start || start.id !== e.pointerId) return;
+      e.stopPropagation();
+      if (!turned && Math.hypot(e.clientX - start.x, e.clientY - start.y) < 8) this.onStickerClick(start.sticker);
+      start = null;
+    };
+    host.addEventListener('pointerup', end, { capture: true });
+    host.addEventListener('pointercancel', () => { start = null; }, { capture: true });
   }
 }

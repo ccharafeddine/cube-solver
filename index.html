@@ -2,72 +2,128 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#863bff" />
-    <meta name="description" content="Set up any 2x2 or 3x3 Rubik's cube and get optimal or fast solutions, ranked next moves and a layer-by-layer breakdown." />
+    <meta name="description" content="Set up any 2x2 or 3x3 Rubik's cube and get optimal or fast solutions, ranked next moves and CFOP, Roux, ZZ or layer-by-layer breakdowns." />
     <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./icon-192.png" />
     <link rel="manifest" href="./manifest.webmanifest" />
     <title>Cube Solver</title>
   </head>
   <body>
+    <a class="skip" href="#solution-card">Skip to solution</a>
+    <div id="error-banner" class="banner bad hidden" role="alert"></div>
+    <div id="update-banner" class="banner hidden" role="status"></div>
     <header>
       <h1><img src="./icon.svg" alt="" width="28" height="28" /> Cube Solver <small id="version"></small></h1>
-      <div class="group" aria-label="Cube size">
-        <button data-size="2">2x2</button><button data-size="3">3x3</button>
+      <div class="group" role="radiogroup" aria-label="Cube size">
+        <button data-size="2" role="radio" title="2x2 (key 2)">2x2</button><button data-size="3" role="radio" title="3x3 (key 3)">3x3</button>
       </div>
-      <div class="group" id="mode-group" aria-label="Solver mode">
-        <button data-mode="fast" title="Kociemba two-phase: near-optimal in milliseconds">Fast</button>
-        <button data-mode="optimal" title="Proven shortest in quarter turns; slow on deep scrambles">Optimal</button>
+      <div class="group" id="mode-group" role="radiogroup" aria-label="Solver mode">
+        <button data-mode="fast" role="radio" title="Kociemba two-phase: near-optimal in milliseconds, improves while thinking">Fast</button>
+        <button data-mode="optimal" role="radio" title="Proven shortest in quarter turns (IDA* with pattern databases)">Optimal</button>
       </div>
-      <label class="check"><input type="checkbox" id="beginner" /> Beginner mode</label>
-      <label>Think <select id="think"><option value="1000">1s</option><option value="2000">2s</option><option value="5000">5s</option><option value="10000">10s</option><option value="30000">30s</option></select></label>
-      <button id="theme" title="Toggle light/dark">◐</button>
+      <label class="check" title="Rank next moves by distance blended with ease by hand"><input type="checkbox" id="beginner" /> Beginner</label>
+      <label class="think">Think <select id="think" aria-label="Think time"><option value="1000">1s</option><option value="2000">2s</option><option value="5000">5s</option><option value="10000">10s</option><option value="30000">30s</option><option value="60000">60s</option></select></label>
+      <div class="hdr-icons">
+        <button id="help" class="icon" aria-label="Keyboard shortcuts and help" title="Shortcuts and help (?)">?</button>
+        <button id="theme" class="icon" aria-label="Toggle light or dark theme" title="Light/dark theme">◐</button>
+        <button id="check-update" class="icon" aria-label="Check for updates" title="Check for updates">⟳</button>
+      </div>
     </header>
     <main>
       <section class="left">
-        <div id="viewport"></div>
-        <div class="bar">
-          <button id="reset">Reset</button>
-          <button id="scramble">Scramble</button>
-          <button id="undo">Undo</button>
-          <button id="view-reset">Reset view</button>
-          <label>Speed <input type="range" id="speed" min="60" max="600" value="220" /></label>
+        <div id="viewport" aria-label="3D cube. Drag a sticker to turn its layer; drag the background to rotate the view." role="img">
+          <div id="onboarding" class="tip hidden" role="dialog" aria-live="polite"></div>
         </div>
-        <div class="card">
-          <div class="row"><b>Paint</b><div id="palette"></div></div>
-          <p id="paint-hint" class="muted"></p>
+        <div class="bar" role="toolbar" aria-label="Cube actions">
+          <button id="reset" title="Back to solved (Alt+R)">Reset</button>
+          <button id="scramble" class="primary" title="Random-state scramble (Alt+S)">Scramble</button>
+          <button id="undo" title="Undo (Ctrl+Z)" aria-label="Undo">↶</button>
+          <button id="redo" title="Redo (Ctrl+Y)" aria-label="Redo">↷</button>
+          <button id="view-reset" title="Reset the camera (Alt+V)">Reset view</button>
+          <label class="speed">Speed <input type="range" id="speed" min="0" max="100" value="55" aria-label="Animation speed" /></label>
         </div>
-        <div class="card">
-          <b>Turn</b> <span class="muted">(keys U R F D L B, Shift for prime)</span>
+        <div class="tabs" role="tablist" aria-label="Input">
+          <button role="tab" data-tab="turn" aria-selected="true">Turn</button>
+          <button role="tab" data-tab="paint" aria-selected="false">Paint</button>
+          <button role="tab" data-tab="io" aria-selected="false">Import / export</button>
+        </div>
+        <div class="card tabpanel" data-panel="turn" role="tabpanel">
+          <p class="muted">Drag any sticker to turn its layer, or use the keys U R F D L B M E S x y z (Shift for prime).</p>
           <div id="movepad"></div>
-          <div class="row"><input id="alg" class="mono" placeholder="Type moves, e.g. R U R' U'" /><button id="apply">Apply</button></div>
+          <div class="row"><input id="alg" class="mono" placeholder="Type moves, e.g. R U R' U'" aria-label="Moves to apply" /><button id="apply">Apply</button></div>
+        </div>
+        <div class="card tabpanel hidden" data-panel="paint" role="tabpanel">
+          <div class="row"><b>Colour</b><div id="palette" role="radiogroup" aria-label="Paint colour"></div><button id="paint-off">Stop painting</button></div>
+          <p id="paint-hint" class="muted"></p>
+          <div id="net" aria-label="Unfolded cube net editor"></div>
+          <div class="row"><button id="fill-solved">Fill solved</button><span id="counts" class="muted"></span></div>
+        </div>
+        <div class="card tabpanel hidden" data-panel="io" role="tabpanel">
+          <p class="muted">Paste a facelet string (URFDLB order), a JSON export, or a move sequence.</p>
+          <textarea id="io-text" class="mono" rows="4" aria-label="Import or export text"></textarea>
+          <div class="row">
+            <button id="import">Import</button>
+            <button id="export-facelets">Copy facelets</button>
+            <button id="export-json">Copy JSON</button>
+            <button id="export-solution">Copy solution</button>
+            <button id="share">Copy share link</button>
+            <button id="download">Download .json</button>
+          </div>
+          <p id="io-msg" class="muted" aria-live="polite"></p>
         </div>
       </section>
       <section class="right">
-        <div id="status" class="status">Loading…</div>
-        <div class="card">
-          <div class="row spread"><b>Solution</b><span id="sol-count" class="muted"></span></div>
-          <div id="solution" class="mono"></div>
-          <div class="row"><button id="play">▶ Play</button><button id="step">Step ›</button><button id="stop">Stop search</button></div>
+        <div id="status" class="status" role="status" aria-live="polite">Loading…</div>
+        <div id="progress" class="progress hidden"><div></div></div>
+        <div class="card" id="solution-card" tabindex="-1">
+          <div class="row spread"><h2>Solution</h2><span id="sol-count" class="muted"></span></div>
+          <div id="solution" class="mono" aria-label="Solution moves"></div>
+          <div class="row">
+            <button id="sol-start" aria-label="Back to the start of the solution" title="Back to start">⏮</button>
+            <button id="sol-back" aria-label="Step back" title="Step back (←)">‹</button>
+            <button id="play" class="primary" title="Play or pause (Space)">▶ Play</button>
+            <button id="sol-step" aria-label="Step forward" title="Step forward (→)">›</button>
+            <button id="stop" title="Stop the search and keep the best so far">Stop search</button>
+          </div>
         </div>
         <div class="card">
-          <div class="row spread"><b>Next moves</b><select id="topn"><option value="3">Top 3</option><option value="5" selected>Top 5</option><option value="0">All</option></select></div>
+          <div class="row spread"><h2>Next moves</h2><select id="topn" aria-label="How many candidates"><option value="3">Top 3</option><option value="5" selected>Top 5</option><option value="0">All 12</option></select></div>
           <div id="candidates"></div>
           <p id="cand-note" class="muted"></p>
         </div>
         <div class="card" id="method-card">
-          <div class="row spread"><b>Method</b>
-            <select id="method-select">
-              <option value="lbl" selected>Layer by layer</option>
-              <option disabled>CFOP (planned)</option>
-              <option disabled>Roux (planned)</option>
-              <option disabled>ZZ (planned)</option>
-            </select>
-          </div>
+          <div class="row spread"><h2>Method</h2><select id="method-select" aria-label="Solving method"></select></div>
+          <p id="method-blurb" class="muted"></p>
           <div id="method"></div>
+        </div>
+        <div class="card">
+          <div class="row spread"><h2>History</h2><span id="hist-count" class="muted"></span></div>
+          <div id="history" class="mono" aria-label="Moves played; click one to jump there"></div>
         </div>
       </section>
     </main>
+    <dialog id="help-dialog" aria-labelledby="help-title">
+      <h2 id="help-title">Controls and shortcuts</h2>
+      <table class="keys">
+        <tr><td><kbd>U</kbd> <kbd>R</kbd> <kbd>F</kbd> <kbd>D</kbd> <kbd>L</kbd> <kbd>B</kbd></td><td>Turn a face clockwise; add <kbd>Shift</kbd> for counter-clockwise</td></tr>
+        <tr><td><kbd>M</kbd> <kbd>E</kbd> <kbd>S</kbd></td><td>Middle slices (3x3)</td></tr>
+        <tr><td><kbd>X</kbd> <kbd>Y</kbd> <kbd>Z</kbd></td><td>Rotate the whole cube</td></tr>
+        <tr><td>Drag a sticker</td><td>Turn that layer (mouse, pen or touch)</td></tr>
+        <tr><td>Drag the background</td><td>Rotate the view; scroll or pinch to zoom</td></tr>
+        <tr><td><kbd>Space</kbd></td><td>Play / pause the solution</td></tr>
+        <tr><td><kbd>→</kbd> / <kbd>←</kbd></td><td>Step the solution forward / back</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>Y</kbd></td><td>Undo / redo a move</td></tr>
+        <tr><td><kbd>Alt</kbd>+<kbd>S</kbd> / <kbd>Alt</kbd>+<kbd>R</kbd></td><td>Scramble / reset</td></tr>
+        <tr><td><kbd>Alt</kbd>+<kbd>V</kbd></td><td>Reset the view</td></tr>
+        <tr><td><kbd>2</kbd> / <kbd>3</kbd></td><td>Switch to 2x2 / 3x3</td></tr>
+        <tr><td><kbd>1</kbd>–<kbd>6</kbd> (Paint tab)</td><td>Pick a paint colour; <kbd>0</kbd> or <kbd>Esc</kbd> stops painting</td></tr>
+        <tr><td><kbd>?</kbd></td><td>This help</td></tr>
+      </table>
+      <p class="muted">Move counts use the quarter-turn metric: a half turn (U2) counts as two.</p>
+      <div class="row"><button id="tour">Show the intro again</button><button id="help-close" class="primary">Close</button></div>
+    </dialog>
     <script type="module" src="./src/main.ts"></script>
   </body>
 </html>
