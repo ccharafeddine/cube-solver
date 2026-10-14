@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { solveOptimal, mergeQuarterTurns } from './optimal3';
-import { solveLBL } from './lbl';
+import { solveLBL } from './methods/lbl';
 import { rankCandidates } from './rank';
 import { applyCubieMove, fromFacelets, solvedCubie, toFacelets } from '../cube/cubie';
 import { applyMoves } from '../cube/facelets';
