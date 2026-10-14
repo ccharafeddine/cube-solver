@@ -33,3 +33,12 @@ Rules learned building Cube Solver. Read them before changing the build, the sol
 - Portrait screens need a wider view of the cube. Zoom the camera out based on the aspect ratio.
 - Vitest's `console.log` output can be swallowed. Use `process.stderr.write` in throwaway benchmarks.
 - In vitest, `expect()` inside a loop over 3.6M table entries took 18 s. Count in plain JS and assert once.
+
+## Tutorial (v1.1.0)
+
+- Check lesson answers against the cube's state, not the keystrokes. `U U` is a fine `U2` and `R M'` is `Rw`. Expanding the target into quarter turns and matching prefixes gives "keep going" feedback for free.
+- Test any prose that describes a direction ("M follows L: the front goes down") against the model. One unit test per claim is cheap and stops the text drifting from the code.
+- A demonstration animation that's still in flight sets its own final colours when it lands. Cancelling one has to wait for `view.idle()` before showing the reset cube, or a stale frame wins.
+- Block user moves while a demonstration plays, or the model and the view fall out of step.
+- Spotlight tour steps should name selectors that a test checks against index.html, and skip targets that are hidden (for example the 3x3-only controls on a 2x2) instead of pointing at nothing.
+- On phones, dock the coach and tour cards to the bottom and cap their height, so the cube they talk about stays visible.

@@ -29,9 +29,15 @@
   <td width="20%"><img src="docs/screenshot-mobile.png" alt="Phone layout with the first-run intro" /><p align="center"><sub>Phones and touch</sub></p></td>
 </tr></table>
 
+<table align="center"><tr>
+  <td width="45%"><img src="docs/screenshot-tutorial.png" alt="Notation lesson: the R layer is spotlit on the cube and the coach asks you to play R" /><p align="center"><sub>Notation lessons: watch the move, then play it yourself</sub></p></td>
+  <td width="33%"><img src="docs/screenshot-tour.png" alt="App tour spotlighting the net editor" /><p align="center"><sub>A spotlight tour of every part of the app</sub></p></td>
+  <td width="18%"><img src="docs/screenshot-tutorial-mobile.png" alt="A notation lesson on a phone, answered correctly" /><p align="center"><sub>Lessons on a phone</sub></p></td>
+</tr></table>
+
 ## Contents
 
-[Features](#features) · [Download](#download) · [Quick start](#quick-start) · [Controls](#controls-and-shortcuts) · [Solvers](#how-the-solvers-work) · [Web / PWA / desktop builds](#building-and-packaging) · [Troubleshooting](#troubleshooting) · [Architecture](#architecture) · [Testing](#testing) · [Releasing](#releasing) · [License](#license)
+[Features](#features) · [Download](#download) · [Quick start](#quick-start) · [Tutorial](#tutorial) · [Controls](#controls-and-shortcuts) · [Solvers](#how-the-solvers-work) · [Web / PWA / desktop builds](#building-and-packaging) · [Troubleshooting](#troubleshooting) · [Architecture](#architecture) · [Testing](#testing) · [Releasing](#releasing) · [License](#license)
 
 ## Features
 
@@ -63,9 +69,14 @@
 - Runs in the **browser**, installs as an offline **PWA**, and installs on **Windows** as a desktop app of about 2 MB (Tauri).
 - **Update check** against GitHub releases: automatic at startup in release builds, and on demand with ⟳.
 - Light/dark theme that follows the system until you choose. Settings are remembered.
-- First-run intro, a keyboard shortcut sheet, an error banner with Reload if anything goes wrong, and a solver that restarts itself if it crashes.
+- An interactive tutorial (below), a keyboard shortcut sheet, an error banner with Reload if anything goes wrong, and a solver that restarts itself if it crashes.
 - A responsive layout for phones and tablets. Every control has an accessible name, and keyboard focus is always visible.
 - The UI thread never runs solver work: everything heavy happens in a Web Worker, and solver tables are cached in IndexedDB.
+
+**Tutorial**
+- An interactive **notation course** of 14 short lessons: the faces U D L R F B, prime ('), double (2), the slices M E S, wide moves (Rw), the rotations x y z, and quarter-turn counting. Each lesson spotlights the layer on the 3D cube, animates the move, then asks you to play it and checks your answer. Ends with a 6-question quiz.
+- A guided **spotlight tour** of the app in 12 steps.
+- Offered on first launch, can be skipped, and is always available from the 🎓 Tutorial menu, where you can resume where you stopped or replay. Progress is saved.
 
 ## Download
 
@@ -85,6 +96,34 @@ Requirements: Node.js 20+ and npm.
 npm install
 npm run dev        # http://localhost:5173
 ```
+
+## Tutorial
+
+The first time you open Cube Solver, a welcome card offers **Learn the notation**, **Tour the app** or **Not now**. Whatever you pick, the 🎓 button in the header (also reachable from the help dialog) opens the Tutorial menu at any time. The menu shows your progress, for example `5/14 lessons · quiz best 6/6 · tour done`, and offers to resume, start over, take only the quiz, or reset progress. The offer is not shown when the app is opened from a share link.
+
+**Notation lessons.** The lessons take over the 3D view with a solved 3x3 and give your own cube back when you close them.
+
+| # | Lesson | You play |
+|---|---|---|
+| 1–4 | Faces: R, U, F, then D L B | `R`, `U`, `F`, `D L B` |
+| 5 | Prime | `R'` |
+| 6 | Double turns | `U2` |
+| 7–9 | Slices M, E, S | `M`, `E`, `S` |
+| 10 | Wide moves | `Rw` |
+| 11–13 | Rotations x, y, z | `x`, `y`, `z` |
+| 14 | Counting quarter turns | `R U2 R'` (4 QTM) |
+
+Each lesson:
+1. Dims the cube except the layer that will turn.
+2. Animates the move, then undoes it.
+3. Asks you to play it. You can drag the cube, use the keyboard, type it in the Turn tab, or tap one of the answer buttons. The buttons make it work on phones and with screen readers.
+4. Checks the cube's state, not your keystrokes. So `U U` counts as `U2`, and `R M'` counts as `Rw`. Part of a longer answer gets "keep going" and the next layer is spotlit. A wrong move gets an explanation and a hint, and the cube resets so you can try again.
+
+The dots across the top jump to any lesson, and **Show again** repeats the demonstration. The quiz checks what you learned: what a prime does, counting quarter turns, which face M follows, rotations, wide moves, and inverses. Each answer comes with an explanation.
+
+**App tour.** A spotlight dims the page around each part in turn, scrolls it into view, and opens the right tab. The parts are rotating and drag-to-turn, the move pad and keys, painting, the net editor, scramble/reset/undo, the solution, the Fast/Optimal toggle, ranked next moves, Beginner mode, method breakdowns, history, and share/import/export. Navigate with **Back** and **Next**, or press **Esc** to stop. Steps for parts that aren't on screen, such as Fast/Optimal on a 2x2, are skipped. On phones the card docks to the bottom of the screen.
+
+**Saved progress** lives in `localStorage` (`cube-solver-tutorial`): finished lessons, where to resume the lessons and the tour, and your best quiz score. Corrupt or outdated data falls back to a fresh start.
 
 ## Controls and shortcuts
 
@@ -116,7 +155,8 @@ npm run dev        # http://localhost:5173
 | **Paint** tab | Colour swatches (<kbd>1</kbd>–<kbd>6</kbd>), then click stickers on the cube or the net; <kbd>0</kbd> or <kbd>Esc</kbd> stops painting. With no colour picked, clicking a net sticker cycles its colour |
 | **Fill solved** | Reset the net to a solved cube |
 | **Import / export** tab | Import a facelet string, JSON or moves; copy facelets, JSON, the solution or a share link; download `.json` |
-| **?** | Shortcut sheet; **Show the intro again** replays the first-run tour |
+| **?** | Shortcut sheet, with a link to the Tutorial menu |
+| **🎓** | Tutorial menu: notation lessons, quiz and app tour (resume or replay) |
 | **◐** | Light/dark theme |
 | **⟳** | Check for updates |
 
@@ -206,6 +246,9 @@ src/
   ui/
     scene.ts        three.js view: meshes, turn animation queue, pointer input
     net.ts          flat net editor
+  tutorial/
+    lessons.ts      lesson, quiz and tour content; attempt checking; saved progress (pure, tested)
+    tutorial.ts     coach panel, demonstrations, quiz, spotlight tour
   main.ts           UI wiring, keyboard, dialogs, error banner
 public/             manifest, service worker, icons
 src-tauri/          Tauri 2 shell (Rust), config, capabilities, icons
@@ -233,6 +276,7 @@ The tests cover:
 - Every method breakdown on random cubes.
 - Ranking order and tie-breaking, and the full worker analysis.
 - History, import/export, share URLs, update-check version logic, and drag-to-turn geometry.
+- The tutorial: every direction the lessons describe is checked against the cube model, along with attempt checking (equivalent sequences, partial progress, wrong moves), quiz answers and grading, that every tour target exists in the page, and loading saved progress, including corrupt data.
 
 Every solver's output is played back to confirm the cube ends up solved. CI runs lint, tests and build on every push and pull request.
 

@@ -30,3 +30,14 @@ OPEN / NEXT
 - Full CFOP OLL/PLL sets (currently 2-look subsets); COLL/ZBLL for ZZ.
 - Backlog: 4x4/5x5 by reduction; camera scanning (bottom-bar option, show scanned cube for confirmation).
 - macOS build (Tauri dmg) not set up.
+
+v1.1.0 (2026-10-14) - INTERACTIVE TUTORIAL
+- src/tutorial/lessons.ts (pure): 14 notation lessons (faces, prime, 2, M/E/S, Rw, x/y/z, QTM), state-based
+  attempt checking (correct / partial / wrong), 6-question quiz + grading, 12 tour steps, saved progress
+  (localStorage "cube-solver-tutorial", tolerant of corrupt data), progress summary.
+- src/tutorial/tutorial.ts: coach panel (demo with layer spotlight -> user plays -> feedback), quiz,
+  spotlight tour (scrolls, opens tabs, skips hidden targets, Esc), first-run offer, resume/replay.
+- CubeView.highlight(turn) dims all stickers outside the turning layers.
+- Tutorial menu (🎓 header button, also from help). Lessons borrow a solved 3x3 and restore the user's cube.
+- Tests: lessons.test.ts (14 tests), incl. every direction claim in the lesson text vs the cube model.
+- Browser smoke (Playwright): offer, lesson correct/wrong/partial, reload resumes, quiz, full tour, phone layout.
