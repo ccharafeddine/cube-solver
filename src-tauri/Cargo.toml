@@ -15,6 +15,7 @@ tauri-build = { version = "2", features = [] }
 
 [dependencies]
 tauri = { version = "2", features = [] }
+tauri-plugin-opener = "2"
 
 [profile.release]
 # Small, fast binary; the solver itself runs in the webview's worker.
