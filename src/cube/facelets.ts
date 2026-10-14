@@ -160,7 +160,7 @@ const FACE_AXIS: Record<Face, [0 | 1 | 2, 1 | -1]> = {
 };
 
 export interface Move {
-  face: Face | 'x' | 'y' | 'z';
+  face: Face | 'x' | 'y' | 'z' | 'M' | 'E' | 'S';
   /** 1 = clockwise, 2 = half, 3 = counter-clockwise (prime). */
   power: 1 | 2 | 3;
   /** Layers deep for wide moves (1 = outer layer only). */
@@ -172,6 +172,12 @@ export function moveToTurn(m: Move, n: number): Turn {
   if (m.face === 'x' || m.face === 'y' || m.face === 'z') {
     const axis = ({ x: 0, y: 1, z: 2 } as const)[m.face];
     return { axis, layers: all, q: m.power };
+  }
+  if (m.face === 'M' || m.face === 'E' || m.face === 'S') {
+    // Slice moves turn every inner layer: M follows L, E follows D, S follows F.
+    const inner = all.slice(1, n - 1);
+    const axis = ({ M: 0, E: 1, S: 2 } as const)[m.face];
+    return { axis, layers: inner, q: m.face === 'S' ? m.power : 4 - m.power };
   }
   const [axis, sign] = FACE_AXIS[m.face];
   const layers = sign > 0 ? all.slice(n - m.depth) : all.slice(0, m.depth);
@@ -186,4 +192,33 @@ export function applyMove(s: State, n: number, m: Move): State {
 export function applyMoves(s: State, n: number, ms: Move[]): State {
   for (const m of ms) s = applyMove(s, n, m);
   return s;
+}
+
+/**
+ * The notation for a single-layer turn (the inverse of moveToTurn for one
+ * layer): outer layers become face turns, the middle layer of an odd cube
+ * becomes M/E/S. Returns null for inner layers that have no single-letter
+ * name (e.g. the second layer of a 4x4).
+ */
+export function turnToMove(t: Turn, n: number): Move | null {
+  if (t.layers.length !== 1) return null;
+  const layer = t.layers[0];
+  const q = ((t.q % 4) + 4) % 4 as 0 | 1 | 2 | 3;
+  if (q === 0) return null;
+  const pos: Face[] = ['R', 'U', 'F'], neg: Face[] = ['L', 'D', 'B'];
+  if (layer === n - 1) return { face: pos[t.axis], power: q as 1 | 2 | 3, depth: 1 };
+  if (layer === -(n - 1)) return { face: neg[t.axis], power: (4 - q) as 1 | 2 | 3, depth: 1 };
+  if (n === 3 && layer === 0) {
+    const slice = (['M', 'E', 'S'] as const)[t.axis];
+    // M follows L and E follows D (negative sides); S follows F.
+    return { face: slice, power: (slice === 'S' ? q : 4 - q) as 1 | 2 | 3, depth: 1 };
+  }
+  return null;
+}
+
+/** Colour counts per face colour, for setup validation hints. */
+export function colorCounts(s: State): number[] {
+  const c = [0, 0, 0, 0, 0, 0];
+  for (const x of s) c[x]++;
+  return c;
 }

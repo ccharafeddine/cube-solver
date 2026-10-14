@@ -1,8 +1,8 @@
 import type { Face, Move } from './facelets';
 
-const TOKEN = /^(\d*)([URFDLBxyz])(w?)(2|'|2')?$/;
+const TOKEN = /^(\d*)([URFDLBxyzMES])(w?)(2|'|2')?$/;
 
-/** Parse standard notation (WCA plus `Rw`/`3Rw` wide moves and x/y/z rotations). */
+/** Parse standard notation (WCA plus `Rw`/`3Rw` wide moves, M/E/S slices and x/y/z rotations). */
 export function parseMoves(text: string): Move[] {
   const out: Move[] = [];
   for (const tok of text.trim().split(/\s+/).filter(Boolean)) {
