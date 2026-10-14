@@ -1,0 +1,32 @@
+Cube Solver: progress log
+=========================
+Read this and lessons.md at the start of a session.
+
+STATUS (v1.0.0)
+- 2x2 and 3x3: 3D view, drag-to-turn (mouse/pen/touch), keyboard turns incl. M E S and x y z, typed algorithms.
+- Setup: paint on the 3D cube or the flat 2D net editor; solvability check with specific reasons.
+- Reset, random-state scramble, undo/redo, clickable move history.
+- 2x2: optimal (full 3,674,160-state QTM table).
+- 3x3 Fast: Kociemba two-phase, streaming improvements; short positions auto-proven optimal.
+- 3x3 Optimal: IDA* + 5 pattern databases (2 corner groups, 3 five-edge groups), progress + cancel.
+- Ranked next moves: proven distance where possible, else two-phase estimate clamped by certain bounds;
+  ties broken by PDB lower bound; beginner mode blends ergonomics.
+- Method breakdowns: LBL, CFOP (2-look OLL/PLL), Roux (blocks, CMLL, LSE with M/U), ZZ (EOLine, RUL F2L).
+- Import/export: facelet string, JSON, solution text, share URL (#n=3&f=...), download .json.
+- Update check vs GitHub releases (opener plugin in Tauri).
+- PWA (manifest + service worker), Tauri 2 Windows installers (NSIS per-user + MSI, ~2 MB).
+- Theme (follows OS), help dialog (?), onboarding tour, error banner, responsive/mobile, a11y labels.
+- ESLint, Vitest (cube, notation, solvers, methods, PDB, app logic), CI (lint/test/build), release workflow.
+
+TIMINGS (box, Node 20)
+- 2x2 table 0.5 s; two-phase tables 0.9 s; pattern databases 2.7 s (cached in IndexedDB afterwards).
+- Optimal 3x3: <= 14 QTM in well under a second; 16 QTM ~1-3 s; deep random states (~26 QTM) do not
+  finish in browser time limits -> falls back to the two-phase answer and says how deep it proved.
+
+OPEN / NEXT
+- Stronger optimal: full 8-corner PDB (88M states) and 6/7-edge PDBs, ideally built in Rust/WASM.
+- Fast-mode ranking: estimates are upper bounds from 50 ms two-phase runs; deeper per-candidate search
+  would sharpen them.
+- Full CFOP OLL/PLL sets (currently 2-look subsets); COLL/ZBLL for ZZ.
+- Backlog: 4x4/5x5 by reduction; camera scanning (bottom-bar option, show scanned cube for confirmation).
+- macOS build (Tauri dmg) not set up.

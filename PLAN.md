@@ -128,20 +128,17 @@ The repo's `progress.txt` and `lessons.md` were **not found** on the PC. They ar
 
 ## 8. Milestones (revised)
 
-**Done in the first build:**
-- **M0** Scaffold: Vite + TypeScript, Vitest, CI, MIT license, PWA, Tauri shell.
-- **M1** Cube model: NxN stickers, cubies, notation, solvability checks, with tests.
-- **M2** 3D view: rotatable cube, animated turns, playback, painting.
-- **M3** 2x2: optimal solver, exact ranking, random-state scramble.
-- **M4** 3x3 Fast: two-phase, streaming.
-- **M5** 3x3 Optimal: QTM IDA*, the Fast/Optimal toggle, exact ranking when the solution is short.
-- **M6** Ranking: distance only, or blended with ergonomics in beginner mode.
-- **M7** Layer-by-layer method breakdown, with each step playable.
+**Done in v1.0.0:**
+- **M0–M7** (first build): scaffold, cube model, 3D view, 2x2 optimal, 3x3 Fast and Optimal, ranking, layer by layer.
+- **M8** CFOP, Roux and ZZ breakdowns, each playable step by step.
+- **M9** Optimal 3x3 rebuilt as Korf-style IDA* with five pattern databases (corner and edge groups), progress and cancel, tables cached in IndexedDB.
+- **M10** Polish: drag-to-turn (mouse/touch), flat net editor, move history, import/export and share URLs, update check, shortcut sheet, onboarding, error banner, responsive and accessible UI.
+- **M11** ESLint, CI (lint/test/build), release workflow on `v*` tags, Tauri installers, progress.txt and lessons.md.
 
 **Next:**
-- **M8** CFOP, Roux and ZZ breakdowns (already listed in the methods menu as planned).
-- **M9** A stronger optimal 3x3: a corner pattern database (about 44 MB), possibly in WASM, so deep scrambles are proven optimal faster.
-- **M10** Polish: drag-to-turn on the cube, a 2D net editor, URL sharing, more screenshots, release notes, and a tagged release workflow.
+- Full 8-corner and 6/7-edge pattern databases (Rust/WASM build) for faster proofs on deep scrambles.
+- Full OLL/PLL sets for CFOP; COLL/ZBLL for ZZ.
+- macOS (Tauri dmg) build.
 
 ### Backlog
 - **4x4 and 5x5** by reduction (centres, then edge pairing, then parity fixes, then the 3x3 solver). The sticker model and the renderer already handle any N.
