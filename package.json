@@ -1,0 +1,36 @@
+{
+  "name": "cube-solver",
+  "version": "1.0.0",
+  "description": "Rubik's cube solver: set up any 2x2 or 3x3, get optimal or fast solutions, ranked next moves and a layer-by-layer breakdown, animated in 3D.",
+  "scripts": {
+    "test": "vitest run",
+    "dev": "vite",
+    "build": "tsc -p . && vite build",
+    "preview": "vite preview",
+    "test:watch": "vitest",
+    "typecheck": "tsc -p .",
+    "tauri": "tauri",
+    "desktop": "tauri build",
+    "desktop:dev": "tauri dev"
+  },
+  "author": "ccharafeddine",
+  "license": "MIT",
+  "dependencies": {
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.12.2",
+    "@types/node": "^26.6.5",
+    "@types/three": "^0.186.0",
+    "typescript": "~5.9",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.4"
+  },
+  "type": "module",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ccharafeddine/cube-solver.git"
+  },
+  "homepage": "https://github.com/ccharafeddine/cube-solver"
+}
