@@ -1,0 +1,24 @@
+[package]
+name = "cube-solver"
+version = "1.0.0"
+description = "Cube Solver desktop app"
+authors = ["ccharafeddine"]
+license = "MIT"
+edition = "2021"
+
+[lib]
+name = "cube_solver_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+
+[profile.release]
+# Small, fast binary; the solver itself runs in the webview's worker.
+lto = true
+codegen-units = 1
+opt-level = "s"
+strip = true
