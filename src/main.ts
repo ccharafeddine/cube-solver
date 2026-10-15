@@ -294,6 +294,10 @@ let sequenceRun = 0;
  */
 async function playSequence(moves: string[], asScramble = false) {
   const run = ++sequenceRun;
+  // Any analysis queued or running is for a position about to go stale: drop it until the sequence ends.
+  clearTimeout(analyzeTimer);
+  if (workerBusy) { newWorker(); workerBusy = false; }
+  if (asScramble) setStatus('thinking', 'Mixing up the cube…');
   const done = await playPaced(moves, {
     play: (m) => {
       if (view.exploded) { turnsBlocked(); return false; }

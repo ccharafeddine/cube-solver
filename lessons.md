@@ -85,3 +85,4 @@ Rules learned building Cube Solver. Read them before changing the build, the sol
 - Make scrambles real moves in the history (inverse of a quick solve of a random state) instead of an opaque state, so undo and the timeline can walk through them.
 - Big-cube 3-cycles: searching [a b a', c] for every pure 3-cycle and conjugating them all at once (multi-source BFS) gives ~30% shorter solutions than spreading a single base cycle.
 - Scripted browser checks: wait on a condition that only holds at the true end (history length equals the scramble length), not one every intermediate state satisfies.
+- A debounced analysis reads the state when it fires, not when it was asked for: cancel it when a sequence starts, or it analyses a half-played position.
