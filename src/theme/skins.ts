@@ -4,8 +4,8 @@
  */
 export type SkinId = 'aero' | 'neon' | 'matte';
 export const SKINS: SkinId[] = ['aero', 'neon', 'matte'];
-/** The look that ships. The others are wired up but not offered in the UI yet. */
-export const DEFAULT_SKIN: SkinId = 'aero';
+/** The look a fresh install gets: calm matte plastic on a paper-grain background. */
+export const DEFAULT_SKIN: SkinId = 'matte';
 
 export interface SceneSkin {
   /** Plastic between stickers. */
@@ -41,8 +41,8 @@ export const SCENE_SKINS: Record<SkinId, { light: SceneSkin; dark: SceneSkin }> 
   matte: {
     light: { body: '#1c1b19', bodyRoughness: 0.9, stickerRoughness: 0.75, stickerClearcoat: 0, stickerClearcoatRoughness: 1,
       ambient: 2.2, key: 1.1, sky: '#fff5e6', skyIntensity: 0.3, rim: '#ffffff', rimIntensity: 0 },
-    dark: { body: '#1c1b19', bodyRoughness: 0.9, stickerRoughness: 0.75, stickerClearcoat: 0, stickerClearcoatRoughness: 1,
-      ambient: 1.8, key: 1.1, sky: '#fff5e6', skyIntensity: 0.3, rim: '#ffffff', rimIntensity: 0 },
+    dark: { body: '#141311', bodyRoughness: 0.9, stickerRoughness: 0.75, stickerClearcoat: 0, stickerClearcoatRoughness: 1,
+      ambient: 1.7, key: 1.0, sky: '#ffe2bf', skyIntensity: 0.35, rim: '#ffd9a8', rimIntensity: 0.35 },
   },
 };
 

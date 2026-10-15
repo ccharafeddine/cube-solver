@@ -17,19 +17,21 @@ const lum = (h: string) => { const c = hex(h).map((v) => (v <= 0.03928 ? v / 12.
 const contrast = (a: string, b: string) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
 
 describe('design tokens', () => {
-  const aero = block(":root, :root[data-skin='aero']");
+  const aero = block(":root, :root[data-skin='matte'] {");
   it('every skin defines every token the default skin defines', () => {
     expect(aero.size).toBeGreaterThan(40);
-    for (const sel of [":root[data-skin='neon'] {", ":root[data-skin='matte'] {"]) {
+    for (const sel of [":root[data-skin='neon'] {", ":root[data-skin='aero'] {"]) {
       const b = block(sel);
       const missing = [...aero].filter((v) => !b.has(v));
       expect(missing, sel).toEqual([]);
     }
   });
   it('the dark variant only overrides tokens that exist', () => {
-    const dark = block(":root[data-theme='dark']");
-    expect([...dark].filter((v) => !aero.has(v))).toEqual([]);
-    expect(dark.size).toBeGreaterThan(25);
+    for (const sel of [":root[data-skin='aero'][data-theme='dark']", ":root[data-skin='matte'][data-theme='dark']"]) {
+      const dark = block(sel);
+      expect([...dark].filter((v) => !aero.has(v))).toEqual([]);
+      expect(dark.size).toBeGreaterThan(25);
+    }
   });
   it('components use only declared tokens', () => {
     const used = new Set([...style.matchAll(/var\((--[a-z0-9-]+)/g)].map((m) => m[1]));
@@ -49,6 +51,15 @@ describe('design tokens', () => {
     expect(contrast('#9cc2db', '#0d3050')).toBeGreaterThan(4.5);
     expect(contrast('#ffffff', '#0d66aa')).toBeGreaterThan(4.5); // dark primary button
   });
+  it('keeps text contrast accessible in matte light and dark', () => {
+    expect(contrast('#22201c', '#f7f4ee')).toBeGreaterThan(7);
+    expect(contrast('#6b665c', '#f7f4ee')).toBeGreaterThan(4.5);
+    expect(contrast('#ffffff', '#8a4b14')).toBeGreaterThan(4.5); // pressed primary
+    expect(contrast('#ece6da', '#24221f')).toBeGreaterThan(7);
+    expect(contrast('#b0a898', '#24221f')).toBeGreaterThan(4.5);
+    expect(contrast('#1a1712', '#d98a3d')).toBeGreaterThan(4.5); // dark primary button
+    expect(contrast('#1a1712', '#8fb35f')).toBeGreaterThan(4.5); // dark green button
+  });
 });
 
 describe('skins', () => {
@@ -62,12 +73,12 @@ describe('skins', () => {
     expect(SCENE_SKINS.aero.light.stickerClearcoat).toBe(1); // glossy
     expect(SCENE_SKINS.matte.light.stickerClearcoat).toBe(0); // matte
   });
-  it('picks a skin from the URL, then the saved choice, then Aero', () => {
+  it('picks a skin from the URL, then the saved choice, then matte', () => {
     expect(pickSkin('', null)).toBe(DEFAULT_SKIN);
-    expect(DEFAULT_SKIN).toBe('aero');
-    expect(pickSkin('?skin=neon', 'matte')).toBe('neon');
-    expect(pickSkin('', 'matte')).toBe('matte');
-    expect(pickSkin('?skin=bogus', 'nope')).toBe('aero');
+    expect(DEFAULT_SKIN).toBe('matte');
+    expect(pickSkin('?skin=neon', 'aero')).toBe('neon');
+    expect(pickSkin('', 'aero')).toBe('aero');
+    expect(pickSkin('?skin=bogus', 'nope')).toBe('matte');
   });
   it('resolves the theme from the saved choice or the OS', () => {
     expect(resolveTheme(null, true)).toBe('dark');

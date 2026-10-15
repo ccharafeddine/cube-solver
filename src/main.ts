@@ -644,7 +644,7 @@ $('tut-close').onclick = () => $<HTMLDialogElement>('tutorial-dialog').close();
 if (!fromUrl) tutorial.offer($('onboarding'));
 
 // ---------- theme and skin ----------
-// The skin (Aero for now) and light/dark are CSS variables plus scene parameters.
+// The skin (matte by default) and light/dark are CSS variables plus scene parameters.
 const skin = pickSkin(location.search, localStorage.getItem('cube-solver-skin'));
 document.documentElement.dataset.skin = skin;
 const darkQuery = matchMedia('(prefers-color-scheme: dark)');

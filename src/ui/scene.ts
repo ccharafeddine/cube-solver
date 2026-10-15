@@ -70,7 +70,7 @@ export class CubeView {
   private sun = new THREE.DirectionalLight(0xffffff, 1.2);
   private sky = new THREE.HemisphereLight(0xbfe6ff, 0x203040, 0);
   private rim = new THREE.DirectionalLight(0x9ee7ff, 0);
-  private skin: SceneSkin = SCENE_SKINS.aero.light;
+  private skin: SceneSkin = SCENE_SKINS.matte.light;
   private bodyMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.6 });
 
   /** Apply a skin's lighting and material finish (colours of stickers never change). */

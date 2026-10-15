@@ -1,14 +1,93 @@
 /*
  * Design tokens. Components (style.css) use only these variables, so a skin
- * is just a block of values. Skins: aero (shipped, light + dark), neon, matte.
+ * is just a block of values. Skins: matte (default, light + dark), aero (light + dark), neon (dark),
+ * brutal (light).
  * The 3D scene's matching parameters live in skins.ts.
  *
  * Every skin block must define the same set of variables; a unit test
  * (skins.test.ts) checks that.
  */
 
-/* ---------- Frutiger Aero, light (default) ---------- */
-:root, :root[data-skin='aero'] {
+/* ---------- Matte textured, light (default): paper grain, soft light ---------- */
+:root, :root[data-skin='matte'] {
+  --font: 'Segoe UI', 'Noto Sans', system-ui, sans-serif;
+  --font-mono: 'Cascadia Mono', 'Consolas', ui-monospace, monospace;
+  --text: #22201c; --text-muted: #6b665c; --text-on-accent: #ffffff; --link: #8a4b14;
+  --accent: #b5651d; --accent-2: #8a4b14; --accent-green: #5d7d3a; --accent-soft: rgb(181 101 29 / 0.12);
+  --good: #4c7a2a; --bad: #b3261e;
+  --line: #d9d3c7;
+  --bg: #ece7dd;
+  --bg-image: radial-gradient(ellipse at 30% -10%, #f6f2ea, transparent 60%), linear-gradient(180deg, #efeae1, #e4ddd0);
+  --surface: #f7f4ee;
+  --surface-solid: #f7f4ee;
+  --surface-2: #efebe3;
+  --surface-border: #ddd6c9;
+  --surface-edge: #cfc7b8;
+  --surface-highlight: none;
+  --blur: 0px;
+  --header-bg: #f7f4ee;
+  --btn-bg: #f7f4ee;
+  --btn-bg-hover: #efe9de;
+  --btn-border: #cfc7b8;
+  --btn-text: #22201c;
+  --btn-primary-bg: #b5651d;
+  --btn-primary-hover: #a05817;
+  --btn-primary-border: #8a4b14;
+  --btn-green-bg: #5d7d3a;
+  --btn-green-border: #4a6630;
+  --btn-gloss: none;
+  --btn-shadow: none;
+  --btn-press-shadow: inset 0 1px 3px rgb(0 0 0 / 0.15);
+  --radius-sm: 6px; --radius: 10px; --radius-lg: 12px; --radius-pill: 8px;
+  --shadow-1: 0 1px 2px rgb(60 50 30 / 0.08);
+  --shadow-pop: 0 10px 30px rgb(60 50 30 / 0.2);
+  --focus: 0 0 0 3px rgb(181 101 29 / 0.5);
+  --viewport-bg: #e9e4da;
+  --viewport-exploded-bg: #2a2722;
+  --spot-dim: rgb(30 25 15 / 0.6);
+  --dialog-backdrop: rgb(30 25 15 / 0.4);
+  --texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.07'/%3E%3C/svg%3E");
+  --swatch-gloss: none;
+  color-scheme: light;
+}
+
+/* ---------- Matte textured, dark ---------- */
+:root[data-skin='matte'][data-theme='dark'] {
+  --text: #ece6da; --text-muted: #b0a898; --text-on-accent: #1a1712; --link: #e8a35e;
+  --accent: #d98a3d; --accent-2: #e8a35e; --accent-green: #8fb35f; --accent-soft: rgb(217 138 61 / 0.16);
+  --good: #9cc46a; --bad: #ff8a7a;
+  --line: #3a3630;
+  --bg: #1b1a17;
+  --bg-image: radial-gradient(ellipse at 30% -10%, #2a2723, transparent 60%), linear-gradient(180deg, #1e1c19, #171613);
+  --surface: #24221f;
+  --surface-solid: #24221f;
+  --surface-2: #1c1b18;
+  --surface-border: #3a3630;
+  --surface-edge: #121110;
+  --header-bg: #22201d;
+  --btn-bg: #2c2a26;
+  --btn-bg-hover: #36332e;
+  --btn-border: #4a453d;
+  --btn-text: #ece6da;
+  --btn-primary-bg: #d98a3d;
+  --btn-primary-hover: #e39a52;
+  --btn-primary-border: #e8a35e;
+  --btn-green-bg: #8fb35f;
+  --btn-green-border: #a3c474;
+  --btn-press-shadow: inset 0 1px 3px rgb(0 0 0 / 0.5);
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-pop: 0 10px 30px rgb(0 0 0 / 0.55);
+  --focus: 0 0 0 3px rgb(232 163 94 / 0.6);
+  --viewport-bg: #201e1b;
+  --viewport-exploded-bg: #141311;
+  --spot-dim: rgb(0 0 0 / 0.66);
+  --dialog-backdrop: rgb(0 0 0 / 0.5);
+  --texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.09'/%3E%3C/svg%3E");
+  color-scheme: dark;
+}
+
+/* ---------- Frutiger Aero, light ---------- */
+:root[data-skin='aero'] {
   --font: 'Segoe UI', 'Frutiger', 'Myriad Pro', 'Open Sans', 'Noto Sans', Ubuntu, system-ui, sans-serif;
   --font-mono: 'Cascadia Mono', 'Consolas', ui-monospace, monospace;
   --text: #0d2a3f; --text-muted: #45657c; --text-on-accent: #ffffff; --link: #0a5fa8;
@@ -59,7 +138,7 @@
 
 /* ---------- Frutiger Aero, dark: night-sky glass, same gloss ----------
  * main.ts always sets data-theme (from the saved choice or the OS setting). */
-:root[data-theme='dark']:not([data-skin='neon']):not([data-skin='matte']) {
+:root[data-skin='aero'][data-theme='dark'] {
   --text: #e6f5ff; --text-muted: #9cc2db; --text-on-accent: #ffffff; --link: #7fd0ff;
   --accent: #3fb5f5; --accent-2: #1a8fd6; --accent-green: #5fd77a; --accent-soft: rgb(63 181 245 / 0.18);
   --good: #63de86; --bad: #ff7b7b;
@@ -143,48 +222,6 @@
   color-scheme: dark;
 }
 
-/* ---------- Matte textured (planned skin: variables only) ---------- */
-:root[data-skin='matte'] {
-  --font: 'Segoe UI', 'Noto Sans', system-ui, sans-serif;
-  --font-mono: 'Cascadia Mono', 'Consolas', ui-monospace, monospace;
-  --text: #22201c; --text-muted: #6b665c; --text-on-accent: #ffffff; --link: #8a4b14;
-  --accent: #b5651d; --accent-2: #8a4b14; --accent-green: #5d7d3a; --accent-soft: rgb(181 101 29 / 0.12);
-  --good: #4c7a2a; --bad: #b3261e;
-  --line: #d9d3c7;
-  --bg: #ece7dd;
-  --bg-image: linear-gradient(180deg, #efeae1, #e6e0d4);
-  --surface: #f7f4ee;
-  --surface-solid: #f7f4ee;
-  --surface-2: #efebe3;
-  --surface-border: #ddd6c9;
-  --surface-edge: #cfc7b8;
-  --surface-highlight: none;
-  --blur: 0px;
-  --header-bg: #f7f4ee;
-  --btn-bg: #f7f4ee;
-  --btn-bg-hover: #efe9de;
-  --btn-border: #cfc7b8;
-  --btn-text: #22201c;
-  --btn-primary-bg: #b5651d;
-  --btn-primary-hover: #a05817;
-  --btn-primary-border: #8a4b14;
-  --btn-green-bg: #5d7d3a;
-  --btn-green-border: #4a6630;
-  --btn-gloss: none;
-  --btn-shadow: none;
-  --btn-press-shadow: inset 0 1px 3px rgb(0 0 0 / 0.15);
-  --radius-sm: 6px; --radius: 10px; --radius-lg: 12px; --radius-pill: 8px;
-  --shadow-1: 0 1px 2px rgb(60 50 30 / 0.08);
-  --shadow-pop: 0 10px 30px rgb(60 50 30 / 0.2);
-  --focus: 0 0 0 3px rgb(181 101 29 / 0.5);
-  --viewport-bg: #e9e4da;
-  --viewport-exploded-bg: #2a2722;
-  --spot-dim: rgb(30 25 15 / 0.6);
-  --dialog-backdrop: rgb(30 25 15 / 0.4);
-  --texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.05'/%3E%3C/svg%3E");
-  --swatch-gloss: none;
-  color-scheme: light;
-}
 
 /* Reduced transparency: solid surfaces, no blur. */
 @media (prefers-reduced-transparency: reduce) {
