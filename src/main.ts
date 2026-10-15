@@ -464,6 +464,11 @@ for (const f of 'URFDLBMESxyz') for (const suffix of ['', "'", '2']) {
   pad.appendChild(b);
 }
 
+// On-screen whole-cube rotations: the same moves as the x/y/z keys (Shift for prime).
+document.querySelectorAll<HTMLButtonElement>('[data-rot]').forEach((b) => {
+  b.onclick = (e) => playMove(b.dataset.rot! + (e.shiftKey ? "'" : ''));
+});
+
 const palette = $('palette');
 COLORS.forEach((c, i) => {
   const b = document.createElement('button');

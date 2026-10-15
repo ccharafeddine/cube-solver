@@ -36,6 +36,11 @@
       <section class="left">
         <div id="viewport" aria-label="3D cube. Drag a sticker to turn its layer; drag the background, right-drag or Shift-drag to rotate the view." role="region">
           <div id="onboarding" class="tip hidden" role="dialog" aria-live="polite"></div>
+          <div id="rotate-row" class="rotate-row" role="toolbar" aria-label="Rotate the whole cube">
+            <button data-rot="x" class="mono" title="Rotate the whole cube like R (x). Shift-click: x'" aria-label="Rotate whole cube x; Shift-click for x prime">X</button>
+            <button data-rot="y" class="mono" title="Rotate the whole cube like U (y). Shift-click: y'" aria-label="Rotate whole cube y; Shift-click for y prime">Y</button>
+            <button data-rot="z" class="mono" title="Rotate the whole cube like F (z). Shift-click: z'" aria-label="Rotate whole cube z; Shift-click for z prime">Z</button>
+          </div>
         </div>
         <div class="bar" role="toolbar" aria-label="Cube actions">
           <button id="reset" title="Back to solved (Alt+R)">Reset</button>
@@ -110,7 +115,7 @@
       <table class="keys">
         <tr><td><kbd>U</kbd> <kbd>R</kbd> <kbd>F</kbd> <kbd>D</kbd> <kbd>L</kbd> <kbd>B</kbd></td><td>Turn a face clockwise; add <kbd>Shift</kbd> for counter-clockwise</td></tr>
         <tr><td><kbd>M</kbd> <kbd>E</kbd> <kbd>S</kbd></td><td>Middle slices (3x3)</td></tr>
-        <tr><td><kbd>X</kbd> <kbd>Y</kbd> <kbd>Z</kbd></td><td>Rotate the whole cube</td></tr>
+        <tr><td><kbd>X</kbd> <kbd>Y</kbd> <kbd>Z</kbd> or the X Y Z buttons</td><td>Rotate the whole cube (Shift-click or Shift for prime); no pieces move</td></tr>
         <tr><td>Drag a sticker</td><td>Turn that layer (mouse, pen or touch)</td></tr>
         <tr><td>Drag the background</td><td>Rotate the view; scroll or pinch to zoom</td></tr>
         <tr><td>Right-drag or <kbd>Shift</kbd>+drag</td><td>Rotate the view from anywhere, even over stickers</td></tr>

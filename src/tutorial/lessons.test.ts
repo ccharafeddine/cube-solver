@@ -99,11 +99,13 @@ describe('tour steps', () => {
       expect(html, t.id).toContain(needle);
     }
   });
-  it('covers the required areas and mentions spinning', () => {
+  it('covers the required areas and mentions spinning and X/Y/Z', () => {
     const ids = TOUR.map((t) => t.id);
     for (const id of ['cube', 'rotate', 'turn', 'paint', 'actions', 'solve', 'next', 'method', 'history', 'share']) expect(ids).toContain(id);
     const rotate = TOUR.find((t) => t.id === 'rotate')!;
     expect(rotate.body).toMatch(/Right-drag or Shift-drag/);
+    expect(rotate.body).toMatch(/X, Y and Z/);
+    expect(rotate.touchBody).toMatch(/X, Y and Z/);
   });
   it('touch wording never says click or right-drag', () => {
     for (const t of TOUR) if (t.touchBody) expect(t.touchBody).not.toMatch(/\bclick|right-drag|Shift/i);

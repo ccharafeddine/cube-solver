@@ -43,7 +43,7 @@
 
 **Cubes and input**
 - 2x2 and 3x3 cubes in 3D. Drag a sticker to turn its layer, with mouse, pen or touch. Drag the background to look around (or right-drag / Shift-drag from anywhere), and scroll or pinch to zoom.
-- Keyboard turns for every face (U R F D L B), the middle slices (M E S) and whole-cube rotations (x y z). Add Shift for counter-clockwise.
+- Keyboard turns for every face (U R F D L B), the middle slices (M E S) and whole-cube rotations (x y z). Add Shift for counter-clockwise. Small **X Y Z** buttons in the corner of the cube view do the same whole-cube rotations (Shift-click for prime).
 - A move pad with all 36 turns, and a box for typing algorithms in standard notation (`R U R' U'`, `F2`, `M'`, `Rw`, `x`).
 - **Setup:** paint any sticker from the colour menu, either on the 3D cube or on a **flat 2D net editor**. The net is all buttons, so it works from the keyboard and with screen readers.
 - **Solvability check:** impossible states are explained, for example wrong colour counts, a corner that can't exist, a twisted corner, a flipped edge, or two swapped pieces (parity).
@@ -124,7 +124,7 @@ The dots across the top jump to any lesson, and **Show again** repeats the demon
 **App tour.** A spotlight box, the target's outline plus 8px, sits over one part of the app at a time, and everything else is heavily dimmed. The box and the step card glide between steps in about 0.3 s, or jump instantly when the system asks for reduced motion. The 10 steps:
 
 1. Your cube
-2. Spinning the view
+2. Spinning the view, including the X, Y and Z buttons
 3. Drag-to-turn
 4. Painting and the net editor
 5. Scramble, reset and undo
@@ -158,7 +158,7 @@ The dots across the top jump to any lesson, and **Show again** repeats the demon
 | **Speed** slider | Animation speed |
 | <kbd>U</kbd> <kbd>R</kbd> <kbd>F</kbd> <kbd>D</kbd> <kbd>L</kbd> <kbd>B</kbd> | Turn a face clockwise; with <kbd>Shift</kbd>, counter-clockwise |
 | <kbd>M</kbd> <kbd>E</kbd> <kbd>S</kbd> | Middle slices (3x3 only) |
-| <kbd>X</kbd> <kbd>Y</kbd> <kbd>Z</kbd> | Rotate the whole cube |
+| <kbd>X</kbd> <kbd>Y</kbd> <kbd>Z</kbd>, or the **X Y Z** buttons on the cube | Rotate the whole cube a quarter turn (x like R, y like U, z like F); <kbd>Shift</kbd>+key or <kbd>Shift</kbd>+click for the prime. Rotations move no pieces |
 | <kbd>2</kbd> / <kbd>3</kbd>, or the **2x2 / 3x3** buttons | Switch cube size (starts solved) |
 | **Fast / Optimal** | 3x3 solver mode |
 | **Beginner** | Blend ease-by-hand into the ranking |
