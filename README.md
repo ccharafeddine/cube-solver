@@ -42,7 +42,7 @@
 ## Features
 
 **Cubes and input**
-- 2x2 to 7x7 cubes in 3D (the 6x6 and 7x7 with slightly pillowed faces). Drag a sticker to turn its layer, with mouse, pen or touch. Drag the background to look around (or right-drag / Shift-drag from anywhere), and scroll or pinch to zoom.
+- 2x2 to 7x7 cubes in 3D modelled on the real puzzles: hollow pieces with inset stickers, and the 6x6 and 7x7 with pillowed (spherical) faces. Drag a sticker to turn its layer, with mouse, pen or touch. Drag the background to look around (or right-drag / Shift-drag from anywhere), and scroll or pinch to zoom.
 - Keyboard turns for every face (U R F D L B), the middle slices (M E S) and whole-cube rotations (x y z). Add Shift for counter-clockwise. Small **X Y Z** buttons in the corner of the cube view do the same whole-cube rotations (Shift-click for prime).
 - A move pad with all 36 turns, and a box for typing algorithms in standard notation (`R U R' U'`, `F2`, `M'`, `Rw`, `x`).
 - **Setup:** paint any sticker from the colour menu, either on the 3D cube or on a **flat 2D net editor**. The net is all buttons, so it works from the keyboard and with screen readers.
@@ -213,7 +213,7 @@ Inner layers use SiGN notation: `2R` turns only the second layer from the right,
 
 **Next moves on big cubes** rank every single-layer quarter turn by the length of the reduction solution from the resulting position. That measures progress through the reduction, not a proven distance, so every number is marked ≈.
 
-**Mechanism.** The exploded 4x4 shows a spherical core with three raised tracks the centres ride in, and a foot with a curved pad on every piece, reaching in to the sphere. The 5x5 has a 3x3-style core: a hub with six arms holding the fixed centre-centres, which are hollow shells with their screw and spring inside; every other piece reaches the hub with a curved foot. On odd cubes the edges are paired to their middle piece (midge), so parity there is just the one inner-slice turn.
+**Mechanism.** The exploded 4x4 shows the Rubik's Revenge ball core: eight raised triangles leave three grooves that the centres' cams ride in, while edges and corners hook onto their neighbours. The 5x5 to 7x7 show the V-Cube design: a solid cross with every piece on a conical stalk ending in a curved foot, the corners reaching nearly to the centre (the 6x6's cross ends in six hidden fixed centres). On odd cubes the edges are paired to their middle piece (midge), so parity there is just the one inner-slice turn.
 
 ## Theming
 

@@ -101,3 +101,4 @@ UNRELEASED (2026-10-14) - FRUTIGER AERO VISUAL OVERHAUL
 - 5x5: enabled (fixed centre-centres on a 3x3-style core; wings paired to their midge).
 - 6x6: enabled, with slightly pillowed faces. Analysis queued before a sequence (scramble, method step) is dropped so a mid-sequence result never shows.
 - 7x7: enabled. History and solution lists update in place (1000+ move solutions).
+- Realism: hollow piece shells with ridges and inset stickers on every size; true spherical pillowing on 6x6/7x7 (pieces bend); Rubik's Revenge ball-and-groove 4x4 core and V-Cube cross for 5x5-7x7; mechanism parts double-sided so arm ends never vanish from inside. Sources in PLAN.md section 10.
