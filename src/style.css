@@ -136,10 +136,9 @@ textarea { width: 100%; padding: 9px 12px; border-radius: var(--corner-control);
 .mv { padding: 2px 9px; border-radius: var(--corner-chip); box-shadow: none; font-family: inherit; }
 .mv.done { opacity: 0.45; } .mv.next { background: var(--btn-primary-bg); color: var(--text-on-accent); border-color: var(--btn-primary-border); }
 #history { max-height: 120px; overflow-y: auto; font-size: 0.9rem; }
-.cand { display: grid; grid-template-columns: 1.6em 3.4em 1fr 3em 4.6em; gap: 6px; width: 100%; text-align: left; margin-bottom: 6px; align-items: center; border-radius: var(--corner-control); }
+.cand { display: grid; grid-template-columns: 1.6em 3.4em 1fr 3em; gap: 6px; width: 100%; text-align: left; margin-bottom: 6px; align-items: center; border-radius: var(--corner-control); }
 .cand .mvname { font-weight: 600; font-size: 1.05rem; }
 .cand .delta { font-weight: 700; text-align: right; } .cand.good .delta { color: var(--good); } .cand.bad .delta { color: var(--bad); }
-.cand .ease { font-size: 0.75rem; color: var(--text-muted); text-align: right; }
 .step { border-top: var(--border-w) solid var(--line); padding: 9px 0; }
 .step-name { font-weight: 600; } .step-name small { color: var(--text-muted); font-weight: normal; }
 .step .mono { margin: 5px 0; word-break: break-word; line-height: 1.5; }

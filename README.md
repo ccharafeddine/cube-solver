@@ -56,7 +56,7 @@
 - **2x2: always optimal.** A complete table of all 3,674,160 positions (built in under a second) gives the shortest solution and the exact distance for every candidate move.
 - **3x3 Fast:** Kociemba's two-phase algorithm. It finds about 20 moves in milliseconds, keeps improving while it thinks, and streams every better solution to the screen. Positions within about 12 quarter turns of solved are also proven optimal automatically.
 - **3x3 Optimal:** Korf-style IDA* with five pattern databases (two corner groups and three five-edge groups) for the proven-shortest solution in quarter turns. It shows live progress (depth proven, positions searched) and can be stopped at any time. If the think time runs out, you get the fast solution plus how far the proof reached.
-- **Ranked next moves:** all 12 quarter turns, each with its distance to solved and the change it makes (-1 is progress). Proven distances are shown plainly; estimates are marked with ≈. Ties are broken by a proven lower bound. **Beginner mode** also weighs how easy each turn is by hand: R and U are easy, B and D need regrips.
+- **Ranked next moves:** all 12 quarter turns, each with its distance to solved and the change it makes (-1 is progress). Proven distances are shown plainly; estimates are marked with ≈. Ties are broken by a proven lower bound.
 - **Method breakdowns** for the 3x3:
   - **Layer by layer:** cross, first-layer corners, middle layer, then the last layer in four steps.
   - **CFOP:** cross, four F2L pairs (the easiest pair first), then two-look OLL and two-look PLL.
@@ -132,7 +132,7 @@ The dots across the top jump to any lesson, and **Show again** repeats the demon
 4. Painting and the net editor
 5. Scramble, reset and undo
 6. Solving, with the Fast/Optimal switch
-7. Ranked next moves and Beginner mode
+7. Ranked next moves
 8. Method breakdowns
 9. History
 10. Share and export
@@ -165,7 +165,6 @@ The dots across the top jump to any lesson, and **Show again** repeats the demon
 | <kbd>G</kbd>, or **Explode** / **Assemble** | Exploded view on and off. Turns pause while exploded; orbiting and painting work |
 | <kbd>2</kbd> / <kbd>3</kbd>, or the **2x2 / 3x3** buttons | Switch cube size (starts solved) |
 | **Fast / Optimal** | 3x3 solver mode |
-| **Beginner** | Blend ease-by-hand into the ranking |
 | **Think** | Time limit for the search (1–60 s) |
 | <kbd>Space</kbd> / **▶ Play** | Play or pause the solution |
 | <kbd>→</kbd> / <kbd>←</kbd>, **›** / **‹** | Step the solution forward / back |
@@ -281,7 +280,7 @@ src/
     twophase.ts     3x3 Fast (two-phase, streaming)
     pdb.ts          pattern databases (corner and edge groups), lower bound
     optimal3.ts     3x3 Optimal (IDA* + PDBs, progress, cancel)
-    rank.ts         candidate ranking, ergonomics
+    rank.ts         candidate ranking by distance
     methods/        common.ts (piece and macro searches), lbl.ts, cfop.ts, roux.ts, zz.ts, index.ts
     analyze.ts      one full analysis: validity, solution, candidates, method (pure, tested)
     worker.ts       Web Worker: loads/builds tables (tableCache.ts, IndexedDB), runs analyze

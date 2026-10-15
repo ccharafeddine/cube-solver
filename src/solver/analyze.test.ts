@@ -4,10 +4,10 @@ import type { AnalyzeResponse } from './protocol';
 import { applyMoves, solved } from '../cube/facelets';
 import { parseMoves } from '../cube/notation';
 
-const run = (n: 2 | 3, seq: string, mode: 'fast' | 'optimal' = 'fast', beginner = false) => {
+const run = (n: 2 | 3, seq: string, mode: 'fast' | 'optimal' = 'fast') => {
   const out: AnalyzeResponse[] = [];
   const state = Array.from(applyMoves(solved(n), n, parseMoves(seq)));
-  analyze({ id: 1, n, state, mode, beginner, timeMs: 1500, method: 'lbl' }, (r) => out.push(r));
+  analyze({ id: 1, n, state, mode, timeMs: 1500, method: 'lbl' }, (r) => out.push(r));
   return out[out.length - 1];
 };
 
@@ -41,7 +41,7 @@ describe('analyze', () => {
     const s = Array.from(solved(3));
     [s[8], s[9]] = [s[9], s[8]];
     const out: AnalyzeResponse[] = [];
-    analyze({ id: 1, n: 3, state: s, mode: 'fast', beginner: false, timeMs: 100, method: 'lbl' }, (r) => out.push(r));
+    analyze({ id: 1, n: 3, state: s, mode: 'fast', timeMs: 100, method: 'lbl' }, (r) => out.push(r));
     expect(out[0].kind).toBe('invalid');
   });
 });

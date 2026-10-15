@@ -44,7 +44,7 @@ src/
   solver/twophase.ts 3x3 Fast (two-phase, streaming improvements)
   solver/optimal3.ts 3x3 Optimal (QTM IDA*)
   solver/lbl.ts      Layer-by-layer breakdown
-  solver/rank.ts     Candidate ranking + ergonomics
+  solver/rank.ts     Candidate ranking by distance
   solver/analyze.ts  One full analysis (pure, tested); worker.ts wraps it
   ui/scene.ts        three.js view, painting, turn animation
   main.ts            UI wiring; style.css; index.html
@@ -75,13 +75,13 @@ Solutions will be long (about 100 moves or more on 5x5), and the UI will say so 
 - 3x3: the best two-phase length found within the time budget (exact when Optimal mode is on).
 - NxN: an estimate, using the reduction stage index plus the remaining length.
 
-**Beginner mode** ranks by a blend: `score = distance + w * ergonomicCost` (w tunable in settings), favoring R/U/L/F turns, penalizing B/D, wide moves, slice moves and cube rotations. **Non-beginner** ranks by distance to solved only.
+Candidates are ranked by distance to solved only. (An earlier Beginner mode that blended in ease by hand was removed at the owner's request.)
 
 The results are sorted, and the top N are shown (1/3/5/all, the same as chess-solver's MultiPV). Each one shows the move, its resulting distance, and a Δ value (-1 means the move makes progress). Clicking a candidate plays that move with animation.
 
 ## 5. Features and UI
 
-> **Status after the first build:** these are done: the orbiting 3D cube, keyboard and button turns, typed algorithms, the colour menu painting on the 3D cube, solvability errors, reset, random-state scramble, undo, the solution with play and step, ranked candidates with a top-N selector, the Fast/Optimal toggle, beginner mode, think time, animation speed, theme, and the layer-by-layer breakdown. Still open: drag-to-turn, the 2D net editor, STM, URL sharing, the update check, and the CFOP/Roux/ZZ breakdowns.
+> **Status after the first build:** these are done: the orbiting 3D cube, keyboard and button turns, typed algorithms, the colour menu painting on the 3D cube, solvability errors, reset, random-state scramble, undo, the solution with play and step, ranked candidates with a top-N selector, the Fast/Optimal toggle, think time, animation speed, theme, and the layer-by-layer breakdown. Still open: drag-to-turn, the 2D net editor, STM, URL sharing, the update check, and the CFOP/Roux/ZZ breakdowns.
 
 - **3D cube:** drag to orbit, plus a reset-view button. Click and drag on a face to turn a layer. Keyboard shortcuts follow the cstimer-style layout.
 - **Size selector:** 2x2 and 3x3 now. The decided ceiling is 7x7, and 4x4/5x5 are on the backlog.
@@ -93,7 +93,7 @@ The results are sorted, and the top N are shown (1/3/5/all, the same as chess-so
 - **Sharing:** export and import the state as a facelet string and as a URL hash.
 - **Methods menu:** Layer-by-layer (default), CFOP, Roux, ZZ. Each produces a human-style solution labeled by step (e.g. cross / F2L / OLL / PLL), alongside the computer solution (Fast or Optimal).
 - **Colour menu:** a paint-any-sticker palette modeled on chess-solver's piece selector; pick a colour, click any sticker (net or 3D).
-- **Settings and polish:** theme (follows the OS by default), metric (QTM default; a 180° turn counts as two moves), beginner mode toggle, color scheme (standard Western), animation speed, think time, and an update check against GitHub releases.
+- **Settings and polish:** theme (follows the OS by default), metric (QTM default; a 180° turn counts as two moves), color scheme (standard Western), animation speed, think time, and an update check against GitHub releases.
 
 ## 6. Testing
 
@@ -151,7 +151,7 @@ The repo's `progress.txt` and `lessons.md` were **not found** on the PC. They ar
 1. **Max size:** 7x7 was decided first. The revised scope ships 2x2 and 3x3 now and puts 4x4/5x5 on the backlog.
 2. **3x3 modes:** both Optimal and Fast, with a toggle (optimal moved from stretch into scope).
 3. **Methods menu:** layer-by-layer, CFOP, Roux, ZZ; layer-by-layer is the default.
-4. **Ranking:** beginner mode blends ergonomics (ease by hand) with distance; non-beginner ranks by distance to solved only.
+4. **Ranking:** by distance to solved only (Beginner mode and the ease-by-hand blend were removed).
 5. **License:** MIT, so no GPL code reuse.
 6. **Metric:** quarter-turn metric; a 180° turn counts as two moves.
 7. **Colours / input:** paint-any-sticker colour menu like chess-solver's piece menu. Camera scanning of a real cube is on the backlog as a bottom-bar option showing the scanned cube digitally.

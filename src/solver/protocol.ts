@@ -8,7 +8,6 @@ export interface AnalyzeRequest {
   n: 2 | 3;
   state: number[];
   mode: Mode;
-  beginner: boolean;
   /** Think time for the main solve, ms. */
   timeMs: number;
   method: MethodId;

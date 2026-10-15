@@ -149,7 +149,7 @@ export const TOUR: TourStep[] = [
     body: 'The solver starts as soon as the cube changes. Press Play (or Space) to watch the solution, and ← → to step through it. In the header, Fast finds a near-shortest answer quickly and Optimal finds the proven shortest one.',
     touchBody: 'The solver starts as soon as the cube changes. Tap Play to watch the solution, and the arrows to step through it. In the header, Fast finds a near-shortest answer quickly and Optimal finds the proven shortest one.' },
   { id: 'next', target: '#next-card', title: 'Ranked next moves',
-    body: 'See every move you could make next, ranked by how close it gets you to solved. Each one shows how many moves would be left and the change: -1 in green is a step closer, ±0 makes no difference, +1 in red is a step back. ≈ marks an estimate. Turn on Beginner in the header to favour moves that are easy by hand.' },
+    body: 'See every move you could make next, ranked by how close it gets you to solved. Each one shows how many moves would be left and the change: -1 in green is a step closer, ±0 makes no difference, +1 in red is a step back. ≈ marks an estimate.' },
   { id: 'method', target: '#method-card', title: 'Method breakdowns',
     body: 'See the same solve the way people learn it: layer by layer, CFOP, Roux or ZZ. You can play each named step on its own.' },
   { id: 'history', target: '#history-card', title: 'History',

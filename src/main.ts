@@ -7,7 +7,6 @@ import { solvedCubie, toFacelets, parity, type Cubie } from './cube/cubie';
 import { randomState2 } from './solver/solver2';
 import type { AnalyzeRequest, AnalyzeResponse, Mode } from './solver/protocol';
 import type { Candidate } from './solver/rank';
-import { ergonomicCost } from './solver/rank';
 import { METHODS, type MethodId, type Step } from './solver/methods/index';
 import { History, inverseMove } from './app/history';
 import { fromHash, importText, toFaceletString, toHash, toJSON } from './app/share';
@@ -38,12 +37,11 @@ window.addEventListener('error', (e) => showError(e.message || 'unknown error'))
 window.addEventListener('unhandledrejection', (e) => showError(String((e.reason as Error)?.message ?? e.reason)));
 
 // ---------- settings ----------
-interface Settings { n: 2 | 3; mode: Mode; beginner: boolean; thinkMs: number; method: MethodId; speed: number; topn: string }
+interface Settings { n: 2 | 3; mode: Mode; thinkMs: number; method: MethodId; speed: number; topn: string }
 const saved: Partial<Settings> = (() => { try { return JSON.parse(localStorage.getItem('cube-solver-settings') ?? '{}'); } catch { return {}; } })();
 const settings: Settings = {
   n: saved.n === 2 ? 2 : 3,
   mode: saved.mode === 'optimal' ? 'optimal' : 'fast',
-  beginner: saved.beginner ?? true,
   thinkMs: saved.thinkMs ?? 2000,
   method: (METHODS.some((m) => m.id === saved.method) ? saved.method : 'lbl') as MethodId,
   speed: saved.speed ?? 55,
@@ -102,7 +100,7 @@ function requestAnalysis() {
     if (!worker || workerBusy) newWorker();
     workerBusy = true;
     const req: AnalyzeRequest = {
-      id: ++reqId, n, state: Array.from(state), mode: settings.mode, beginner: settings.beginner,
+      id: ++reqId, n, state: Array.from(state), mode: settings.mode,
       timeMs: settings.thinkMs, method: settings.method,
     };
     setStatus('thinking', settings.mode === 'optimal' && n === 3 ? 'Searching for the optimal solution…' : 'Solving…');
@@ -195,15 +193,12 @@ function renderCandidates(cs: Candidate[], current: number) {
     row.className = 'cand' + (c.delta < 0 ? ' good' : c.delta > 0 ? ' bad' : '');
     const d = c.delta === 0 ? '±0' : c.delta > 0 ? `+${c.delta}` : `${c.delta}`;
     const dist = c.exact ? `${c.distance}` : `≈${c.distance}`;
-    row.innerHTML = `<b>${i + 1}</b><span class="mono mvname">${c.move}</span><span>${dist} to go</span><span class="delta">${d}</span>` +
-      (settings.beginner ? `<span class="ease" title="Ease by hand (lower is easier)">ease ${ergonomicCost(c.move).toFixed(1)}</span>` : '<span></span>');
+    row.innerHTML = `<b>${i + 1}</b><span class="mono mvname">${c.move}</span><span>${dist} to go</span><span class="delta">${d}</span>`;
     row.setAttribute('aria-label', `${c.move}: ${c.exact ? '' : 'about '}${c.distance} moves to go, change ${d}`);
     row.onclick = () => playMove(c.move);
     el.appendChild(row);
   });
-  $('cand-note').textContent = current === 0 ? 'Already solved.' : (settings.beginner
-    ? 'Beginner ranking: distance blended with how easy each turn is by hand.'
-    : 'Ranked by distance to solved.') + ' ≈ marks an estimate; plain numbers are proven.';
+  $('cand-note').textContent = current === 0 ? 'Already solved.' : 'Ranked by distance to solved.' + ' ≈ marks an estimate; plain numbers are proven.';
 }
 
 function renderMethod(steps?: Step[]) {
@@ -427,7 +422,6 @@ function syncControls() {
   });
   $('mode-group').classList.toggle('hidden', n !== 3);
   $('method-card').classList.toggle('hidden', n !== 3);
-  $<HTMLInputElement>('beginner').checked = settings.beginner;
   $<HTMLSelectElement>('think').value = String(settings.thinkMs);
   $<HTMLSelectElement>('topn').value = settings.topn;
   $<HTMLSelectElement>('method-select').value = settings.method;
@@ -455,7 +449,6 @@ function selectTab(tab: string) {
 document.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach((b) => (b.onclick = () => selectTab(b.dataset.tab!)));
 document.querySelectorAll<HTMLButtonElement>('[data-size]').forEach((b) => (b.onclick = () => setBaseline(solved(Number(b.dataset.size) as 2 | 3), Number(b.dataset.size) as 2 | 3)));
 document.querySelectorAll<HTMLButtonElement>('[data-mode]').forEach((b) => (b.onclick = () => { settings.mode = b.dataset.mode as Mode; persist(); syncControls(); requestAnalysis(); }));
-$<HTMLInputElement>('beginner').onchange = (e) => { settings.beginner = (e.target as HTMLInputElement).checked; persist(); requestAnalysis(); };
 $<HTMLSelectElement>('think').onchange = (e) => { settings.thinkMs = Number((e.target as HTMLSelectElement).value); persist(); requestAnalysis(); };
 $<HTMLSelectElement>('topn').onchange = (e) => { settings.topn = (e.target as HTMLSelectElement).value; persist(); requestAnalysis(); };
 $<HTMLInputElement>('speed').oninput = (e) => { settings.speed = Number((e.target as HTMLInputElement).value); persist(); };

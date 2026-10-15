@@ -55,13 +55,12 @@ describe('ranking', () => {
     { move: 'R', distance: 5, exact: true },
     { move: 'U', distance: 7, exact: true },
   ];
-  it('ranks by distance only outside beginner mode', () => {
-    const r = rankCandidates(6, ds, false);
+  it('ranks purely by distance to solved', () => {
+    const r = rankCandidates(6, ds);
     expect(r[0].distance).toBe(5);
     expect(r[0].delta).toBe(-1);
-  });
-  it('prefers the easier turn in beginner mode', () => {
-    expect(rankCandidates(6, ds, true)[0].move).toBe('R');
-    expect(rankCandidates(6, [{ move: 'B', distance: 5, exact: true }, { move: 'R', distance: 5.5, exact: true }], true)[0].move).toBe('R');
+    expect(r[2].move).toBe('U');
+    // No ease-by-hand bias: a shorter B beats a longer R.
+    expect(rankCandidates(6, [{ move: 'B', distance: 5, exact: true }, { move: 'R', distance: 5.5, exact: true }])[0].move).toBe('B');
   });
 });

@@ -27,7 +27,6 @@ export function analyze(req: AnalyzeRequest, emit: (r: AnalyzeResponse) => void,
     const candidates = rankCandidates(
       current,
       QUARTER_NAMES.map((move) => ({ move, distance: distance2(applyMove(state, 2, parseMoves(move)[0]))!, exact: true })),
-      req.beginner,
     );
     // Show "U U" as the standard "U2" (still two quarter turns).
     const shown: string[] = [];
@@ -89,7 +88,7 @@ export function analyze(req: AnalyzeRequest, emit: (r: AnalyzeResponse) => void,
     // Upper bound meeting lower bound means the distance is proven.
     return { move: QUARTER_NAMES[k], distance: est, exact: est === bound, bound };
   });
-  const candidates = rankCandidates(current, dists, req.beginner);
+  const candidates = rankCandidates(current, dists);
   const lbl = solveMethod(req.method ?? 'lbl', c);
   emit({
     id: req.id, kind: 'result', final: true, solution, qtm: current, optimal, note, candidates,
