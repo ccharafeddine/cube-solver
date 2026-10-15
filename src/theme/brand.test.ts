@@ -25,4 +25,12 @@ describe('brand', () => {
     const dlg = /<dialog id="settings-dialog"[\s\S]*?<\/dialog>/.exec(html)![0];
     for (const id of ['theme-skins', 'theme-modes', 'check-update', 'version', 'settings-close']) expect(dlg).toContain(`id="${id}"`);
   });
+  it('every icon the manifest and page name exists, including the social card', () => {
+    const manifest = JSON.parse(readFileSync(new URL('../../public/manifest.webmanifest', import.meta.url), 'utf-8'));
+    for (const i of manifest.icons) expect(existsSync(new URL(`../../public/${i.src}`, import.meta.url))).toBe(true);
+    expect(manifest.icons.some((i: { purpose?: string }) => i.purpose === 'maskable')).toBe(true);
+    const og = /property="og:image" content="\.\/([^"]+)"/.exec(html);
+    expect(og).not.toBeNull();
+    expect(existsSync(new URL(`../../public/${og![1]}`, import.meta.url))).toBe(true);
+  });
 });

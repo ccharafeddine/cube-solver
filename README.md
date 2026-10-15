@@ -1,4 +1,4 @@
-<p align="center"><img src="public/icon-192.png" width="96" alt="Cube Solver logo" /></p>
+<p align="center"><img src="public/og-image.png" width="720" alt="Cube Solver: an isometric cube with a solve arrow, and the tagline: solve any cube from 2x2 to 7x7" /></p>
 
 <h1 align="center">Cube Solver</h1>
 
@@ -22,6 +22,7 @@
 </p>
 
 <p align="center"><img src="docs/screenshot-3x3.png" width="860" alt="A scrambled 3x3 with its solution, ranked next moves and the layer-by-layer breakdown" /></p>
+<p align="center"><img src="docs/screenshot-7x7.png" width="860" alt="A scrambled 7x7 in the Neon theme with its reduction solution and ranked next moves" /></p>
 
 <table align="center"><tr>
   <td width="40%"><img src="docs/screenshot-paint.png" alt="Painting stickers with the colour menu and the flat net editor" /><p align="center"><sub>Paint a real cube's colours on the 3D cube or the flat net</sub></p></td>
@@ -236,8 +237,20 @@ There are four themes. Pick one in **Settings** (the gear at the top right), or 
 
 Each theme also has its own corners, set by tokens per size tier (panel, card, control, chip): Matte uses 2-4px radii with a hairline double-line edge; Aero rounds only the top corners with a gloss band; Neon chamfers panel corners with a glowing line along each cut; Neubrutalism stays nearly square and lets the heavy outline and offset shadow do the work. Focus rings follow each shape. Every theme has light and dark, each with its own 3D lighting and plastic. Light, Dark or System applies to all of them; System follows the OS setting live, without a reload. `?skin=neon` (or `matte`, `aero`, `brutal`) previews a theme without saving it. Every theme defines every token, which a test checks. Under reduced transparency, panels become solid and blur is turned off; reduced motion also removes the Neubrutalism press nudge. Contrast is checked in tests to meet WCAG AA for body text, muted text and text on buttons in every theme. Selects and their native option lists take solid colours from the theme so they stay readable on Windows.
 
-<p align="center"><img src="docs/screenshot-theme-picker.png" width="700" alt="The Appearance picker with swatch previews of the four themes" /></p>
+<p align="center"><img src="docs/screenshot-theme-picker.png" width="700" alt="Settings: the theme picker with swatch previews of the four themes, light/dark/system, update check and About" /></p>
 <p align="center"><img src="docs/screenshot-brutal.png" width="700" alt="The Neubrutalism theme: flat colour, thick outlines, hard shadows" /></p>
+
+## Brand assets
+
+The logo is original artwork: an isometric cube with inset, rounded stickers on black plastic (like the 3D cube) and a solve arrow. The SVG sources live in `brand/`:
+
+- `brand/icon.svg`: the app icon and header mark (copied to `public/icon.svg`, the favicon).
+- `brand/icon-maskable.svg`: full-bleed version with the mark inside the maskable safe zone.
+- `brand/og-image.html`: the social/OG card, rendered to `public/og-image.png` (1200x630).
+
+PNG sizes (`public/icon-192.png`, `icon-512.png`, `icon-1024.png`, `icon-maskable-512.png`) are rendered from the SVGs. The desktop icons in `src-tauri/icons/` (PNG, `.ico`, `.icns`) come from `npx tauri icon public/icon-1024.png`. README screenshots in `docs/` are taken from the running app.
+
+The title font is [Bungee](https://github.com/djrrb/Bungee) (SIL Open Font License, `src/assets/fonts/Bungee-OFL.txt`), bundled with the app, so it works offline and in the desktop app.
 
 ## Building and packaging
 

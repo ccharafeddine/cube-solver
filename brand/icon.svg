@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<!-- Cube Solver mark: an isometric cube with inset rounded stickers on black plastic, and a solve arrow. Original artwork. -->
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2e2924"/><stop offset="1" stop-color="#15130f"/></linearGradient>
+  <linearGradient id="acc" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#c25f12"/><stop offset="1" stop-color="#f2a04a"/></linearGradient>
+  <radialGradient id="glow" cx=".5" cy=".42" r=".5"><stop offset="0" stop-color="#f2a04a" stop-opacity=".22"/><stop offset="1" stop-color="#f2a04a" stop-opacity="0"/></radialGradient>
+</defs>
+<rect width="512" height="512" rx="112" fill="url(#bg)"/>
+<rect x="6" y="6" width="500" height="500" rx="106" fill="none" stroke="#fff" stroke-opacity=".08" stroke-width="4"/>
+<rect width="512" height="512" rx="112" fill="url(#glow)"/>
+<g transform="translate(256 236) scale(0.92) translate(-256 -262)">
+  <polygon points="256,112 386,187 386,337 256,412 126,337 126,187" fill="#121110" stroke="#121110" stroke-width="16" stroke-linejoin="round"/>
+  <g transform="matrix(43.33,25,-43.33,25,256,112)">
+<rect x="0" y="0" width="3" height="3" fill="#121110"/>
+<rect x="0.10" y="0.10" width=".8" height=".8" rx=".17" fill="#f6f2e9"/>
+<rect x="1.10" y="0.10" width=".8" height=".8" rx=".17" fill="#f6f2e9"/>
+<rect x="2.10" y="0.10" width=".8" height=".8" rx=".17" fill="#f6f2e9"/>
+<rect x="0.10" y="1.10" width=".8" height=".8" rx=".17" fill="#f6f2e9"/>
+<rect x="1.10" y="1.10" width=".8" height=".8" rx=".17" fill="#f6f2e9"/>
+<rect x="2.10" y="1.10" width=".8" height=".8" rx=".17" fill="#f6f2e9"/>
+<rect x="0.10" y="2.10" width=".8" height=".8" rx=".17" fill="#f6f2e9"/>
+<rect x="1.10" y="2.10" width=".8" height=".8" rx=".17" fill="#f6f2e9"/>
+<rect x="2.10" y="2.10" width=".8" height=".8" rx=".17" fill="#f6f2e9"/>
+</g>
+  <g transform="matrix(43.33,25,0,50,126,187)">
+<rect x="0" y="0" width="3" height="3" fill="#121110"/>
+<rect x="0.10" y="0.10" width=".8" height=".8" rx=".17" fill="#1fa35c"/>
+<rect x="1.10" y="0.10" width=".8" height=".8" rx=".17" fill="#1fa35c"/>
+<rect x="2.10" y="0.10" width=".8" height=".8" rx=".17" fill="#1fa35c"/>
+<rect x="0.10" y="1.10" width=".8" height=".8" rx=".17" fill="#1fa35c"/>
+<rect x="1.10" y="1.10" width=".8" height=".8" rx=".17" fill="#1fa35c"/>
+<rect x="2.10" y="1.10" width=".8" height=".8" rx=".17" fill="#1fa35c"/>
+<rect x="0.10" y="2.10" width=".8" height=".8" rx=".17" fill="#1fa35c"/>
+<rect x="1.10" y="2.10" width=".8" height=".8" rx=".17" fill="#1fa35c"/>
+<rect x="2.10" y="2.10" width=".8" height=".8" rx=".17" fill="#1fa35c"/>
+<rect x="0" y="0" width="3" height="3" fill="#000" opacity="0.08"/>
+</g>
+  <g transform="matrix(43.33,-25,0,50,256,262)">
+<rect x="0" y="0" width="3" height="3" fill="#121110"/>
+<rect x="0.10" y="0.10" width=".8" height=".8" rx=".17" fill="#d8363f"/>
+<rect x="1.10" y="0.10" width=".8" height=".8" rx=".17" fill="#d8363f"/>
+<rect x="2.10" y="0.10" width=".8" height=".8" rx=".17" fill="#d8363f"/>
+<rect x="0.10" y="1.10" width=".8" height=".8" rx=".17" fill="#d8363f"/>
+<rect x="1.10" y="1.10" width=".8" height=".8" rx=".17" fill="#d8363f"/>
+<rect x="2.10" y="1.10" width=".8" height=".8" rx=".17" fill="#d8363f"/>
+<rect x="0.10" y="2.10" width=".8" height=".8" rx=".17" fill="#d8363f"/>
+<rect x="1.10" y="2.10" width=".8" height=".8" rx=".17" fill="#d8363f"/>
+<rect x="2.10" y="2.10" width=".8" height=".8" rx=".17" fill="#d8363f"/>
+<rect x="0" y="0" width="3" height="3" fill="#000" opacity="0.2"/>
+</g>
+  <path d="M136 186 L256 117 L376 186" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="3" stroke-linecap="round"/>
+</g>
+<path d="M 96 352 A 182 182 0 0 0 418 342" fill="none" stroke="url(#acc)" stroke-width="22" stroke-linecap="round"/>
+  <path d="M 446 314 L 426 376 L 382 330 Z" fill="#f2a04a" stroke="#f2a04a" stroke-width="8" stroke-linejoin="round"/>
+</svg>

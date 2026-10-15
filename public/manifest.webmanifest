@@ -1,15 +1,38 @@
 {
   "name": "Cube Solver",
   "short_name": "Cube Solver",
-  "description": "Set up any 2x2 or 3x3 cube and get optimal or fast solutions, ranked next moves and a layer-by-layer breakdown.",
+  "description": "Set up any cube from 2x2 to 7x7 and get solutions, ranked next moves and step-by-step methods.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#15141b",
-  "theme_color": "#863bff",
+  "background_color": "#15130f",
+  "theme_color": "#2e2924",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }
