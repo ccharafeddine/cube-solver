@@ -31,7 +31,7 @@
 
 <table align="center"><tr>
   <td width="45%"><img src="docs/screenshot-tutorial.png" alt="Notation lesson: the R layer is spotlit on the cube and the coach asks you to play R" /><p align="center"><sub>Notation lessons: watch the move, then play it yourself</sub></p></td>
-  <td width="33%"><img src="docs/screenshot-tour.png" alt="App tour spotlighting the net editor" /><p align="center"><sub>A spotlight tour of every part of the app</sub></p></td>
+  <td width="33%"><img src="docs/screenshot-tour.png" alt="App tour: the 3D cube in the spotlight with the step card beside it" /><p align="center"><sub>A spotlight tour of every part of the app</sub></p></td>
   <td width="18%"><img src="docs/screenshot-tutorial-mobile.png" alt="A notation lesson on a phone, answered correctly" /><p align="center"><sub>Lessons on a phone</sub></p></td>
 </tr></table>
 
@@ -42,7 +42,7 @@
 ## Features
 
 **Cubes and input**
-- 2x2 and 3x3 cubes in 3D. Drag a sticker to turn its layer, with mouse, pen or touch. Drag the background to look around, and scroll or pinch to zoom.
+- 2x2 and 3x3 cubes in 3D. Drag a sticker to turn its layer, with mouse, pen or touch. Drag the background to look around (or right-drag / Shift-drag from anywhere), and scroll or pinch to zoom.
 - Keyboard turns for every face (U R F D L B), the middle slices (M E S) and whole-cube rotations (x y z). Add Shift for counter-clockwise.
 - A move pad with all 36 turns, and a box for typing algorithms in standard notation (`R U R' U'`, `F2`, `M'`, `Rw`, `x`).
 - **Setup:** paint any sticker from the colour menu, either on the 3D cube or on a **flat 2D net editor**. The net is all buttons, so it works from the keyboard and with screen readers.
@@ -75,7 +75,7 @@
 
 **Tutorial**
 - An interactive **notation course** of 14 short lessons: the faces U D L R F B, prime ('), double (2), the slices M E S, wide moves (Rw), the rotations x y z, and quarter-turn counting. Each lesson spotlights the layer on the 3D cube, animates the move, then asks you to play it and checks your answer. Ends with a 6-question quiz.
-- A guided **spotlight tour** of the app in 12 steps.
+- A 10-step **spotlight tour** of the app. It highlights each part, lets you try it right there, and uses touch wording on phones.
 - Offered on first launch, can be skipped, and is always available from the 🎓 Tutorial menu, where you can resume where you stopped or replay. Progress is saved.
 
 ## Download
@@ -121,7 +121,25 @@ Each lesson:
 
 The dots across the top jump to any lesson, and **Show again** repeats the demonstration. The quiz checks what you learned: what a prime does, counting quarter turns, which face M follows, rotations, wide moves, and inverses. Each answer comes with an explanation.
 
-**App tour.** A spotlight dims the page around each part in turn, scrolls it into view, and opens the right tab. The parts are rotating and drag-to-turn, the move pad and keys, painting, the net editor, scramble/reset/undo, the solution, the Fast/Optimal toggle, ranked next moves, Beginner mode, method breakdowns, history, and share/import/export. Navigate with **Back** and **Next**, or press **Esc** to stop. Steps for parts that aren't on screen, such as Fast/Optimal on a 2x2, are skipped. On phones the card docks to the bottom of the screen.
+**App tour.** A spotlight box, the target's outline plus 8px, sits over one part of the app at a time, and everything else is heavily dimmed. The box and the step card glide between steps in about 0.3 s, or jump instantly when the system asks for reduced motion. The 10 steps:
+
+1. Your cube
+2. Spinning the view
+3. Drag-to-turn
+4. Painting and the net editor
+5. Scramble, reset and undo
+6. Solving, with the Fast/Optimal switch
+7. Ranked next moves and Beginner mode
+8. Method breakdowns
+9. History
+10. Share and export
+
+- **Try it in place.** Clicks inside the spotlight reach the real control. A step can ask you to spin the view, drag a sticker or press Scramble, and the tour stays open. The dimmed area is four click-catching rectangles around the hole, not a full-screen blocker.
+- **Navigation.** An "N of 10" counter, plus **Skip**, **Back** and **Next** (**Done** on the last step). The ← → keys move between steps. **Esc** or clicking the dimmed area closes the tour. Nothing advances on its own.
+- **Placement.** The card parks beside large targets such as the 3D cube, and below or above small ones, always on screen. On phones it docks to the bottom. Each target is scrolled into view first, and everything repositions on resize and scroll.
+- **Adapting.** Steps whose target isn't visible, such as the 3x3-only method card on a 2x2, are dropped. On touch screens the steps say "tap" and "swipe" instead of "click" and "drag".
+- **Accessibility.** The card is a modal dialog with a focus trap. Tab stays inside it, and closing returns focus to where you were.
+- **Starting it.** The welcome card offers it on first launch, and the 🎓 Tutorial menu resumes it or replays it from the start.
 
 **Saved progress** lives in `localStorage` (`cube-solver-tutorial`): finished lessons, where to resume the lessons and the tour, and your best quiz score. Corrupt or outdated data falls back to a fresh start.
 
@@ -131,6 +149,7 @@ The dots across the top jump to any lesson, and **Show again** repeats the demon
 |---|---|
 | Drag a sticker | Turn that layer in the drag direction (outer layers and, on the 3x3, the middle slices) |
 | Drag the background | Rotate the view |
+| Right-drag, or <kbd>Shift</kbd>+drag | Rotate the view from anywhere, even starting on a sticker (it never turns a layer) |
 | Scroll / pinch | Zoom |
 | **Reset** (<kbd>Alt</kbd>+<kbd>R</kbd>) | Back to solved |
 | **Scramble** (<kbd>Alt</kbd>+<kbd>S</kbd>) | Random-state scramble; its notation appears in the move box |
@@ -248,7 +267,8 @@ src/
     net.ts          flat net editor
   tutorial/
     lessons.ts      lesson, quiz and tour content; attempt checking; saved progress (pure, tested)
-    tutorial.ts     coach panel, demonstrations, quiz, spotlight tour
+    tutorial.ts     coach panel, demonstrations, quiz; starts the tour
+    spotlight.ts    spotlight tour: hole/dim/card geometry (pure, tested), focus trap, keys
   main.ts           UI wiring, keyboard, dialogs, error banner
 public/             manifest, service worker, icons
 src-tauri/          Tauri 2 shell (Rust), config, capabilities, icons
@@ -276,6 +296,7 @@ The tests cover:
 - Every method breakdown on random cubes.
 - Ranking order and tie-breaking, and the full worker analysis.
 - History, import/export, share URLs, update-check version logic, and drag-to-turn geometry.
+- The spotlight geometry: 8px padding, the four dim rectangles tiling the screen around the hole, the card beside large targets and below or above small ones, always on screen. Also visible-step filtering, the counter text, and touch wording.
 - The tutorial: every direction the lessons describe is checked against the cube model, along with attempt checking (equivalent sequences, partial progress, wrong moves), quiz answers and grading, that every tour target exists in the page, and loading saved progress, including corrupt data.
 
 Every solver's output is played back to confirm the cube ends up solved. CI runs lint, tests and build on every push and pull request.

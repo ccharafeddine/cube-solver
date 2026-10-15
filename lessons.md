@@ -42,3 +42,11 @@ Rules learned building Cube Solver. Read them before changing the build, the sol
 - Block user moves while a demonstration plays, or the model and the view fall out of step.
 - Spotlight tour steps should name selectors that a test checks against index.html, and skip targets that are hidden (for example the 3x3-only controls on a 2x2) instead of pointing at nothing.
 - On phones, dock the coach and tour cards to the bottom and cap their height, so the cube they talk about stays visible.
+
+## Spotlight tour
+
+- A `box-shadow: 0 0 0 9999px` dim draws faintly in Chromium software rendering (headless and some GPU-less setups): the measured pixel stayed near the page colour. A spread of `100vmax` always covers the viewport and renders reliably. Measure the pixel; don't trust the computed style.
+- To make the target clickable, set `pointer-events: none` on the spotlight and put four transparent rectangles *around* the hole to catch dim clicks. A full-screen blocker would kill the "try it now" steps.
+- Overlay buttons inside the 3D viewport must not be swallowed by the capture-phase drag handler. Bail out unless the event target is the canvas itself.
+- Tour keys belong in a capture-phase listener with `stopPropagation`, or ← → would also step the solution underneath.
+- Keep placement pure (`holeRect`, `dimRects`, `placeCard`) and test it with numbers. Then the DOM class only measures and applies.

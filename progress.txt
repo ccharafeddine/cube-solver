@@ -41,3 +41,15 @@ v1.1.0 (2026-10-14) - INTERACTIVE TUTORIAL
 - Tutorial menu (🎓 header button, also from help). Lessons borrow a solved 3x3 and restore the user's cube.
 - Tests: lessons.test.ts (14 tests), incl. every direction claim in the lesson text vs the cube model.
 - Browser smoke (Playwright): offer, lesson correct/wrong/partial, reload resumes, quiz, full tour, phone layout.
+
+UNRELEASED (2026-10-14) - SPOTLIGHT TOUR, ORBIT GESTURES, X/Y/Z BUTTONS
+- App tour reworked (src/tutorial/spotlight.ts): 10 steps, "N of 10", Skip/Back/Next(Done), arrows, Esc or
+  dim-click closes, no auto-advance. Hole = target rect + 8px; dim = spot box-shadow; four transparent
+  rects outside the hole catch clicks so the target stays interactive ("try it now" steps).
+  Card beside large targets, below/above small ones, clamped; glides 0.3 s (instant under reduced motion);
+  scrolls target into view; repositions on resize/scroll; drops invisible steps; touch wording;
+  modal dialog with focus trap and focus restore. Resume/saved progress, welcome offer, menu replay kept.
+- Orbit discoverability: right-drag (OrbitControls RIGHT=ROTATE) and Shift-drag (manual spherical orbit)
+  spin the view from anywhere without turning layers; help, README and tour mention it.
+- On-screen X/Y/Z buttons in the cube view: same moves as the x/y/z keys, Shift-click = prime.
+- Tests: spotlight.test.ts (geometry, filtering, counter, touch wording) + tour content tests; 85 total.
