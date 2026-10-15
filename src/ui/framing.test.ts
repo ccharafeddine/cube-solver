@@ -48,12 +48,3 @@ describe('zoom limits', () => {
   });
 });
 
-describe('pillowed faces', () => {
-  it('lift the middle of a 6x6 face but not its corners, and leave smaller cubes flat', async () => {
-    const { pillow } = await import('./scene');
-    expect(pillow([0, 6, 0], [0, 1, 0], 7)).toBeCloseTo(0.14);
-    expect(pillow([6, 6, 6], [0, 1, 0], 7)).toBeCloseTo(0);
-    expect(pillow([1, 5, 1], [0, 1, 0], 6)).toBeGreaterThan(pillow([5, 5, 1], [0, 1, 0], 6));
-    expect(pillow([0, 4, 0], [0, 1, 0], 5)).toBe(0);
-  });
-});

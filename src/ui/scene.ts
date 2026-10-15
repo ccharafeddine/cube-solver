@@ -16,23 +16,14 @@ import { CUBE_SIZE, cubeRadius, fitDistance, along, MIN_DISTANCE, MAX_ZOOM_OUT }
 import { SCENE_SKINS, type SceneSkin } from '../theme/skins';
 import { ExplodeController, explodeOffset, staggerDelay, spreadFor, explodeExtent, MECH, AXES, capPosition, footOffset, MECH3, foot3 } from './explode';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
+import { PIECE, PILLOW, pieceShell, pillowGeometry, stickerShape, wallsFor } from './pieces';
+
+const toDirQ = (d: Vec3) => new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), new THREE.Vector3(...d));
 
 export const COLORS = ['#ffffff', '#c41e3a', '#009e60', '#ffd500', '#ff5800', '#0051ba'];
 export const COLOR_NAMES = ['White', 'Red', 'Green', 'Yellow', 'Orange', 'Blue'];
 
 interface Piece { mesh: THREE.Object3D; grid: THREE.Vector3; home: THREE.Matrix4; homePos: THREE.Vector3; delay: number }
-
-/**
- * Slightly pillowed faces on 6x6 and 7x7, as on real big cubes: a sticker is
- * lifted a little more the nearer it sits to the middle of its face (grid
- * units, 0 at the face's corners).
- */
-export function pillow(pos: Vec3, normal: Vec3, n: number): number {
-  if (n < 6) return 0;
-  const m = n - 1;
-  const across = pos.filter((_, k) => normal[k] === 0).map((v) => v / m);
-  return 0.14 * (1 - (across[0] ** 2 + across[1] ** 2) / 2);
-}
 
 export class CubeView {
   private renderer: THREE.WebGLRenderer;
@@ -83,7 +74,8 @@ export class CubeView {
   private sky = new THREE.HemisphereLight(0xbfe6ff, 0x203040, 0);
   private rim = new THREE.DirectionalLight(0x9ee7ff, 0);
   private skin: SceneSkin = SCENE_SKINS.matte.light;
-  private bodyMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.6 });
+  // Double-sided: hollow shells, open tubes and arm ends must show from inside and from behind.
+  private bodyMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.6, side: THREE.DoubleSide });
 
   /** Apply a skin's lighting and material finish (colours of stickers never change). */
   applySkin(p: SceneSkin) {
@@ -159,27 +151,39 @@ export class CubeView {
     const s = CUBE_SIZE / (2 * n);
     this.root.scale.setScalar(s);
     const body = this.bodyMat;
-    const box = new THREE.BoxGeometry(1.96, 1.96, 1.96);
     const m = n - 1;
+    const pillowed = (PILLOW[n] ?? 0) > 0;
     for (let x = -m; x <= m; x += 2)
       for (let y = -m; y <= m; y += 2)
         for (let z = -m; z <= m; z += 2) {
           if (Math.max(Math.abs(x), Math.abs(y), Math.abs(z)) !== m) continue;
-          const isCentre = [x, y, z].filter((v) => v !== 0).length === 1;
-          // Fixed centres of odd cubes are hollow shells (seen when exploded); everything else is a solid block.
-          const mesh = n % 2 === 1 && isCentre ? this.centreShell([Math.sign(x), Math.sign(y), Math.sign(z)] as Vec3) : new THREE.Mesh(box, body);
-          mesh.position.set(x, y, z);
-          this.addPiece(mesh);
+          const home: Vec3 = [x, y, z];
+          const isCentre = home.filter((v) => v !== 0).length === 1;
+          // Fixed centres of odd cubes are 3x3-style shells (screw and spring inside); every other piece is a hollow shell open toward the core.
+          if (n % 2 === 1 && isCentre) {
+            const shell = this.centreShell([Math.sign(x), Math.sign(y), Math.sign(z)] as Vec3);
+            shell.position.set(x, y, z);
+            this.addPiece(shell);
+            continue;
+          }
+          const { walls, outer } = wallsFor(home, n);
+          let geo = pieceShell(walls, outer);
+          if (pillowed) geo = pillowGeometry(geo.clone().translate(x, y, z), home, n);
+          const mesh = new THREE.Mesh(geo, body);
+          if (!pillowed) mesh.position.set(x, y, z);
+          this.addPiece(mesh, new THREE.Vector3(x, y, z));
         }
-    const plane = new THREE.PlaneGeometry(1.7, 1.7);
+    const flat = stickerShape();
+    const lift = PIECE.half + 0.004;
     model(n).stickers.forEach((st, i) => {
       const mat = new THREE.MeshPhysicalMaterial({ color: COLORS[st.face], roughness: this.skin.stickerRoughness,
         clearcoat: this.skin.stickerClearcoat, clearcoatRoughness: this.skin.stickerClearcoatRoughness });
-      const mesh = new THREE.Mesh(plane, mat);
       const [nx, ny, nz] = st.normal;
-      const lift = 0.99 + pillow(st.pos, st.normal, n);
-      mesh.position.set(st.pos[0] + nx * lift, st.pos[1] + ny * lift, st.pos[2] + nz * lift);
-      mesh.lookAt(mesh.position.clone().add(new THREE.Vector3(nx, ny, nz)));
+      const at = new THREE.Vector3(st.pos[0] + nx * lift, st.pos[1] + ny * lift, st.pos[2] + nz * lift);
+      const place = new THREE.Matrix4().compose(at, toDirQ([nx, ny, nz]), new THREE.Vector3(1, 1, 1));
+      const geo = pillowed ? pillowGeometry(flat.clone().applyMatrix4(place), st.pos, n) : flat;
+      const mesh = new THREE.Mesh(geo, mat);
+      if (!pillowed) place.decompose(mesh.position, mesh.quaternion, mesh.scale);
       mesh.userData.sticker = i;
       this.stickerMeshes.push(mesh);
       this.addPiece(mesh, new THREE.Vector3(st.pos[0], st.pos[1], st.pos[2]));
@@ -195,7 +199,7 @@ export class CubeView {
    * core, and an inner tube the core arm enters. Being one piece, it moves
    * rigidly. Local +y points outward; ~100 triangles.
    */
-  private metalMat = new THREE.MeshStandardMaterial({ color: 0xb8bec6, roughness: 0.35, metalness: 0.9 });
+  private metalMat = new THREE.MeshStandardMaterial({ color: 0xb8bec6, roughness: 0.35, metalness: 0.9, side: THREE.DoubleSide });
   private screwGeo: THREE.BufferGeometry[] | null = null;
 
   /** A 3x3 centre screw with its spring: head at the local origin, shaft and spring running toward the core (-y). */
@@ -276,9 +280,9 @@ export class CubeView {
    */
   private buildMechanism() {
     // Mid grey with a faint self-glow so it still reads against the dark exploded backdrop.
-    const plastic = new THREE.MeshStandardMaterial({ color: 0x8a9099, roughness: 0.72, metalness: 0.02, emissive: 0x1c2430 });
-    const darker = new THREE.MeshStandardMaterial({ color: 0x5c636c, roughness: 0.8, emissive: 0x141a22 });
-    const metal = new THREE.MeshStandardMaterial({ color: 0xb8bec6, roughness: 0.35, metalness: 0.9 });
+    const plastic = new THREE.MeshStandardMaterial({ color: 0x8a9099, roughness: 0.72, metalness: 0.02, emissive: 0x1c2430, side: THREE.DoubleSide });
+    const darker = new THREE.MeshStandardMaterial({ color: 0x5c636c, roughness: 0.8, emissive: 0x141a22, side: THREE.DoubleSide });
+    const metal = new THREE.MeshStandardMaterial({ color: 0xb8bec6, roughness: 0.35, metalness: 0.9, side: THREE.DoubleSide });
     const group = new THREE.Group();
     group.visible = false;
     // No core block: six spindles along the face axes meet at the centre.
@@ -348,8 +352,8 @@ export class CubeView {
    * corners have no holes; only centres are screwed down. ~6k triangles.
    */
   private buildMechanism3() {
-    const plastic = new THREE.MeshStandardMaterial({ color: 0x8a9099, roughness: 0.72, metalness: 0.02, emissive: 0x1c2430 });
-    const darker = new THREE.MeshStandardMaterial({ color: 0x5c636c, roughness: 0.8, emissive: 0x141a22 });
+    const plastic = new THREE.MeshStandardMaterial({ color: 0x8a9099, roughness: 0.72, metalness: 0.02, emissive: 0x1c2430, side: THREE.DoubleSide });
+    const darker = new THREE.MeshStandardMaterial({ color: 0x5c636c, roughness: 0.8, emissive: 0x141a22, side: THREE.DoubleSide });
     const M = MECH3, up = new THREE.Vector3(0, 1, 0);
     const group = new THREE.Group();
     group.visible = false;
@@ -390,64 +394,94 @@ export class CubeView {
   }
 
   /**
-   * Big-cube mechanism, shown when exploded (see PLAN.md, big-cube decisions).
-   * Even cubes (4x4, 6x6): a spherical core; every piece has a foot ending
-   * in a curved pad that rides on the sphere, and the centres are tracked by
-   * it, so nothing has a fixed centre. Odd cubes (5x5, 7x7): a 3x3-style core,
-   * a small hub with six arms out to the fixed centre-centres (hollow shells
-   * with their screw and spring inside), and the same curved feet elsewhere.
+   * Big-cube mechanisms, shown when exploded, after the real designs (sources in PLAN.md §10).
+   *
+   * 4x4, Sebestény's Rubik's Revenge (US 4,421,311): a ball core carrying eight
+   * spherical-triangle guide elements, leaving three perpendicular grooves.
+   * Only the centres reach the ball, with cams that ride in the grooves; edges
+   * hook onto the centres and corners onto the edges, as on a 3x3.
+   *
+   * 5x5 to 7x7, Verdes' V-Cube (US 2007/0057455): a solid 3D cross. Every
+   * piece has a cubic outer part, a conical stalk narrowing toward the centre
+   * and a foot that is a piece of a spherical shell; the corners reach nearly
+   * to the centre. Odd cubes screw their fixed centres to the cross; the 6x6
+   * cross ends in six hidden fixed centres one layer in.
    */
   private buildMechanismBig(n: number) {
-    const plastic = new THREE.MeshStandardMaterial({ color: 0x8a9099, roughness: 0.72, metalness: 0.02, emissive: 0x1c2430 });
-    const darker = new THREE.MeshStandardMaterial({ color: 0x5c636c, roughness: 0.8, emissive: 0x141a22 });
+    const plastic = new THREE.MeshStandardMaterial({ color: 0x8a9099, roughness: 0.72, metalness: 0.02, emissive: 0x1c2430, side: THREE.DoubleSide });
+    const darker = new THREE.MeshStandardMaterial({ color: 0x5c636c, roughness: 0.8, emissive: 0x141a22, side: THREE.DoubleSide });
     const up = new THREE.Vector3(0, 1, 0);
-    const odd = n % 2 === 1, m = n - 1;
+    const m = n - 1;
     const group = new THREE.Group();
     group.visible = false;
-    // The core fits inside the hollow left by the outer layer (half-width n - 2).
-    const coreR = odd ? 0.9 : 0.92 * (n - 2);
-    group.add(new THREE.Mesh(new THREE.SphereGeometry(coreR, 32, 20), darker));
-    if (odd) {
-      const armLen = m - 0.9;
-      const armGeo = new THREE.CylinderGeometry(0.22, 0.28, armLen, 14);
-      armGeo.translate(0, armLen / 2, 0);
-      for (const dir of AXES) {
-        const arm = new THREE.Mesh(armGeo, darker);
-        arm.quaternion.setFromUnitVectors(up, new THREE.Vector3(...dir));
-        group.add(arm);
+    const revenge = n === 4;
+    const hubR = revenge ? 1.45 : 0.75;
+    if (revenge) {
+      // Ball with three grooves: eight raised spherical triangles, one per octant.
+      group.add(new THREE.Mesh(new THREE.SphereGeometry(hubR, 32, 20), darker));
+      const g = 0.16; // half-width of a groove, radians
+      for (let oct = 0; oct < 8; oct++) {
+        const cap = new THREE.Mesh(new THREE.SphereGeometry(hubR + 0.22, 12, 8, g, Math.PI / 2 - 2 * g, g, Math.PI / 2 - 2 * g), plastic);
+        cap.rotation.set(oct & 4 ? Math.PI : 0, (oct & 3) * (Math.PI / 2), 0);
+        group.add(cap);
       }
     } else {
-      // Tracks: a raised ring around the sphere's equator on each axis, which the centre feet ride in.
-      const ring = new THREE.TorusGeometry(coreR * 0.995, 0.06, 6, 48);
-      for (const rot of [[0, 0, 0], [Math.PI / 2, 0, 0], [0, Math.PI / 2, 0]] as const) {
-        const r = new THREE.Mesh(ring, plastic);
-        r.rotation.set(rot[0], rot[1], rot[2]);
-        group.add(r);
+      // The solid cross: a hub and six arms.
+      group.add(new THREE.Mesh(new THREE.SphereGeometry(hubR, 24, 16), darker));
+      const armLen = n % 2 ? m - 0.9 : m - 2.2;
+      const armGeo = new THREE.CylinderGeometry(0.24, 0.32, armLen, 16);
+      armGeo.translate(0, armLen / 2, 0);
+      // Hidden fixed centres at the arm ends on the 6x6 (one layer below the surface).
+      const hiddenGeo = new RoundedBoxGeometry(1.7, 0.5, 1.7, 2, 0.12);
+      for (const dir of AXES) {
+        const q = new THREE.Quaternion().setFromUnitVectors(up, new THREE.Vector3(...dir));
+        const arm = new THREE.Mesh(armGeo, darker);
+        arm.quaternion.copy(q);
+        group.add(arm);
+        if (n % 2 === 0) {
+          const c = new THREE.Mesh(hiddenGeo, plastic);
+          c.quaternion.copy(q);
+          c.position.set(dir[0] * (armLen + 0.2), dir[1] * (armLen + 0.2), dir[2] * (armLen + 0.2));
+          group.add(c);
+        }
       }
     }
     this.root.add(group);
-    // Feet: each piece (but the fixed centres) reaches in to the core with a curved pad, part of the piece.
-    const stemGeo = new THREE.CylinderGeometry(0.12, 0.2, 1, 8);
-    stemGeo.translate(0, 0.5, 0);
-    // A curved pad: a spherical cap, concave toward the core.
-    const padGeo = new THREE.SphereGeometry(1, 16, 6, 0, Math.PI * 2, 0, 0.32);
+    // Feet: a conical stalk from the piece toward the centre, ending in a curved
+    // (spherical-shell) pad. They belong to the piece, so they turn and explode with it.
     const feet: THREE.Object3D[] = [];
+    const stemGeo = new THREE.CylinderGeometry(0.42, 0.12, 1, 10, 1, false); // wide at the piece, narrow at the core
+    stemGeo.translate(0, 0.5, 0);
     for (let x = -m; x <= m; x += 2) for (let y = -m; y <= m; y += 2) for (let z = -m; z <= m; z += 2) {
       if (Math.max(Math.abs(x), Math.abs(y), Math.abs(z)) !== m) continue;
-      if (odd && [x, y, z].filter((v) => v !== 0).length === 1) continue;
       const home = new THREE.Vector3(x, y, z);
+      const outerCount = [x, y, z].filter((v) => Math.abs(v) === m).length;
+      const nonzero = [x, y, z].filter((v) => v !== 0).length;
+      if (n % 2 === 1 && nonzero === 1) continue; // fixed centres: screwed to the cross
       const outward = home.clone().normalize();
-      // The piece's inner face, toward the core, and the core surface below it.
-      const innerD = home.length() - 1, padD = Math.max(coreR + 0.12, 0.5);
+      const innerD = home.length() - 1.1;
+      let padD: number;
+      if (revenge) padD = outerCount === 1 ? hubR + 0.08 : innerD - 0.55; // centres ride the grooves; edges and corners hook on their neighbours
+      else padD = outerCount === 3 ? hubR + 0.3 : Math.max(hubR + 0.6, home.length() * 0.5);
+      if (innerD - padD < 0.1) continue;
       const foot = new THREE.Group();
       foot.position.copy(outward.clone().multiplyScalar(padD));
       foot.quaternion.setFromUnitVectors(up, outward);
       const stem = new THREE.Mesh(stemGeo, plastic);
-      stem.scale.y = Math.max(0.1, innerD - padD);
-      const pad = new THREE.Mesh(padGeo, plastic);
-      pad.scale.setScalar(padD);
+      stem.scale.set(1, innerD - padD, 1);
+      stem.rotation.x = Math.PI; // narrow end at the core
+      stem.position.y = innerD - padD;
+      // The pad: a patch of the sphere of radius padD around the cube centre.
+      const ang = Math.min(0.5, 0.75 / padD);
+      const pad = new THREE.Mesh(new THREE.SphereGeometry(padD, 12, 4, 0, Math.PI * 2, 0, ang), plastic);
       pad.position.y = -padD;
       foot.add(stem, pad);
+      if (revenge && outerCount === 1) {
+        // The cam that runs in the ball's groove.
+        const cam = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.3, 10), darker);
+        cam.position.y = -0.1;
+        foot.add(cam);
+      }
       foot.visible = false;
       this.addPiece(foot, home);
       feet.push(foot);
