@@ -133,7 +133,7 @@ describe('2x2 mechanism layout', () => {
       expect(Math.max(...p.map(Math.abs)) + MECH.capThickness / 2).toBeLessThan(2);
     }
     expect(MECH.armLength).toBeLessThan(2);
-    expect(MECH.coreRadius).toBeLessThan(MECH.capDistance);
+    expect(MECH.armRadius).toBeLessThan(0.1); // thin spindles, no hub
   });
   it('caps separate along their axis on explode, less than the corners do', () => {
     for (const d of AXES) {

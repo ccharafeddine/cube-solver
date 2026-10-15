@@ -200,7 +200,7 @@ export class CubeView {
   private mech: { group: THREE.Group; caps: { obj: THREE.Object3D; dir: Vec3 }[]; feet: THREE.Object3D[] } | null = null;
 
   /**
-   * The inside of a real 2x2, revealed when exploded: a core hub with six
+   * The inside of a real 2x2, revealed when exploded: six thin spindles meeting at the centre (no core block), with six
    * axle arms, a hidden centre cap on each arm held by a screw and spring,
    * and an inner foot on every corner. Matte grey plastic, ~4k triangles.
    */
@@ -211,9 +211,8 @@ export class CubeView {
     const metal = new THREE.MeshStandardMaterial({ color: 0xb8bec6, roughness: 0.35, metalness: 0.9 });
     const group = new THREE.Group();
     group.visible = false;
-    // Core: a sphere with six arms along the face axes.
-    group.add(new THREE.Mesh(new THREE.SphereGeometry(MECH.coreRadius, 24, 16), darker));
-    const armGeo = new THREE.CylinderGeometry(MECH.armRadius, MECH.armRadius * 1.15, MECH.armLength, 12);
+    // No core block: six spindles along the face axes meet at the centre.
+    const armGeo = new THREE.CylinderGeometry(MECH.armRadius * 1.3, MECH.armRadius * 0.6, MECH.armLength, 10);
     armGeo.translate(0, MECH.armLength / 2, 0);
     const capGeo = new RoundedBoxGeometry(MECH.capRadius * 1.5, MECH.capThickness, MECH.capRadius * 1.5, 2, 0.08);
     const capRing = new THREE.CylinderGeometry(MECH.capRadius * 0.42, MECH.capRadius * 0.42, MECH.capThickness * 1.3, 20);
@@ -247,7 +246,7 @@ export class CubeView {
       group.add(cap);
       caps.push({ obj: cap, dir });
     }
-    // The 2x2 spreads far, so the core is drawn larger to stay the centre of attention.
+    // The 2x2 spreads far, so the mechanism is drawn larger to stay the centre of attention.
     group.scale.setScalar(1.35);
     this.root.add(group);
     // Corner feet: part of each corner piece, so they turn and explode with it.

@@ -32,23 +32,22 @@ export function explodeExtent(n: number, spread = spreadFor(n)): number {
 
 /**
  * The 2x2 mechanism, in grid units (the assembled cube spans -2..2). Modelled
- * on a real 2x2: a core hub with six axle arms, a hidden centre cap riding on
+ * on a real 2x2: six thin axle spindles meeting at the centre (no solid core), a hidden centre cap riding on
  * each arm, held by a screw with a spring, and an inner foot on every corner
- * that tucks under the caps around the core.
+ * that tucks under the caps around the centre.
  */
 export const MECH = {
-  coreRadius: 0.55,
   armLength: 1.25,
-  armRadius: 0.13,
-  /** Distance of each cap's centre from the core, and its size. */
+  armRadius: 0.07,
+  /** Distance of each cap's centre from the centre, and its size. */
   capDistance: 1.05,
   capRadius: 0.78,
   capThickness: 0.24,
   springInner: 0.35,
   springOuter: 0.95,
-  /** Caps separate a little further than the core on explode, but much less than corners. */
+  /** Caps separate a little further than the centre on explode, but much less than corners. */
   capSpread: 0.75,
-  /** Corner foot: a stem from the piece's inner corner toward the core, ending in a pad. */
+  /** Corner foot: a stem from the piece's inner corner toward the centre, ending in a pad. */
   footStem: 0.95,
   footPad: 0.62,
 };
@@ -63,7 +62,7 @@ export function capPosition(dir: Vec3, a: number): Vec3 {
 
 /**
  * Where a corner's foot pad sits relative to the corner's own centre
- * (`home` is the corner centre, e.g. [1, 1, 1]): pointing at the core, past
+ * (`home` is the corner centre, e.g. [1, 1, 1]): pointing at the centre, past
  * the piece's inner corner.
  */
 export function footOffset(home: Vec3): Vec3 {
