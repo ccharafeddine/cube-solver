@@ -88,15 +88,25 @@ describe('quiz', () => {
 });
 
 describe('tour steps', () => {
-  it('have unique ids and selectors that exist in index.html', async () => {
+  it('are ten, with unique ids and selectors that exist in index.html', async () => {
     const { readFileSync } = await import('node:fs');
     const html = readFileSync(new URL('../../index.html', import.meta.url), 'utf-8');
+    expect(TOUR).toHaveLength(10);
     expect(new Set(TOUR.map((t) => t.id)).size).toBe(TOUR.length);
     for (const t of TOUR) {
       const needle = t.target.startsWith('#') ? `id="${t.target.slice(1)}"` : t.target === '.bar' ? 'class="bar"'
-        : t.target === 'label.check' ? 'class="check"' : 'data-panel="io"';
+        : t.target.replace(/^\[|\]$/g, '');
       expect(html, t.id).toContain(needle);
     }
+  });
+  it('covers the required areas and mentions spinning', () => {
+    const ids = TOUR.map((t) => t.id);
+    for (const id of ['cube', 'rotate', 'turn', 'paint', 'actions', 'solve', 'next', 'method', 'history', 'share']) expect(ids).toContain(id);
+    const rotate = TOUR.find((t) => t.id === 'rotate')!;
+    expect(rotate.body).toMatch(/Right-drag or Shift-drag/);
+  });
+  it('touch wording never says click or right-drag', () => {
+    for (const t of TOUR) if (t.touchBody) expect(t.touchBody).not.toMatch(/\bclick|right-drag|Shift/i);
   });
 });
 

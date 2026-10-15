@@ -89,7 +89,7 @@
             <button id="stop" title="Stop the search and keep the best so far">Stop search</button>
           </div>
         </div>
-        <div class="card">
+        <div class="card" id="next-card">
           <div class="row spread"><h2>Next moves</h2><select id="topn" aria-label="How many candidates"><option value="3">Top 3</option><option value="5" selected>Top 5</option><option value="0">All 12</option></select></div>
           <div id="candidates"></div>
           <p id="cand-note" class="muted"></p>
@@ -99,7 +99,7 @@
           <p id="method-blurb" class="muted"></p>
           <div id="method"></div>
         </div>
-        <div class="card">
+        <div class="card" id="history-card">
           <div class="row spread"><h2>History</h2><span id="hist-count" class="muted"></span></div>
           <div id="history" class="mono" aria-label="Moves played; click one to jump there"></div>
         </div>

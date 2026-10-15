@@ -124,35 +124,38 @@ export interface TourStep {
   target: string;
   title: string;
   body: string;
+  /** Wording for touch screens, when it differs. */
+  touchBody?: string;
   /** Tab to open first, if the target lives in one. */
   tab?: 'turn' | 'paint' | 'io';
 }
 
 export const TOUR: TourStep[] = [
-  { id: 'rotate', target: '#viewport', tab: 'turn', title: 'Look around and turn',
-    body: 'Drag the background to rotate the view; scroll or pinch to zoom. Drag any sticker to turn its layer, with a mouse, a pen or a finger.' },
-  { id: 'movepad', target: '#movepad', tab: 'turn', title: 'Move pad and keys',
-    body: "Tap a move, type moves in the box, or press U R F D L B M E S and x y z on the keyboard (Shift for prime)." },
-  { id: 'paint', target: '#palette', tab: 'paint', title: 'Paint your own cube',
-    body: 'Pick a colour, then click stickers on the cube. Without a colour, a click cycles through them. Number keys 1 to 6 pick colours.' },
-  { id: 'net', target: '#net', tab: 'paint', title: 'The net editor',
-    body: 'The flat net shows all 54 stickers at once, so you can copy a real cube face by face. The colour counts below catch typos, and impossible cubes are explained.' },
+  { id: 'cube', target: '#viewport', tab: 'turn', title: 'Your cube',
+    body: 'This is the cube you are solving. Everything else in the app reads from it: change it here and the solution, ranked moves and method breakdown update on their own.' },
+  { id: 'rotate', target: '#viewport', tab: 'turn', title: 'Spin the view',
+    body: 'Try it now: drag the empty background to spin the cube and look at any side. Right-drag or Shift-drag spins it from anywhere, even over stickers. Scroll to zoom; Alt+V resets the view.',
+    touchBody: 'Try it now: drag the empty area around the cube to spin it and look at any side. Pinch to zoom.' },
+  { id: 'turn', target: '#viewport', tab: 'turn', title: 'Drag to turn',
+    body: 'Try it now: press on a sticker and drag along the layer you want to turn. The keys U R F D L B M E S also turn layers (Shift for prime), and the move pad below has every turn.',
+    touchBody: 'Try it now: put a finger on a sticker and swipe along the layer you want to turn. The move pad below has every turn too.' },
+  { id: 'paint', target: '[data-panel="paint"]', tab: 'paint', title: 'Paint your own cube',
+    body: 'Copy a real cube: pick a colour, then click stickers on the 3D cube or on the flat net. The colour counts catch typos, and impossible cubes are explained.',
+    touchBody: 'Copy a real cube: pick a colour, then tap stickers on the 3D cube or on the flat net. The colour counts catch typos, and impossible cubes are explained.' },
   { id: 'actions', target: '.bar', tab: 'turn', title: 'Scramble, reset, undo',
-    body: 'Scramble gives a random position, Reset returns to solved, the arrows undo and redo (Ctrl+Z / Ctrl+Y). The slider sets animation speed.' },
-  { id: 'solver', target: '#solution-card', title: 'The solution',
-    body: 'The solver runs in the background as soon as the cube changes. Press Play or Space to watch it, or ← → to step one move at a time.' },
-  { id: 'mode', target: '#mode-group', title: 'Fast or Optimal',
-    body: 'Fast finds a short solution in milliseconds and keeps improving. Optimal proves the shortest solution in quarter turns; deep positions take longer, and you can stop at any time.' },
-  { id: 'next', target: '#candidates', title: 'Ranked next moves',
-    body: 'Every possible next move, with how far it leaves you from solved. Green gets closer, red goes further. ≈ marks an estimate.' },
-  { id: 'beginner', target: 'label.check', title: 'Beginner mode',
-    body: 'Beginner mode blends distance with how easy a turn is by hand, so R and U rank ahead of B and D when they are equally good.' },
+    body: 'Try it now: press Scramble for a random position. Reset goes back to solved, the arrows undo and redo (Ctrl+Z / Ctrl+Y), and the slider sets animation speed.',
+    touchBody: 'Try it now: tap Scramble for a random position. Reset goes back to solved, the arrows undo and redo, and the slider sets animation speed.' },
+  { id: 'solve', target: '#solution-card', title: 'Solve it, fast or optimal',
+    body: 'The solver runs as soon as the cube changes. Press Play (or Space) to watch, ← → to step. The Fast/Optimal switch in the header picks a quick near-best answer or the proven shortest one.' },
+  { id: 'next', target: '#next-card', title: 'Ranked next moves',
+    body: 'Every possible next move with how far it leaves you from solved: green gets closer, red goes further, ≈ marks an estimate. Beginner mode in the header also favours turns that are easy by hand.' },
   { id: 'method', target: '#method-card', title: 'Method breakdowns',
-    body: 'See the solve the way people learn it: layer by layer, CFOP, Roux or ZZ. Each step plays on its own.' },
-  { id: 'history', target: '#history', title: 'History',
-    body: 'Every move you play is listed here. Click any move to jump back to that point.' },
-  { id: 'share', target: '[data-panel="io"]', tab: 'io', title: 'Share, import, export',
-    body: 'Copy a share link, the facelet string, JSON or the solution, or paste one in to load a cube. Download saves a .json file.' },
+    body: 'See the solve the way people learn it: layer by layer, CFOP, Roux or ZZ. Each named step plays on its own.' },
+  { id: 'history', target: '#history-card', title: 'History',
+    body: 'Every move you play is listed here. Click any move to jump back to that point.',
+    touchBody: 'Every move you play is listed here. Tap any move to jump back to that point.' },
+  { id: 'share', target: '[data-panel="io"]', tab: 'io', title: 'Share and export',
+    body: 'Copy a share link, the facelet string, JSON or the solution, or paste one in to load a cube. That is the tour: replay it any time from the 🎓 Tutorial menu.' },
 ];
 
 export interface Progress {

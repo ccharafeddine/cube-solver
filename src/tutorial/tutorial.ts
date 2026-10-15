@@ -7,6 +7,7 @@
 import { applyTurn, moveToTurn, solved, type State } from '../cube/facelets';
 import { parseMoves } from '../cube/notation';
 import type { CubeView } from '../ui/scene';
+import { SpotlightTour } from './spotlight';
 import {
   LESSONS, QUIZ, TOUR, checkAttempt, gradeQuiz, loadProgress, saveProgress, progressSummary, type Progress,
 } from './lessons';
@@ -37,8 +38,7 @@ const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').match
 export class Tutorial {
   progress: Progress;
   private coach: HTMLElement;
-  private spot: HTMLElement;
-  private tourCard: HTMLElement;
+  private tour: SpotlightTour;
   private mode: 'off' | 'lesson' | 'quiz' | 'tour' = 'off';
   private played: string[] = [];
   private demoing = false;
@@ -53,18 +53,16 @@ export class Tutorial {
     this.coach.setAttribute('role', 'dialog');
     this.coach.setAttribute('aria-modal', 'false');
     this.coach.setAttribute('aria-labelledby', 'coach-title');
-    this.spot = el('div', { className: 'spot hidden' });
-    this.spot.setAttribute('aria-hidden', 'true');
-    this.tourCard = el('section', { id: 'tour-card', className: 'tour-card hidden' });
-    this.tourCard.setAttribute('role', 'dialog');
-    this.tourCard.setAttribute('aria-labelledby', 'tour-title');
-    document.body.append(this.spot, this.tourCard, this.coach);
-    const reposition = () => { if (this.mode === 'tour') this.placeTour(); };
-    window.addEventListener('resize', reposition);
-    window.addEventListener('scroll', reposition, true);
-    window.addEventListener('keydown', (e) => {
-      if (this.mode !== 'tour') return;
-      if (e.key === 'Escape') { e.preventDefault(); this.endTour(false); }
+    document.body.append(this.coach);
+    this.tour = new SpotlightTour(TOUR, {
+      selectTab: (t) => this.host.selectTab(t),
+      onStep: (id) => { this.progress.tour = Math.max(0, TOUR.findIndex((t) => t.id === id)); this.save(); },
+      onClose: (finished) => {
+        if (finished) { this.progress.tourDone = true; this.progress.tour = 0; }
+        this.save();
+        this.mode = 'off';
+        this.host.selectTab('turn');
+      },
     });
   }
 
@@ -311,69 +309,7 @@ export class Tutorial {
   startTour(from = this.progress.tourDone ? 0 : this.progress.tour) {
     this.stopAll();
     this.mode = 'tour';
-    this.showStep(from, 1);
-  }
-
-  private stepIndex = 0;
-  private showStep(i: number, dir: 1 | -1) {
-    // Skip steps whose target is not on screen (e.g. Fast/Optimal on a 2x2).
-    while (i >= 0 && i < TOUR.length) {
-      const s = TOUR[i];
-      if (s.tab) this.host.selectTab(s.tab);
-      const t = document.querySelector<HTMLElement>(s.target);
-      if (t && t.offsetParent !== null) break;
-      i += dir;
-    }
-    if (i < 0) i = 0;
-    if (i >= TOUR.length) return this.endTour(true);
-    this.stepIndex = i;
-    this.progress.tour = i;
-    this.save();
-    const s = TOUR[i];
-    const back = el('button', { textContent: 'Back', disabled: i === 0 });
-    back.onclick = () => this.showStep(i - 1, -1);
-    const next = el('button', { className: 'primary', textContent: i + 1 < TOUR.length ? 'Next' : 'Finish' });
-    next.onclick = () => this.showStep(i + 1, 1);
-    const skip = el('button', { className: 'link', textContent: 'Skip tour' });
-    skip.onclick = () => this.endTour(false);
-    this.tourCard.replaceChildren(
-      el('div', { className: 'muted' }, `App tour · ${i + 1}/${TOUR.length}`),
-      el('h2', { id: 'tour-title', tabIndex: -1 }, s.title),
-      el('p', {}, s.body),
-      el('div', { className: 'row' }, skip, el('span', { className: 'grow' }), back, next),
-    );
-    this.tourCard.classList.remove('hidden');
-    this.spot.classList.remove('hidden');
-    const target = document.querySelector<HTMLElement>(s.target)!;
-    target.scrollIntoView({ block: 'center', behavior: reducedMotion() ? 'auto' : 'smooth' });
-    this.placeTour();
-    setTimeout(() => this.placeTour(), 350);
-    next.focus();
-  }
-
-  private placeTour() {
-    const t = document.querySelector<HTMLElement>(TOUR[this.stepIndex].target);
-    if (!t) return;
-    const r = t.getBoundingClientRect();
-    const pad = 6;
-    Object.assign(this.spot.style, { left: `${r.left - pad}px`, top: `${r.top - pad}px`, width: `${r.width + 2 * pad}px`, height: `${r.height + 2 * pad}px` });
-    // Narrow screens dock the card at the bottom (CSS); wide ones place it beside the target.
-    if (window.innerWidth < 700) { this.tourCard.style.left = this.tourCard.style.top = ''; return; }
-    const card = this.tourCard.getBoundingClientRect();
-    const below = r.bottom + 14 + card.height < window.innerHeight;
-    const top = below ? r.bottom + 14 : Math.max(10, r.top - card.height - 14);
-    const left = Math.min(window.innerWidth - card.width - 10, Math.max(10, r.left));
-    this.tourCard.style.left = `${left}px`;
-    this.tourCard.style.top = `${top}px`;
-  }
-
-  private endTour(finished: boolean) {
-    if (finished) { this.progress.tourDone = true; this.progress.tour = 0; }
-    this.save();
-    this.mode = 'off';
-    this.spot.classList.add('hidden');
-    this.tourCard.classList.add('hidden');
-    this.host.selectTab('turn');
+    this.tour.start(from);
   }
 
   // ---------- shared ----------
@@ -395,7 +331,7 @@ export class Tutorial {
   stopAll() {
     this.demoToken++;
     this.demoing = false;
-    if (this.mode === 'tour') this.endTour(false);
+    if (this.mode === 'tour') this.tour.close(false);
     if (this.mode === 'lesson' || this.mode === 'quiz') {
       this.host.view.highlight(null);
       this.host.exitLessons();
