@@ -98,3 +98,4 @@ UNRELEASED (2026-10-14) - FRUTIGER AERO VISUAL OVERHAUL
 - Rewrote the tour, welcome card, lessons, tooltips and panel notes in plain language for first-time (and young) solvers.
 - Two-way timeline: scrambles play turn by turn into the history, undo walks back through them, and clicking the history walks there in either direction, animated.
 - 4x4: reduction solver (parity, centres, edges by commutator 3-cycles, then 3x3), SiGN single-layer notation (2R), spherical-core mechanism, 4x4 button, scramble and tour step.
+- 5x5: enabled (fixed centre-centres on a 3x3-style core; wings paired to their midge).

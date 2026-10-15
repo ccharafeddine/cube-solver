@@ -42,7 +42,7 @@
 ## Features
 
 **Cubes and input**
-- 2x2, 3x3 and 4x4 cubes in 3D. Drag a sticker to turn its layer, with mouse, pen or touch. Drag the background to look around (or right-drag / Shift-drag from anywhere), and scroll or pinch to zoom.
+- 2x2, 3x3, 4x4 and 5x5 cubes in 3D. Drag a sticker to turn its layer, with mouse, pen or touch. Drag the background to look around (or right-drag / Shift-drag from anywhere), and scroll or pinch to zoom.
 - Keyboard turns for every face (U R F D L B), the middle slices (M E S) and whole-cube rotations (x y z). Add Shift for counter-clockwise. Small **X Y Z** buttons in the corner of the cube view do the same whole-cube rotations (Shift-click for prime).
 - A move pad with all 36 turns, and a box for typing algorithms in standard notation (`R U R' U'`, `F2`, `M'`, `Rw`, `x`).
 - **Setup:** paint any sticker from the colour menu, either on the 3D cube or on a **flat 2D net editor**. The net is all buttons, so it works from the keyboard and with screen readers.
@@ -198,7 +198,7 @@ The dots across the top jump to any lesson, and **Show again** repeats the demon
 The cube is modelled twice. The sticker model derives every move from 3D geometry, so it works for any size and the renderer uses the same coordinates. The cubie model uses Kociemba's conventions for the solvers. Tests apply every move in both models and check they agree.
 
 
-### Big cubes (4x4)
+### Big cubes (4x4 and 5x5)
 
 Big cubes are solved by **reduction**, the way people solve them by hand (`src/solver/big/`):
 
@@ -213,7 +213,7 @@ Inner layers use SiGN notation: `2R` turns only the second layer from the right,
 
 **Next moves on big cubes** rank every single-layer quarter turn by the length of the reduction solution from the resulting position. That measures progress through the reduction, not a proven distance, so every number is marked ≈.
 
-**Mechanism.** The exploded 4x4 shows a spherical core with three raised tracks the centres ride in, and a foot with a curved pad on every piece, reaching in to the sphere.
+**Mechanism.** The exploded 4x4 shows a spherical core with three raised tracks the centres ride in, and a foot with a curved pad on every piece, reaching in to the sphere. The 5x5 has a 3x3-style core: a hub with six arms holding the fixed centre-centres, which are hollow shells with their screw and spring inside; every other piece reaches the hub with a curved foot. On odd cubes the edges are paired to their middle piece (midge), so parity there is just the one inner-slice turn.
 
 ## Theming
 
