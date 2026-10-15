@@ -29,10 +29,11 @@ describe('brand', () => {
     const manifest = JSON.parse(readFileSync(new URL('../../public/manifest.webmanifest', import.meta.url), 'utf-8'));
     for (const i of manifest.icons) expect(existsSync(new URL(`../../public/${i.src}`, import.meta.url))).toBe(true);
     expect(manifest.icons.some((i: { purpose?: string }) => i.purpose === 'maskable')).toBe(true);
-    // Link previews need absolute URLs on the deployed domain.
-    expect(html).toContain('<meta property="og:url" content="https://cube.chafic.me/" />');
-    expect(html).toContain('<meta name="twitter:image" content="https://cube.chafic.me/og-image.png" />');
-    const og = /property="og:image" content="https:\/\/cube\.chafic\.me\/([^"]+)"/.exec(html);
+    // Domain-independent: relative paths and no og:url in the source; SITE_URL at build time makes them absolute.
+    expect(html).not.toContain('og:url');
+    expect(html).not.toMatch(/chafic\.me/);
+    expect(html).toContain('<meta name="twitter:image" content="./og-image.png" />');
+    const og = /property="og:image" content="\.\/([^"]+)"/.exec(html);
     expect(og).not.toBeNull();
     expect(existsSync(new URL(`../../public/${og![1]}`, import.meta.url))).toBe(true);
   });
