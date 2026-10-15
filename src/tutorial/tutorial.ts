@@ -10,6 +10,7 @@ import type { CubeView } from '../ui/scene';
 import { SpotlightTour } from './spotlight';
 import {
   LESSONS, QUIZ, TOUR, checkAttempt, gradeQuiz, loadProgress, saveProgress, progressSummary, type Progress,
+  WELCOME,
 } from './lessons';
 
 export interface TutorialHost {
@@ -80,15 +81,15 @@ export class Tutorial {
   offer(slot: HTMLElement) {
     if (this.progress.offered) return;
     const done = () => { this.progress.offered = true; this.save(); slot.classList.add('hidden'); };
-    const learn = el('button', { className: 'primary', textContent: 'Learn the notation' });
+    const learn = el('button', { className: 'primary', textContent: WELCOME.learn });
     learn.onclick = () => { done(); this.startLessons(); };
-    const tour = el('button', { textContent: 'Tour the app' });
+    const tour = el('button', { textContent: WELCOME.tour });
     tour.onclick = () => { done(); this.startTour(); };
-    const skip = el('button', { textContent: 'Not now' });
+    const skip = el('button', { textContent: WELCOME.skip });
     skip.onclick = done;
     slot.replaceChildren(
-      el('b', { id: 'offer-title' }, 'Welcome to Cube Solver'),
-      el('p', {}, 'New to cube notation? A 5-minute interactive lesson teaches it on the cube, and a short tour shows you around the app. Both are always in the 🎓 Tutorial menu.'),
+      el('b', { id: 'offer-title' }, WELCOME.title),
+      el('p', {}, WELCOME.body),
       el('div', { className: 'row' }, skip, tour, learn),
     );
     slot.setAttribute('aria-labelledby', 'offer-title');
@@ -139,7 +140,7 @@ export class Tutorial {
       dots.append(d);
     });
     this.renderCoach(
-      el('div', { className: 'row spread coach-head' }, el('span', { className: 'muted' }, `Notation · ${i + 1}/${LESSONS.length}`), this.closeButton()),
+      el('div', { className: 'row spread coach-head' }, el('span', { className: 'muted' }, `Lesson ${i + 1} of ${LESSONS.length}`), this.closeButton()),
       dots,
       el('h2', { id: 'coach-title' }, lesson.title),
       el('p', {}, lesson.body),
@@ -322,7 +323,7 @@ export class Tutorial {
   private closeButton() {
     const b = el('button', { className: 'icon', textContent: '✕' });
     b.setAttribute('aria-label', 'Close the tutorial (progress is saved)');
-    b.title = 'Close (progress is saved)';
+    b.title = 'Close (the app remembers where you got to)';
     b.onclick = () => this.stopAll();
     return b;
   }

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { applyMoves, solved } from '../cube/facelets';
 import { parseMoves, qtm } from '../cube/notation';
 import {
-  LESSONS, QUIZ, TOUR, checkAttempt, gradeQuiz, loadProgress, saveProgress, freshProgress, progressSummary, PROGRESS_KEY, targetState,
+  LESSONS, QUIZ, TOUR, WELCOME, checkAttempt, gradeQuiz, loadProgress, saveProgress, freshProgress, progressSummary, PROGRESS_KEY, targetState,
 } from './lessons';
 
 const memory = (init: Record<string, string> = {}) => {
@@ -106,6 +106,18 @@ describe('tour steps', () => {
     expect(rotate.body).toMatch(/Right-drag or Shift-drag/);
     expect(rotate.body).toMatch(/X, Y and Z/);
     expect(rotate.touchBody).toMatch(/X, Y and Z/);
+  });
+  it('uses short sentences and explains its words, for a first-time young reader', () => {
+    const texts = [WELCOME.body, ...TOUR.flatMap((t) => [t.body, t.touchBody ?? '']), ...LESSONS.map((l) => l.body)].filter(Boolean);
+    for (const text of texts) {
+      for (const sentence of text.split(/(?<=[.!?])\s+/)) expect(sentence.split(/\s+/).length, sentence).toBeLessThanOrEqual(30);
+      // Expert words stay out unless explained right there.
+      expect(text).not.toMatch(/\b(metric|near-optimal|notation|IDA|Kociemba)\b/i);
+      if (/facelet/i.test(text)) expect(text).toMatch(/one letter per sticker/);
+    }
+    const next = TOUR.find((t) => t.id === 'next')!;
+    expect(next.body).not.toMatch(/beginner|easy by hand/i);
+    expect(TOUR.find((t) => t.id === 'turn')!.body).toMatch(/A move means/);
   });
   it('touch wording never says click or right-drag', () => {
     for (const t of TOUR) if (t.touchBody) expect(t.touchBody).not.toMatch(/\bclick|right-drag|Shift/i);

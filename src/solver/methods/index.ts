@@ -7,10 +7,10 @@ import { solveZZ } from './zz';
 
 export type MethodId = 'lbl' | 'cfop' | 'roux' | 'zz';
 export const METHODS: { id: MethodId; name: string; blurb: string }[] = [
-  { id: 'lbl', name: 'Layer by layer', blurb: 'The beginner method: cross, first layer, middle layer, then the last layer in four steps.' },
-  { id: 'cfop', name: 'CFOP', blurb: 'Cross, F2L pairs, OLL, PLL (two-look). The most common speedsolving method.' },
-  { id: 'roux', name: 'Roux', blurb: 'Two 1x2x3 blocks, CMLL for the corners, then the last six edges with M and U.' },
-  { id: 'zz', name: 'ZZ', blurb: 'Orient every edge first (EOLine), build F2L with R, U, L only, then the last layer.' },
+  { id: 'lbl', name: 'Layer by layer', blurb: 'The easiest way to learn: solve one layer at a time. A cross on the bottom, the bottom corners, the middle layer, then the top layer in four steps.' },
+  { id: 'cfop', name: 'CFOP', blurb: 'What most fast solvers use. A cross, then F2L (the first two layers, built in pairs), then OLL (make the top one colour) and PLL (move the top pieces into place).' },
+  { id: 'roux', name: 'Roux', blurb: 'Build a 1x2x3 block on each side, then solve the top corners (CMLL), then the last six edges with only M and U turns.' },
+  { id: 'zz', name: 'ZZ', blurb: 'First flip every edge the right way round (EOLine). Then build the first two layers with only R, U and L turns, then finish the top layer.' },
 ];
 
 export function solveMethod(id: MethodId, c: Cubie): MethodResult {

@@ -199,14 +199,14 @@ function renderCandidates(cs: Candidate[], current: number) {
     row.onclick = () => playMove(c.move);
     el.appendChild(row);
   });
-  $('cand-note').textContent = current === 0 ? 'Already solved.' : 'Ranked by distance to solved.' + ' ≈ marks an estimate; plain numbers are proven.';
+  $('cand-note').textContent = current === 0 ? 'Already solved.' : 'Best first: fewest moves left to solve. ≈ means a good guess; a plain number is certain.';
 }
 
 function renderMethod(steps?: Step[]) {
   const el = $('method');
   el.innerHTML = '';
   if (n !== 3) return;
-  if (!steps) { el.innerHTML = '<p class="muted">No breakdown for this state.</p>'; return; }
+  if (!steps) { el.innerHTML = '<p class="muted">No step-by-step breakdown for this cube.</p>'; return; }
   if (!steps.length) { el.innerHTML = '<p class="muted">Nothing to do: the cube is solved.</p>'; return; }
   const total = steps.reduce((a, s) => a + qtmOf(s.moves.split(' ')), 0);
   const head = document.createElement('p');
@@ -236,7 +236,7 @@ function renderHistory() {
   const start = document.createElement('button');
   start.className = 'mv' + (history.position === 0 ? ' next' : '');
   start.textContent = '•';
-  start.title = 'Start position';
+  start.title = 'Back to the start';
   start.onclick = () => jumpHistory(0);
   el.appendChild(start);
   list.forEach((m, i) => {
@@ -268,7 +268,7 @@ function animateMove(m: string) {
  */
 function turnsBlocked(): boolean {
   if (!view.exploded) return false;
-  $('explode-hint').textContent = 'Exploded view: turns are paused. Press Assemble (G) to turn layers again.';
+  $('explode-hint').textContent = 'The pieces are spread apart, so turning is paused. Press Assemble (G) to put the cube back together.';
   $('explode-hint').classList.remove('hidden');
   clearTimeout(hintTimer);
   hintTimer = window.setTimeout(() => $('explode-hint').classList.add('hidden'), 2600);
@@ -454,8 +454,8 @@ function syncControls() {
   });
   view.paintMode = paintColor !== null;
   $('paint-hint').textContent = paintColor === null
-    ? 'Pick a colour, then click stickers on the cube or the net. Without a colour, clicking a net sticker cycles its colour.'
-    : `Painting ${COLOR_NAMES[paintColor]}: click stickers on the cube or the net. Esc stops.`;
+    ? 'Pick a colour, then click stickers on the cube or the flat map. No colour picked? Each click changes the sticker to the next colour.'
+    : `Painting ${COLOR_NAMES[paintColor]}: click stickers on the cube or the flat map. Press Esc to stop.`;
   document.querySelectorAll<HTMLButtonElement>('#movepad button').forEach((b) => {
     b.disabled = n === 2 && /^[MES]/.test(b.textContent ?? '');
   });

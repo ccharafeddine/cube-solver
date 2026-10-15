@@ -20,8 +20,8 @@
         <button data-size="2" role="radio" title="2x2 (key 2)">2x2</button><button data-size="3" role="radio" title="3x3 (key 3)">3x3</button>
       </div>
       <div class="group" id="mode-group" role="radiogroup" aria-label="Solver mode">
-        <button data-mode="fast" role="radio" title="Kociemba two-phase: near-optimal in milliseconds, improves while thinking">Fast</button>
-        <button data-mode="optimal" role="radio" title="Proven shortest in quarter turns (IDA* with pattern databases)">Optimal</button>
+        <button data-mode="fast" role="radio" title="Finds a short solution right away, and keeps making it shorter while it thinks">Fast</button>
+        <button data-mode="optimal" role="radio" title="Finds the shortest possible solution, counted in quarter turns. Can take longer.">Optimal</button>
       </div>
       <label class="think">Think <select id="think" aria-label="Think time"><option value="1000">1s</option><option value="2000">2s</option><option value="5000">5s</option><option value="10000">10s</option><option value="30000">30s</option><option value="60000">60s</option></select></label>
       <div class="hdr-icons">
@@ -35,20 +35,20 @@
       <section class="left">
         <div id="viewport" aria-label="3D cube. Drag a sticker to turn its layer; drag the background, right-drag or Shift-drag to rotate the view." role="region">
           <div id="onboarding" class="tip hidden" role="dialog" aria-live="polite"></div>
-          <button id="explode" class="explode-btn" aria-pressed="false" title="Exploded view: spread the pieces out (G)" aria-label="Exploded view (G)">Explode</button>
+          <button id="explode" class="explode-btn" aria-pressed="false" title="Spread the pieces apart to see how the cube works inside (G)" aria-label="Exploded view (G)">Explode</button>
           <div id="explode-hint" class="explode-hint hidden" role="status"></div>
           <div id="rotate-row" class="rotate-row" role="toolbar" aria-label="Rotate the whole cube">
-            <button data-rot="x" class="mono" title="Rotate the whole cube like R (x). Shift-click: x'" aria-label="Rotate whole cube x; Shift-click for x prime">X</button>
-            <button data-rot="y" class="mono" title="Rotate the whole cube like U (y). Shift-click: y'" aria-label="Rotate whole cube y; Shift-click for y prime">Y</button>
-            <button data-rot="z" class="mono" title="Rotate the whole cube like F (z). Shift-click: z'" aria-label="Rotate whole cube z; Shift-click for z prime">Z</button>
+            <button data-rot="x" class="mono" title="Turn the whole cube like R (x). Shift-click turns it back (x')" aria-label="Rotate whole cube x; Shift-click for x prime">X</button>
+            <button data-rot="y" class="mono" title="Turn the whole cube like U (y). Shift-click turns it back (y')" aria-label="Rotate whole cube y; Shift-click for y prime">Y</button>
+            <button data-rot="z" class="mono" title="Turn the whole cube like F (z). Shift-click turns it back (z')" aria-label="Rotate whole cube z; Shift-click for z prime">Z</button>
           </div>
         </div>
         <div class="bar" role="toolbar" aria-label="Cube actions">
-          <button id="reset" title="Back to solved (Alt+R)">Reset</button>
-          <button id="scramble" class="primary" title="Random-state scramble (Alt+S)">Scramble</button>
-          <button id="undo" title="Undo (Ctrl+Z)" aria-label="Undo">↶</button>
-          <button id="redo" title="Redo (Ctrl+Y)" aria-label="Redo">↷</button>
-          <button id="view-reset" title="Standard view: white on top, green in front; undoes x/y/z rotations (Alt+V)">Reset view</button>
+          <button id="reset" title="Make the cube solved again (Alt+R)">Reset</button>
+          <button id="scramble" class="primary" title="Mix the cube up at random (Alt+S)">Scramble</button>
+          <button id="undo" title="Undo the last move (Ctrl+Z)" aria-label="Undo">↶</button>
+          <button id="redo" title="Redo the move you undid (Ctrl+Y)" aria-label="Redo">↷</button>
+          <button id="view-reset" title="Put the view back: white on top, green in front (Alt+V)">Reset view</button>
           <label class="speed">Speed <input type="range" id="speed" min="0" max="100" value="55" aria-label="Animation speed" /></label>
         </div>
         <div class="tabs" role="tablist" aria-label="Input">
@@ -57,7 +57,7 @@
           <button role="tab" data-tab="io" aria-selected="false">Import / export</button>
         </div>
         <div class="card tabpanel" data-panel="turn" role="tabpanel">
-          <p class="muted">Drag any sticker to turn its layer, or use the keys U R F D L B M E S x y z (Shift for prime).</p>
+          <p class="muted">Drag a sticker to turn its layer. Or press a key: U R F D L B turn the six sides, M E S the middle layers, and x y z the whole cube. Hold Shift to turn the other way.</p>
           <div id="movepad"></div>
           <div class="row"><input id="alg" class="mono" placeholder="Type moves, e.g. R U R' U'" aria-label="Moves to apply" /><button id="apply">Apply</button></div>
         </div>
@@ -68,7 +68,7 @@
           <div class="row"><button id="fill-solved">Fill solved</button><span id="counts" class="muted"></span></div>
         </div>
         <div class="card tabpanel hidden" data-panel="io" role="tabpanel">
-          <p class="muted">Paste a facelet string (URFDLB order), a JSON export, or a move sequence.</p>
+          <p class="muted">Paste in a cube to load it: a facelet string (one letter per sticker, sides in the order U R F D L B), a JSON export, or a list of moves like R U R'.</p>
           <textarea id="io-text" class="mono" rows="4" aria-label="Import or export text"></textarea>
           <div class="row">
             <button id="import">Import</button>
@@ -92,7 +92,7 @@
             <button id="sol-back" aria-label="Step back" title="Step back (←)">‹</button>
             <button id="play" class="primary" title="Play or pause (Space)">▶ Play</button>
             <button id="sol-step" aria-label="Step forward" title="Step forward (→)">›</button>
-            <button id="stop" title="Stop the search and keep the best so far">Stop search</button>
+            <button id="stop" title="Stop thinking and keep the best solution found so far">Stop search</button>
           </div>
         </div>
         <div class="card" id="next-card">
@@ -141,17 +141,17 @@
         <tr><td><kbd>G</kbd> or <b>Explode</b></td><td>Exploded view: spread the pieces out, or assemble them again. Turns pause while exploded; painting and orbiting still work</td></tr>
         <tr><td><kbd>?</kbd></td><td>This help</td></tr>
       </table>
-      <p class="muted">Move counts use the quarter-turn metric: a half turn (U2) counts as two.</p>
+      <p class="muted">Moves are counted in quarter turns: a half turn like U2 counts as two.</p>
       <div class="row"><button id="tour">Tutorial…</button><button id="help-appearance">Appearance…</button><button id="help-close" class="primary">Close</button></div>
     </dialog>
     <dialog id="tutorial-dialog" aria-labelledby="tut-title">
       <h2 id="tut-title">Tutorial</h2>
       <p id="tut-summary" class="muted"></p>
       <h3>Cube notation</h3>
-      <p class="muted">Faces, prime and double turns, slices, wide moves, rotations and quarter-turn counting, each shown on the cube and then played by you. Ends with a short quiz.</p>
+      <p class="muted">Learn the letters for each turn, like R, U, R' and U2. Each lesson shows the turn on the cube, then you try it yourself. A short quiz at the end checks what you learned.</p>
       <div class="row"><button id="tut-lessons" class="primary">Start the notation lessons</button><button id="tut-restart">Start over</button><button id="tut-quiz">Just the quiz</button></div>
       <h3>App tour</h3>
-      <p class="muted">A guided spotlight tour of every part of the app.</p>
+      <p class="muted">A short tour that points at each part of the app and says what it does.</p>
       <div class="row"><button id="tut-tour" class="primary">Take the app tour</button><button id="tut-tour-restart">From the start</button></div>
       <div class="row spread"><button id="tut-reset" class="link">Reset tutorial progress</button><button id="tut-close">Close</button></div>
     </dialog>

@@ -95,3 +95,4 @@ UNRELEASED (2026-10-14) - FRUTIGER AERO VISUAL OVERHAUL
 - Removed Beginner mode and the ease-by-hand ranking: next moves rank purely by distance to solved.
 - Method steps, Play all steps and typed algorithms now play one turn at a time at the speed slider's pace (read live), like solution playback.
 - The camera can now zoom right into the cube (0.08 from the centre) to inspect the mechanism; max zoom-out stays 2.5x the default framing.
+- Rewrote the tour, welcome card, lessons, tooltips and panel notes in plain language for first-time (and young) solvers.
