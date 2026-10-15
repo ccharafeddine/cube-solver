@@ -11,6 +11,7 @@ import { METHODS, type MethodId, type Step } from './solver/methods/index';
 import { History, inverseMove } from './app/history';
 import { fromHash, importText, toFaceletString, toHash, toJSON } from './app/share';
 import { checkForUpdate } from './app/update';
+import { playPaced } from './app/pace';
 import { Tutorial } from './tutorial/tutorial';
 import { standardRotation } from './cube/orient';
 import { pickSkin, resolveTheme, modeFor, SCENE_SKINS, SKINS, SKIN_LABELS, SKIN_MODES, type SkinId } from './theme/skins';
@@ -213,7 +214,7 @@ function renderMethod(steps?: Step[]) {
   head.textContent = `${steps.length} steps · ${total} quarter turns in all.`;
   const playAll = document.createElement('button');
   playAll.textContent = 'Play all steps';
-  playAll.onclick = () => playSequence(steps.flatMap((s) => s.moves.split(' ')));
+  playAll.onclick = () => void playSequence(steps.flatMap((s) => s.moves.split(' ')));
   head.append(' ', playAll);
   el.appendChild(head);
   steps.forEach((s, i) => {
@@ -222,7 +223,7 @@ function renderMethod(steps?: Step[]) {
     row.innerHTML = `<div class="step-name">${i + 1}. ${s.name} <small>${qtmOf(s.moves.split(' '))} QTM</small></div><div class="mono">${s.moves}</div>`;
     const play = document.createElement('button');
     play.textContent = 'Play step';
-    play.onclick = () => playSequence(s.moves.split(' '));
+    play.onclick = () => void playSequence(s.moves.split(' '));
     row.appendChild(play);
     el.appendChild(row);
   });
@@ -286,15 +287,32 @@ function playMove(m: string, analyze = true) {
   tutorial?.onMove(m);
 }
 
-function playSequence(moves: string[]) {
-  for (const m of moves) playMove(m, false);
-  requestAnalysis();
+/** Bumped whenever a new sequence or a reset takes over, to stop the running one. */
+let sequenceRun = 0;
+
+/**
+ * Play a sequence (a method step, a typed algorithm) one turn at a time at the
+ * speed slider's pace, like solution playback, instead of queueing every turn
+ * at once (which the view speeds up to drain a long queue).
+ */
+async function playSequence(moves: string[]) {
+  const run = ++sequenceRun;
+  const done = await playPaced(moves, {
+    play: (m) => {
+      if (view.exploded) { turnsBlocked(); return false; }
+      playMove(m, false);
+    },
+    idle: () => view.idle(),
+    gapMs: () => turnMs() * 0.25,
+    cancelled: () => run !== sequenceRun,
+  });
+  if (done || run === sequenceRun) requestAnalysis();
 }
 
 function doMoves(text: string) {
   try {
     const ms = parseMoves(text).map(formatMove);
-    playSequence(ms);
+    void playSequence(ms);
   } catch (e) {
     setStatus('bad', (e as Error).message);
   }
@@ -335,6 +353,7 @@ async function togglePlay() {
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 function undo() {
+  sequenceRun++;
   if (turnsBlocked()) return;
   const m = history.back();
   if (!m) return;
@@ -354,6 +373,7 @@ function redo() {
 }
 
 function jumpHistory(pos: number) {
+  sequenceRun++;
   state = history.jump(pos);
   render();
   requestAnalysis();
@@ -361,6 +381,7 @@ function jumpHistory(pos: number) {
 
 /** Replace the cube outright (reset, scramble, paint, import). */
 function setBaseline(s: State, size: 2 | 3 = n) {
+  sequenceRun++;
   if (size !== n) { n = size; settings.n = n; persist(); view.build(n); net.build(n); syncControls(); }
   state = s;
   history.reset(state, n);
@@ -468,7 +489,7 @@ $('stop').onclick = stopAnalysis;
 function resetView() {
   view.resetView();
   const fix = standardRotation(state, n);
-  if (fix?.length && !view.exploded) playSequence(fix.map(formatMove));
+  if (fix?.length && !view.exploded) void playSequence(fix.map(formatMove));
 }
 $('view-reset').onclick = resetView;
 $('apply').onclick = () => doMoves($<HTMLInputElement>('alg').value);
@@ -537,7 +558,7 @@ $('import').onclick = () => {
   const r = importText($<HTMLTextAreaElement>('io-text').value, n);
   if (!r.ok) return ioMsg(r.error);
   setBaseline(r.state, r.n);
-  if (r.moves?.length) playSequence(r.moves);
+  if (r.moves?.length) void playSequence(r.moves);
   ioMsg('Imported.');
 };
 $('export-facelets').onclick = () => copy(toFaceletString(state), 'Facelet string');
@@ -572,7 +593,7 @@ window.addEventListener('keydown', (e) => {
   }
   if (k === '?') { openHelp(); return; }
   if (k === 'g' || k === 'G') { toggleExplode(); return; }
-  if (k === 'Escape') { paintColor = null; playing = false; syncControls(); return; }
+  if (k === 'Escape') { paintColor = null; playing = false; sequenceRun++; syncControls(); return; }
   if (k === ' ' && (e.target as HTMLElement).tagName !== 'BUTTON') { e.preventDefault(); void togglePlay(); return; }
   if (k === 'ArrowRight') { e.preventDefault(); playing = false; stepSolution(); return; }
   if (k === 'ArrowLeft') { e.preventDefault(); playing = false; stepSolutionBack(); return; }

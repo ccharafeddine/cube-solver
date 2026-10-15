@@ -93,3 +93,4 @@ UNRELEASED (2026-10-14) - FRUTIGER AERO VISUAL OVERHAUL
 - 3x3 explode: no separate cap circles; centre faces stay flat and move rigidly. Screws and springs are part of the centre assembly and never leave its shell; they show only through the open inner side once the centre clears its arm. Timeline tests sample explode, reverse and assemble.
 - Crafted corners per theme via corner tokens (panel/card/control/chip, edge detail, corner art, panel clip). Before/after screenshots in /workspace/corners/.
 - Removed Beginner mode and the ease-by-hand ranking: next moves rank purely by distance to solved.
+- Method steps, Play all steps and typed algorithms now play one turn at a time at the speed slider's pace (read live), like solution playback.

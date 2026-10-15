@@ -78,3 +78,5 @@ Rules learned building Cube Solver. Read them before changing the build, the sol
 - Keep hidden inner geometry a hair below the sticker plane (0.97 vs 0.99); coplanar faces z-fight and show through stickers as ghost circles.
 
 - Anything positioned relative to a staggered piece must use that piece's delay, or it leads the piece at the start of the animation. Better still, parent it to the piece.
+
+- Queueing a whole sequence into the view at once makes it speed up to drain the queue and freezes each turn's duration at enqueue time. Pace sequences one turn at a time and read the slider before each turn.
