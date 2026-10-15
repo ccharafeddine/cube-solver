@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { fitDistance, cubeRadius, along, MARGIN } from './framing';
+import { fitDistance, cubeRadius, along, MARGIN, CUBE_SIZE, MIN_ZOOM, safeDistance } from './framing';
 import { DEFAULT_CAMERA } from '../cube/orient';
 
 /** Does a sphere at the origin fit, seen from distance d? Check every edge of the frustum. */
@@ -30,5 +30,26 @@ describe('framing', () => {
   });
   it('the radius covers the corners of the cube', () => {
     expect(r).toBeGreaterThan(Math.hypot(1.3, 1.3, 1.3));
+  });
+});
+
+describe('closest zoom', () => {
+  const half = CUBE_SIZE / 2 + 0.02;
+  it('head-on lets the camera come to about 0.8 of the bounding radius, well outside the face', () => {
+    const d = safeDistance([0, 0, 1]);
+    expect(d).toBeCloseTo(MIN_ZOOM * cubeRadius());
+    expect(d - half).toBeGreaterThan(0.15);
+  });
+  it('on a diagonal it stays outside the corner, with room for the near plane', () => {
+    for (const dir of [[1, 1, 1], [-1, 1, -1], [1, 1, 0], [2, 1, 0.5]] as [number, number, number][]) {
+      const d = safeDistance(dir);
+      const len = Math.hypot(...dir);
+      const support = (half * dir.reduce((a, v) => a + Math.abs(v), 0)) / len;
+      expect(d).toBeGreaterThanOrEqual(support + 0.2 - 1e-9);
+    }
+    expect(safeDistance([1, 1, 1])).toBeCloseTo(cubeRadius() - 0.02 * Math.sqrt(3) + 0.2 + 0.02 * Math.sqrt(3), 1);
+  });
+  it('scales out for the exploded view', () => {
+    expect(safeDistance([1, 1, 1], undefined, 0.2, 2)).toBeGreaterThan(safeDistance([1, 1, 1]) * 1.8);
   });
 });

@@ -29,3 +29,20 @@ export function along(dir: [number, number, number], distance: number): [number,
   const len = Math.hypot(...dir);
   return [(dir[0] / len) * distance, (dir[1] / len) * distance, (dir[2] / len) * distance];
 }
+
+/** Closest zoom, as a fraction of the bounding-sphere radius: about halfway from the old limit to the face. */
+export const MIN_ZOOM = 0.8;
+
+/**
+ * Closest the camera may come along view direction `dir` without the near
+ * plane cutting into the cube. A cube of half-size `half` reaches out to
+ * half * (|x| + |y| + |z|) along a unit direction (its support distance): the
+ * face plane head-on, the corner on a diagonal. `clearance` keeps the near
+ * plane (and a little more) outside it. `scale` grows the box for the
+ * exploded view.
+ */
+export function safeDistance(dir: [number, number, number], half = CUBE_SIZE / 2 + STICKER_LIFT, clearance = 0.2, scale = 1): number {
+  const len = Math.hypot(...dir) || 1;
+  const support = (half * scale * (Math.abs(dir[0]) + Math.abs(dir[1]) + Math.abs(dir[2]))) / len;
+  return Math.max(MIN_ZOOM * cubeRadius() * scale, support + clearance);
+}
