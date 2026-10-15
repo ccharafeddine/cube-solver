@@ -265,3 +265,16 @@ kbd { font-family: inherit; font-size: 0.8rem; padding: 1px 7px; border: var(--b
 dialog, .tour-card, .card, .status, .coach, .tip { clip-path: var(--panel-clip); }
 #viewport { clip-path: var(--panel-clip); }
 #progress.hidden { display: block !important; visibility: hidden; }
+
+/* The page never shifts sideways when its scrollbar comes or goes: always keep room for it. */
+html { scrollbar-gutter: stable; }
+@supports not (scrollbar-gutter: stable) { html { overflow-y: scroll; } }
+/* Fixed panel heights, so analysis and long solutions on big cubes never change the page height move to move. */
+#solution { height: 168px; max-height: none; }
+#candidates { height: 236px; max-height: none; }
+#method { height: 300px; max-height: none; }
+#method-blurb { height: 4.4em; overflow-y: auto; }
+#history { height: 132px; max-height: none; }
+#status { box-sizing: border-box; height: 4.6em; min-height: 0; }
+.right .card > .row.spread:first-child { min-height: 36px; box-sizing: border-box; }
+#cand-note { height: 2.8em; min-height: 0; overflow: hidden; }
