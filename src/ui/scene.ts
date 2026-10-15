@@ -22,6 +22,18 @@ export const COLOR_NAMES = ['White', 'Red', 'Green', 'Yellow', 'Orange', 'Blue']
 
 interface Piece { mesh: THREE.Object3D; grid: THREE.Vector3; home: THREE.Matrix4; homePos: THREE.Vector3; delay: number }
 
+/**
+ * Slightly pillowed faces on 6x6 and 7x7, as on real big cubes: a sticker is
+ * lifted a little more the nearer it sits to the middle of its face (grid
+ * units, 0 at the face's corners).
+ */
+export function pillow(pos: Vec3, normal: Vec3, n: number): number {
+  if (n < 6) return 0;
+  const m = n - 1;
+  const across = pos.filter((_, k) => normal[k] === 0).map((v) => v / m);
+  return 0.14 * (1 - (across[0] ** 2 + across[1] ** 2) / 2);
+}
+
 export class CubeView {
   private renderer: THREE.WebGLRenderer;
   private scene = new THREE.Scene();
@@ -165,7 +177,8 @@ export class CubeView {
         clearcoat: this.skin.stickerClearcoat, clearcoatRoughness: this.skin.stickerClearcoatRoughness });
       const mesh = new THREE.Mesh(plane, mat);
       const [nx, ny, nz] = st.normal;
-      mesh.position.set(st.pos[0] + nx * 0.99, st.pos[1] + ny * 0.99, st.pos[2] + nz * 0.99);
+      const lift = 0.99 + pillow(st.pos, st.normal, n);
+      mesh.position.set(st.pos[0] + nx * lift, st.pos[1] + ny * lift, st.pos[2] + nz * lift);
       mesh.lookAt(mesh.position.clone().add(new THREE.Vector3(nx, ny, nz)));
       mesh.userData.sticker = i;
       this.stickerMeshes.push(mesh);
