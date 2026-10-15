@@ -11,6 +11,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { model, type State, type Turn, type Vec3 } from '../cube/facelets';
 import { dragToTurn } from '../app/drag';
+import { DEFAULT_CAMERA } from '../cube/orient';
 import { ExplodeController, explodeOffset, staggerDelay } from './explode';
 
 /** Extra zoom-out at full explode; the exploded cube is about 1.6x wider. */
@@ -41,7 +42,7 @@ export class CubeView {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     this.renderer.setPixelRatio(window.devicePixelRatio);
     host.appendChild(this.renderer.domElement);
-    this.camera.position.set(4.2, 3.6, 5.6);
+    this.camera.position.set(...DEFAULT_CAMERA);
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enablePan = false;
     this.controls.enableDamping = true;
@@ -63,8 +64,9 @@ export class CubeView {
     });
   }
 
+  /** Camera back to the standard view: slightly above, front-right corner toward you. */
   resetView() {
-    this.camera.position.set(4.2, 3.6, 5.6);
+    this.camera.position.set(...DEFAULT_CAMERA);
     this.controls.target.set(0, 0, 0);
   }
 

@@ -154,7 +154,7 @@ The dots across the top jump to any lesson, and **Show again** repeats the demon
 | **Reset** (<kbd>Alt</kbd>+<kbd>R</kbd>) | Back to solved |
 | **Scramble** (<kbd>Alt</kbd>+<kbd>S</kbd>) | Random-state scramble; its notation appears in the move box |
 | ↶ / ↷ (<kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>Y</kbd> or <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd>) | Undo / redo a move |
-| **Reset view** (<kbd>Alt</kbd>+<kbd>V</kbd>) | Put the camera back |
+| **Reset view** (<kbd>Alt</kbd>+<kbd>V</kbd>) | The standard view: white on top, green in front (so red is R and orange is L), seen from slightly above with the front-right corner toward you. Also undoes any x/y/z rotations, played as rotation moves so history stays consistent |
 | **Speed** slider | Animation speed |
 | <kbd>U</kbd> <kbd>R</kbd> <kbd>F</kbd> <kbd>D</kbd> <kbd>L</kbd> <kbd>B</kbd> | Turn a face clockwise; with <kbd>Shift</kbd>, counter-clockwise |
 | <kbd>M</kbd> <kbd>E</kbd> <kbd>S</kbd> | Middle slices (3x3 only) |
@@ -245,6 +245,7 @@ src/
   cube/
     facelets.ts     NxN sticker model; moves from 3D geometry; M/E/S, wide moves, rotations; turn<->notation
     cubie.ts        Kociemba cubie model, facelet<->cubie, solvability checks
+    orient.ts       standard orientation (white U, green F) for any size; the rotation that restores it
     notation.ts     parse/format, inverse, simplify, QTM/HTM counts
   solver/
     solver2.ts      2x2 optimal (full BFS table)

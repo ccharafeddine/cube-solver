@@ -13,6 +13,7 @@ import { History, inverseMove } from './app/history';
 import { fromHash, importText, toFaceletString, toHash, toJSON } from './app/share';
 import { checkForUpdate } from './app/update';
 import { Tutorial } from './tutorial/tutorial';
+import { standardRotation } from './cube/orient';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const qtmOf = (ms: string[]) => ms.reduce((a, m) => a + (m.endsWith('2') ? 2 : 1), 0);
@@ -463,7 +464,17 @@ $('scramble').onclick = scramble;
 $('undo').onclick = undo;
 $('redo').onclick = redo;
 $('stop').onclick = stopAnalysis;
-$('view-reset').onclick = () => view.resetView();
+/**
+ * Reset view: standard camera, and undo any x/y/z rotations so white is on
+ * top and green in front again. The fix is played as rotation moves (they
+ * move no pieces), so history and the solution stay consistent.
+ */
+function resetView() {
+  view.resetView();
+  const fix = standardRotation(state, n);
+  if (fix?.length && !view.exploded) playSequence(fix.map(formatMove));
+}
+$('view-reset').onclick = resetView;
 $('apply').onclick = () => doMoves($<HTMLInputElement>('alg').value);
 $<HTMLInputElement>('alg').onkeydown = (e) => { if (e.key === 'Enter') doMoves((e.target as HTMLInputElement).value); };
 $('play').onclick = () => void togglePlay();
@@ -560,7 +571,7 @@ window.addEventListener('keydown', (e) => {
     const a = e.code;
     if (a === 'KeyS') { e.preventDefault(); scramble(); }
     if (a === 'KeyR') { e.preventDefault(); setBaseline(solved(n)); }
-    if (a === 'KeyV') { e.preventDefault(); view.resetView(); }
+    if (a === 'KeyV') { e.preventDefault(); resetView(); }
     return;
   }
   if (k === '?') { openHelp(); return; }
