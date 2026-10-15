@@ -61,6 +61,8 @@ let playing = false;
 let paintColor: number | null = null;
 /** History positions 1..scrambleLen are scramble turns (played and undone at scramble pace). */
 let scrambleLen = 0;
+/** Moves the history buttons were built for (to update the list in place). */
+let historyShown: string[] = [];
 /** Set while playing solution moves, so the (still valid) solution is not recomputed. */
 let followingSolution = false;
 
@@ -166,8 +168,20 @@ function render() {
   renderHistory();
 }
 
+/** The solution the buttons were built for: stepping only updates their classes (big cubes have 1000+ moves). */
+let renderedSolution: string[] | null = null;
 function renderSolution() {
   const el = $('solution');
+  if (renderedSolution === solution && solution.length) {
+    const kids = el.children;
+    for (let i = 0; i < kids.length; i++) {
+      const c = 'mv' + (i < solutionPos ? ' done' : i === solutionPos ? ' next' : '');
+      if (kids[i].className !== c) kids[i].className = c;
+    }
+    $('play').textContent = playing ? '⏸ Pause' : '▶ Play';
+    return;
+  }
+  renderedSolution = solution;
   el.innerHTML = '';
   if (!solution.length) el.innerHTML = '<span class="muted">—</span>';
   solution.forEach((m, i) => {
@@ -226,23 +240,42 @@ function renderMethod(steps?: Step[]) {
   });
 }
 
+/**
+ * The history list, updated in place: keep the buttons for the moves that
+ * are unchanged, rebuild only the tail, then move the highlight. Playing a
+ * 1000-move big-cube solution stays cheap per turn.
+ */
 function renderHistory() {
   const el = $('history');
-  el.innerHTML = '';
   const list = history.list;
-  const start = document.createElement('button');
-  start.className = 'mv' + (history.position === 0 ? ' next' : '');
-  start.textContent = '•';
-  start.title = 'Back to the start';
-  start.onclick = () => void jumpHistory(0);
-  el.appendChild(start);
-  list.forEach((m, i) => {
+  if (!el.firstChild) {
+    const start = document.createElement('button');
+    start.textContent = '•';
+    start.title = 'Back to the start';
+    start.onclick = () => void jumpHistory(0);
+    el.appendChild(start);
+  }
+  let keep = 0;
+  while (keep < list.length && keep < historyShown.length && historyShown[keep] === list[keep]) keep++;
+  while (el.childElementCount > keep + 1) el.lastElementChild!.remove();
+  for (let i = keep; i < list.length; i++) {
     const b = document.createElement('button');
-    b.className = 'mv' + (i < history.position ? '' : ' done') + (i + 1 === history.position ? ' next' : '');
-    b.textContent = m;
+    b.textContent = list[i];
     b.onclick = () => void jumpHistory(i + 1);
     el.appendChild(b);
-  });
+  }
+  historyShown = list;
+  // Only touch buttons whose class actually changes, so the browser restyles a handful, not thousands.
+  const cls = (i: number) => (i === 0 ? 'mv' + (history.position === 0 ? ' next' : '')
+    : 'mv' + (i - 1 < history.position ? '' : ' done') + (i === history.position ? ' next' : ''));
+  for (let i = 0; i <= list.length; i++) {
+    const c = cls(i);
+    if (el.children[i].className !== c) el.children[i].className = c;
+  }
+  renderHistoryFooter(list);
+}
+
+function renderHistoryFooter(list: string[]) {
   $('hist-count').textContent = list.length ? `${history.position}/${list.length} · ${qtmOf(list.slice(0, history.position))} QTM` : 'No moves yet';
   $<HTMLButtonElement>('undo').disabled = !history.canBack;
   $<HTMLButtonElement>('redo').disabled = !history.canForward;
