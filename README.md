@@ -42,7 +42,7 @@
 ## Features
 
 **Cubes and input**
-- 2x2 to 6x6 cubes in 3D (the 6x6 with slightly pillowed faces). Drag a sticker to turn its layer, with mouse, pen or touch. Drag the background to look around (or right-drag / Shift-drag from anywhere), and scroll or pinch to zoom.
+- 2x2 to 7x7 cubes in 3D (the 6x6 and 7x7 with slightly pillowed faces). Drag a sticker to turn its layer, with mouse, pen or touch. Drag the background to look around (or right-drag / Shift-drag from anywhere), and scroll or pinch to zoom.
 - Keyboard turns for every face (U R F D L B), the middle slices (M E S) and whole-cube rotations (x y z). Add Shift for counter-clockwise. Small **X Y Z** buttons in the corner of the cube view do the same whole-cube rotations (Shift-click for prime).
 - A move pad with all 36 turns, and a box for typing algorithms in standard notation (`R U R' U'`, `F2`, `M'`, `Rw`, `x`).
 - **Setup:** paint any sticker from the colour menu, either on the 3D cube or on a **flat 2D net editor**. The net is all buttons, so it works from the keyboard and with screen readers.
@@ -198,7 +198,7 @@ The dots across the top jump to any lesson, and **Show again** repeats the demon
 The cube is modelled twice. The sticker model derives every move from 3D geometry, so it works for any size and the renderer uses the same coordinates. The cubie model uses Kociemba's conventions for the solvers. Tests apply every move in both models and check they agree.
 
 
-### Big cubes (4x4 to 6x6)
+### Big cubes (4x4 to 7x7)
 
 Big cubes are solved by **reduction**, the way people solve them by hand (`src/solver/big/`):
 
@@ -207,7 +207,7 @@ Big cubes are solved by **reduction**, the way people solve them by hand (`src/s
 3. **Pair the edges** with pure 3-cycles of wing pieces.
 4. **Solve it like a 3x3** with the two-phase solver, using outer turns only, which keep the centres and edges intact.
 
-The 3-cycles are not hand-written: a short search finds every commutator of the form `[a b a', c]` (single-layer turns) that moves exactly three pieces of one orbit, and conjugating them by setup turns covers every triple of positions, fewest setup turns first. The same code serves every size; the library is built once per size (about 0.2 s for a 4x4). Every solution is checked by playing it back before it is shown.
+The 3-cycles are not hand-written: a short search finds every commutator of the form `[a b a', c]` (single-layer turns) that moves exactly three pieces of one orbit, and conjugating them by setup turns covers every triple of positions, fewest setup turns first. The same code serves every size; the library is built once per size (about 0.2 s for a 4x4, 2 s for a 7x7). Typical solutions: about 320 quarter turns on a 4x4, 450 on a 5x5, 900 on a 6x6 and 1200 on a 7x7. Every solution is checked by playing it back before it is shown.
 
 Inner layers use SiGN notation: `2R` turns only the second layer from the right, `3Rw` the three right layers together.
 

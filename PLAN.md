@@ -168,3 +168,4 @@ Defaults chosen so work could go ahead; each is easy to change.
 5. **Ranked moves on big cubes:** single-layer quarter turns only (no wide turns), ranked by the reduction solution's length from each resulting position, always labelled as an estimate.
 6. **Scrambles on big cubes:** random turns of any single layer (40 for 4x4, 60, 80, 100 for 5x5 to 7x7), not random-state.
 7. **Odd cubes pair wings to their midge;** even cubes put wings straight into their solved slots (so the 3x3 phase only has corners left to move).
+8. **7x7 performance:** about 1,050 meshes (pieces, stickers, feet), no instancing: orbiting held ~48 fps even on software GL in the browser check, so instancing was not needed. The history and solution lists update in place, so a 1,200-move solution plays without rebuilding them each turn.

@@ -6,7 +6,7 @@ export type Mode = 'fast' | 'optimal';
 export type Size = 2 | 3 | 4 | 5 | 6 | 7;
 export const SIZES: Size[] = [2, 3, 4, 5, 6, 7];
 /** Sizes the app offers so far (big cubes are switched on one size at a time). */
-export const ENABLED_SIZES: Size[] = [2, 3, 4, 5, 6];
+export const ENABLED_SIZES: Size[] = [2, 3, 4, 5, 6, 7];
 
 export interface AnalyzeRequest {
   id: number;
