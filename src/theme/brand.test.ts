@@ -33,4 +33,9 @@ describe('brand', () => {
     expect(og).not.toBeNull();
     expect(existsSync(new URL(`../../public/${og![1]}`, import.meta.url))).toBe(true);
   });
+  it('the solver-mode code never touches the Light/Dark/System buttons (they share data-mode)', () => {
+    const main = readFileSync(new URL('../main.ts', import.meta.url), 'utf-8');
+    expect(main).not.toMatch(/querySelectorAll<HTMLButtonElement>\('\[data-mode\]'\)/);
+    expect(style).toMatch(/#theme-modes button\[aria-checked='true'\]/);
+  });
 });

@@ -536,7 +536,7 @@ function syncControls() {
     const on = Number(b.dataset.size) === n;
     b.classList.toggle('on', on); b.setAttribute('aria-checked', String(on));
   });
-  document.querySelectorAll<HTMLButtonElement>('[data-mode]').forEach((b) => {
+  document.querySelectorAll<HTMLButtonElement>('#mode-group [data-mode]').forEach((b) => {
     const on = b.dataset.mode === settings.mode;
     b.classList.toggle('on', on); b.setAttribute('aria-checked', String(on));
   });
@@ -571,7 +571,7 @@ function selectTab(tab: string) {
 
 document.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach((b) => (b.onclick = () => selectTab(b.dataset.tab!)));
 document.querySelectorAll<HTMLButtonElement>('[data-size]').forEach((b) => (b.onclick = () => setBaseline(solved(Number(b.dataset.size)), Number(b.dataset.size) as Size)));
-document.querySelectorAll<HTMLButtonElement>('[data-mode]').forEach((b) => (b.onclick = () => { settings.mode = b.dataset.mode as Mode; persist(); syncControls(); requestAnalysis(); }));
+document.querySelectorAll<HTMLButtonElement>('#mode-group [data-mode]').forEach((b) => (b.onclick = () => { settings.mode = b.dataset.mode as Mode; persist(); syncControls(); requestAnalysis(); }));
 $<HTMLSelectElement>('think').onchange = (e) => { settings.thinkMs = Number((e.target as HTMLSelectElement).value); persist(); requestAnalysis(); };
 $<HTMLSelectElement>('topn').onchange = (e) => { settings.topn = (e.target as HTMLSelectElement).value; persist(); requestAnalysis(); };
 $<HTMLInputElement>('speed').oninput = (e) => { settings.speed = Number((e.target as HTMLInputElement).value); persist(); };

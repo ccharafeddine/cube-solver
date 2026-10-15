@@ -284,3 +284,6 @@ html { scrollbar-gutter: stable; }
 #status { box-sizing: border-box; height: 4.6em; min-height: 0; }
 .right .card > .row.spread:first-child { min-height: 36px; box-sizing: border-box; }
 #cand-note { height: 2.8em; min-height: 0; overflow: hidden; }
+/* The chosen Light/Dark/System option: filled like a primary button, with a check mark so it is not colour alone. */
+#theme-modes button[aria-checked='true'] { color: var(--text-on-accent); background: var(--btn-primary-bg); border-color: var(--btn-primary-border); font-weight: 600; }
+#theme-modes button[aria-checked='true']::before { content: '✓ '; }
