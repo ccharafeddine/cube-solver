@@ -110,7 +110,8 @@ describe('state safety', () => {
   });
 });
 
-import { spreadFor, explodeExtent, MECH, AXES, capPosition, footOffset } from './explode';
+import { spreadFor, explodeExtent, MECH, AXES, capPosition, footOffset, MECH3, foot3, centreDistance3, screwHeadDistance3, capDistance3 } from './explode';
+type Vec3 = [number, number, number];
 
 describe('2x2 explodes further, and the camera knows how far', () => {
   it('spreads the 2x2 more than the 3x3', () => {
@@ -155,5 +156,39 @@ describe('2x2 mechanism layout', () => {
       // ...and the pad ends up in the other octant, under the caps near the core.
       expect(pad.every((v, i) => Math.sign(v) === -Math.sign(h[i]) || Math.abs(v) < 0.5)).toBe(true);
     }
+  });
+});
+
+describe('3x3 mechanism layout', () => {
+  it('hides inside the assembled cube', () => {
+    expect(screwHeadDistance3(0)).toBeLessThan(3);
+    expect(capDistance3(0) + MECH3.capThickness / 2).toBeLessThan(3);
+    expect(MECH3.armLength).toBeLessThan(2);
+    expect(MECH3.coreRadius).toBeLessThan(1);
+  });
+  it('on explode the centres move out along their arms, caps lift and screws back out only a little', () => {
+    const moved = (f: (a: number) => number) => f(1) - f(0);
+    expect(moved(centreDistance3)).toBeCloseTo(2 * spreadFor(3));
+    expect(moved(capDistance3)).toBeGreaterThan(moved(centreDistance3));
+    expect(moved(screwHeadDistance3)).toBeGreaterThan(0);
+    expect(moved(screwHeadDistance3)).toBeLessThan(moved(centreDistance3));
+    // The exploded centre clears the screw head, so screw and spring are visible.
+    expect(centreDistance3(1) - 1).toBeGreaterThan(screwHeadDistance3(1) - 0.2);
+  });
+  it('edge and corner feet point at the core, edges inside corners, outside the core', () => {
+    for (const home of [[2, 2, 0], [0, -2, 2], [-2, 0, -2]] as Vec3[]) {
+      const { inner, pad } = foot3(home);
+      const r = Math.hypot(...pad);
+      expect(r).toBeCloseTo(MECH3.edgePad);
+      expect(r).toBeGreaterThan(MECH3.coreRadius);
+      expect(r).toBeLessThan(Math.hypot(...inner));
+      expect(pad.every((v, i) => Math.sign(v) === Math.sign(home[i]))).toBe(true);
+    }
+    for (const home of [[2, 2, 2], [-2, 2, -2]] as Vec3[]) {
+      const { inner, pad } = foot3(home);
+      expect(Math.hypot(...pad)).toBeCloseTo(MECH3.cornerPad);
+      expect(Math.hypot(...pad)).toBeLessThan(Math.hypot(...inner));
+    }
+    expect(MECH3.cornerPad).toBeGreaterThan(MECH3.edgePad);
   });
 });

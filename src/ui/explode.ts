@@ -70,6 +70,52 @@ export function footOffset(home: Vec3): Vec3 {
   const k = (Math.hypot(1, 1, 1) + MECH.footStem * 0.5) / len;
   return [-home[0] * k, -home[1] * k, -home[2] * k];
 }
+/**
+ * The 3x3 mechanism, in grid units (the assembled cube spans -3..3). Modelled on
+ * a real 3x3: a fixed core with six axle arms; each hollow centre piece is
+ * screwed to its arm, with a spring between the screw head and the centre and
+ * a snap-on cap over it. Edges and corners have no holes: they are held only by
+ * their inner feet, edge feet in the track under the centres, corner feet under
+ * the edges.
+ */
+export const MECH3 = {
+  coreRadius: 0.72,
+  armLength: 1.5,
+  armRadius: 0.2,
+  /** Screw head radius at rest, and how far it backs out when exploded. */
+  screwHead: 2.35,
+  screwBackOut: 0.55,
+  screwLength: 1.2,
+  /** The spring sits between the head and the centre's inner seat, this long at rest. */
+  springLength: 0.55,
+  /** Cap: radius from the core at rest (just under the sticker), extra lift on explode. */
+  capRest: 2.86,
+  capLift: 0.55,
+  capThickness: 0.12,
+  /** Distance of foot pads from the core: edge feet in the centres' track, corner feet under the edges. */
+  edgePad: 1.0,
+  cornerPad: 1.3,
+};
+
+/** Distance of a 3x3 centre piece's middle from the core at explode amount `a`. */
+export const centreDistance3 = (a: number) => 2 + 2 * spreadFor(3) * a;
+/** Screw head distance from the core: it backs out a little, much less than the centre moves. */
+export const screwHeadDistance3 = (a: number) => MECH3.screwHead + MECH3.screwBackOut * a;
+/** Cap distance: rides on the centre, then lifts off it. */
+export const capDistance3 = (a: number) => MECH3.capRest + 2 * spreadFor(3) * a + MECH3.capLift * a;
+
+/**
+ * A 3x3 edge or corner foot, relative to the core: `inner` is the piece's
+ * inner corner (where the stem starts) and `pad` is where the pad sits, along
+ * the line from the piece's home toward the core.
+ */
+export function foot3(home: Vec3): { inner: Vec3; pad: Vec3 } {
+  const nonzero = home.filter((v) => v !== 0).length;
+  const len = Math.hypot(...home);
+  const r = nonzero === 3 ? MECH3.cornerPad : MECH3.edgePad;
+  return { inner: home.map((v) => v - Math.sign(v)) as Vec3, pad: home.map((v) => (v / len) * r) as Vec3 };
+}
+
 export const DURATION_MS = 900;
 export const STAGGER_MS = 160;
 

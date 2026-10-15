@@ -14,7 +14,7 @@ import { dragToTurn } from '../app/drag';
 import { DEFAULT_CAMERA } from '../cube/orient';
 import { CUBE_SIZE, cubeRadius, fitDistance, along } from './framing';
 import { SCENE_SKINS, type SceneSkin } from '../theme/skins';
-import { ExplodeController, explodeOffset, staggerDelay, spreadFor, explodeExtent, MECH, AXES, capPosition, footOffset } from './explode';
+import { ExplodeController, explodeOffset, staggerDelay, spreadFor, explodeExtent, MECH, AXES, capPosition, footOffset, MECH3, foot3, screwHeadDistance3, capDistance3 } from './explode';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 
 export const COLORS = ['#ffffff', '#c41e3a', '#009e60', '#ffd500', '#ff5800', '#0051ba'];
@@ -166,6 +166,7 @@ export class CubeView {
       this.addPiece(mesh, new THREE.Vector3(st.pos[0], st.pos[1], st.pos[2]));
     });
     if (n === 2) this.buildMechanism();
+    if (n === 3) this.buildMechanism3();
   }
 
   private addPiece(mesh: THREE.Object3D, grid = mesh.position.clone()) {
@@ -197,7 +198,7 @@ export class CubeView {
   /** Zoom-out factor for an explode amount, so the spread pieces stay in frame. */
   private explodeZoom(a: number) { return 1 + (explodeExtent(this.n) * 1.04 - 1) * a; }
 
-  private mech: { group: THREE.Group; caps: { obj: THREE.Object3D; dir: Vec3 }[]; feet: THREE.Object3D[] } | null = null;
+  private mech: { group: THREE.Group; caps: { obj: THREE.Object3D; dir: Vec3; dist?: (a: number) => number }[]; feet: THREE.Object3D[] } | null = null;
 
   /**
    * The inside of a real 2x2, revealed when exploded: six thin spindles meeting at the centre (no core block), with six
@@ -271,6 +272,75 @@ export class CubeView {
     this.mech = { group, caps, feet };
   }
 
+  /**
+   * The inside of a real 3x3, revealed when exploded: the fixed core and arms,
+   * a screw and spring per centre (backing out a little), the snap-on centre
+   * caps lifting off, and the inner feet of every edge and corner. Edges and
+   * corners have no holes; only centres are screwed down. ~6k triangles.
+   */
+  private buildMechanism3() {
+    const plastic = new THREE.MeshStandardMaterial({ color: 0x8a9099, roughness: 0.72, metalness: 0.02, emissive: 0x1c2430 });
+    const darker = new THREE.MeshStandardMaterial({ color: 0x5c636c, roughness: 0.8, emissive: 0x141a22 });
+    const metal = new THREE.MeshStandardMaterial({ color: 0xb8bec6, roughness: 0.35, metalness: 0.9 });
+    const M = MECH3, up = new THREE.Vector3(0, 1, 0);
+    const group = new THREE.Group();
+    group.visible = false;
+    group.add(new THREE.Mesh(new THREE.SphereGeometry(M.coreRadius, 24, 16), darker));
+    const armGeo = new THREE.CylinderGeometry(M.armRadius, M.armRadius * 1.2, M.armLength, 14);
+    armGeo.translate(0, M.armLength / 2, 0);
+    // Screw: head at the local origin, shaft running down toward the core.
+    const shaftGeo = new THREE.CylinderGeometry(0.07, 0.07, M.screwLength, 8);
+    shaftGeo.translate(0, -M.screwLength / 2, 0);
+    const headGeo = new THREE.CylinderGeometry(0.2, 0.2, 0.09, 16);
+    // Spring: from just under the head down toward the centre's inner seat.
+    const turns = 6, pts: THREE.Vector3[] = [];
+    for (let i = 0; i <= turns * 16; i++) {
+      const t = i / (turns * 16), ang = t * turns * Math.PI * 2;
+      pts.push(new THREE.Vector3(Math.cos(ang) * 0.16, -0.06 - t * M.springLength, Math.sin(ang) * 0.16));
+    }
+    const springGeo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), turns * 16, 0.028, 6, false);
+    const capGeo = new THREE.CylinderGeometry(0.62, 0.66, M.capThickness, 24);
+    const movers: { obj: THREE.Object3D; dir: Vec3; dist: (a: number) => number }[] = [];
+    for (const dir of AXES) {
+      const q = new THREE.Quaternion().setFromUnitVectors(up, new THREE.Vector3(...dir));
+      const arm = new THREE.Mesh(armGeo, darker);
+      arm.quaternion.copy(q);
+      group.add(arm);
+      const screw = new THREE.Group();
+      screw.quaternion.copy(q);
+      screw.add(new THREE.Mesh(shaftGeo, metal), new THREE.Mesh(headGeo, metal), new THREE.Mesh(springGeo, metal));
+      const cap = new THREE.Mesh(capGeo, plastic);
+      cap.quaternion.copy(q);
+      group.add(screw, cap);
+      movers.push({ obj: screw, dir, dist: screwHeadDistance3 }, { obj: cap, dir, dist: capDistance3 });
+    }
+    this.root.add(group);
+    // Feet: part of each edge and corner, so they turn and explode with it.
+    const stemGeo = new THREE.CylinderGeometry(0.18, 0.24, 1, 10);
+    stemGeo.translate(0, 0.5, 0);
+    const edgePadGeo = new RoundedBoxGeometry(0.9, 0.3, 0.55, 2, 0.08);
+    const cornerPadGeo = new RoundedBoxGeometry(0.6, 0.3, 0.6, 2, 0.08);
+    const feet: THREE.Object3D[] = [];
+    for (let x = -2; x <= 2; x += 2) for (let y = -2; y <= 2; y += 2) for (let z = -2; z <= 2; z += 2) {
+      const nz = [x, y, z].filter((v) => v !== 0).length;
+      if (nz < 2) continue;
+      const home: Vec3 = [x, y, z];
+      const { inner, pad } = foot3(home);
+      const foot = new THREE.Group();
+      foot.position.set(...pad);
+      const outward = new THREE.Vector3(...home).normalize();
+      foot.quaternion.setFromUnitVectors(up, outward);
+      const stem = new THREE.Mesh(stemGeo, plastic);
+      stem.scale.y = new THREE.Vector3(...inner).distanceTo(new THREE.Vector3(...pad)) + 0.15;
+      const padMesh = new THREE.Mesh(nz === 3 ? cornerPadGeo : edgePadGeo, plastic);
+      foot.add(stem, padMesh);
+      foot.visible = false;
+      this.addPiece(foot, new THREE.Vector3(x, y, z));
+      feet.push(foot);
+    }
+    this.mech = { group, caps: movers, feet };
+  }
+
   /** Guide lines from each piece back to its home slot, ghost outlines of the slots, and a floor grid. */
   private buildExplodeFx() {
     const group = new THREE.Group();
@@ -326,7 +396,9 @@ export class CubeView {
       this.mech.group.visible = show;
       for (const f of this.mech.feet) f.visible = show;
       for (const c of this.mech.caps) {
-        const [x, y, z] = capPosition(c.dir, this.explode.amount(0));
+        const a = this.explode.amount(0);
+        if (c.dist) { const d = c.dist(a); c.obj.position.set(c.dir[0] * d, c.dir[1] * d, c.dir[2] * d); continue; }
+        const [x, y, z] = capPosition(c.dir, a);
         c.obj.position.set(x, y, z);
       }
     }
