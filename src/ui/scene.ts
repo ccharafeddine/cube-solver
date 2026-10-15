@@ -185,6 +185,8 @@ export class CubeView {
       const mesh = new THREE.Mesh(geo, mat);
       if (!pillowed) place.decompose(mesh.position, mesh.quaternion, mesh.scale);
       mesh.userData.sticker = i;
+      // Where the sticker sits on the cube (root space). Pillowed stickers are baked at the origin, so their position cannot say.
+      mesh.userData.centre = at;
       this.stickerMeshes.push(mesh);
       this.addPiece(mesh, new THREE.Vector3(st.pos[0], st.pos[1], st.pos[2]));
     });
@@ -654,14 +656,17 @@ export class CubeView {
     const ndc = new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
     const ray = new THREE.Raycaster();
     ray.setFromCamera(ndc, this.camera);
-    const hit = ray.intersectObjects(this.root.children, false)[0];
+    // Hidden objects (feet, guide lines while assembled) still take raycasts in three.js: skip them,
+    // or a ray can land inside the cube and pick a sticker on another face.
+    const hit = ray.intersectObjects(this.root.children, false).find((h) => h.object.visible && !(h.object as THREE.Line).isLine);
     if (!hit) return null;
     if (hit.object.userData.sticker !== undefined) return hit.object.userData.sticker as number;
     // Hit the black plastic between stickers: use the nearest sticker, so
     // grabbing a seam still turns a layer instead of spinning the camera.
     let best: number | null = null, bestD = Infinity;
+    const local = this.root.worldToLocal(hit.point.clone());
     for (const m of this.stickerMeshes) {
-      const d = m.getWorldPosition(new THREE.Vector3()).distanceToSquared(hit.point);
+      const d = (m.userData.centre as THREE.Vector3).distanceToSquared(local);
       if (d < bestD) { bestD = d; best = m.userData.sticker as number; }
     }
     return best;
