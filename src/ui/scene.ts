@@ -44,6 +44,8 @@ export class CubeView {
     this.controls.enableDamping = true;
     this.controls.minDistance = 4;
     this.controls.maxDistance = 14;
+    // Right-drag always spins the view (panning is off, so the right button is free).
+    this.controls.mouseButtons.RIGHT = THREE.MOUSE.ROTATE;
     this.scene.add(this.root, new THREE.AmbientLight(0xffffff, 2.2));
     const sun = new THREE.DirectionalLight(0xffffff, 1.2);
     sun.position.set(5, 8, 6);
@@ -213,6 +215,18 @@ export class CubeView {
   }
 
   /** Grid coordinates -> screen pixels (relative to the canvas). */
+  /** Spin the camera around the cube by a screen drag (used by Shift-drag). */
+  orbitBy(dx: number, dy: number) {
+    const el = this.renderer.domElement;
+    const k = (2 * Math.PI) / Math.max(1, el.clientHeight);
+    const offset = this.camera.position.clone().sub(this.controls.target);
+    const sph = new THREE.Spherical().setFromVector3(offset);
+    sph.theta -= dx * k;
+    sph.phi = Math.min(Math.PI - 0.05, Math.max(0.05, sph.phi - dy * k));
+    this.camera.position.copy(this.controls.target).add(new THREE.Vector3().setFromSpherical(sph));
+    this.camera.lookAt(this.controls.target);
+  }
+
   private project = (p: Vec3): [number, number] => {
     const v = new THREE.Vector3(...p).applyMatrix4(this.root.matrixWorld).project(this.camera);
     const el = this.renderer.domElement;
@@ -230,7 +244,19 @@ export class CubeView {
     const host = this.host;
     let start: { x: number; y: number; sticker: number; id: number } | null = null;
     let turned = false;
+    let orbit: { x: number; y: number; id: number } | null = null;
     host.addEventListener('pointerdown', (e) => {
+      // Overlays inside the viewport (buttons, cards) handle their own clicks.
+      if (e.target !== this.renderer.domElement) return;
+      // Right-drag: leave it to OrbitControls, which spins the view even over stickers.
+      if (e.button === 2) return;
+      // Shift-drag: spin the view from anywhere, even starting on a sticker.
+      if (e.shiftKey && e.button === 0 && e.pointerType === 'mouse') {
+        e.stopPropagation();
+        orbit = { x: e.clientX, y: e.clientY, id: e.pointerId };
+        host.setPointerCapture(e.pointerId);
+        return;
+      }
       const sticker = this.hitSticker(e);
       if (sticker === null) return; // background: let OrbitControls orbit
       e.stopPropagation();
@@ -239,6 +265,12 @@ export class CubeView {
       host.setPointerCapture(e.pointerId);
     }, { capture: true });
     host.addEventListener('pointermove', (e) => {
+      if (orbit && orbit.id === e.pointerId) {
+        e.stopPropagation();
+        this.orbitBy(e.clientX - orbit.x, e.clientY - orbit.y);
+        orbit.x = e.clientX; orbit.y = e.clientY;
+        return;
+      }
       if (!start || start.id !== e.pointerId) {
         if (e.buttons === 0) this.renderer.domElement.style.cursor = this.hitSticker(e) !== null ? (this.paintMode ? 'crosshair' : 'grab') : 'default';
         return;
@@ -255,12 +287,13 @@ export class CubeView {
       }
     }, { capture: true });
     const end = (e: PointerEvent) => {
+      if (orbit && orbit.id === e.pointerId) { orbit = null; e.stopPropagation(); return; }
       if (!start || start.id !== e.pointerId) return;
       e.stopPropagation();
       if (!turned && Math.hypot(e.clientX - start.x, e.clientY - start.y) < 8) this.onStickerClick(start.sticker);
       start = null;
     };
     host.addEventListener('pointerup', end, { capture: true });
-    host.addEventListener('pointercancel', () => { start = null; }, { capture: true });
+    host.addEventListener('pointercancel', () => { start = null; orbit = null; }, { capture: true });
   }
 }
