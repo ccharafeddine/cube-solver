@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { fitDistance, cubeRadius, along, MARGIN, CUBE_SIZE, MIN_ZOOM, safeDistance } from './framing';
+import { fitDistance, cubeRadius, along, MARGIN, geometryHalf, safeDistance } from './framing';
 import { DEFAULT_CAMERA } from '../cube/orient';
 
 /** Does a sphere at the origin fit, seen from distance d? Check every edge of the frustum. */
@@ -34,22 +34,24 @@ describe('framing', () => {
 });
 
 describe('closest zoom', () => {
-  const half = CUBE_SIZE / 2 + 0.02;
-  it('head-on lets the camera come to about 0.8 of the bounding radius, well outside the face', () => {
+  const R = cubeRadius();
+  it('head-on reaches about 0.8R, still outside the face', () => {
     const d = safeDistance([0, 0, 1]);
-    expect(d).toBeCloseTo(MIN_ZOOM * cubeRadius());
-    expect(d - half).toBeGreaterThan(0.15);
+    expect(d).toBeLessThanOrEqual(0.8 * R + 1e-9);
+    expect(d).toBeGreaterThan(geometryHalf() + 0.01);
   });
-  it('on a diagonal it stays outside the corner, with room for the near plane', () => {
+  it('the default diagonal view comes clearly closer than the old 1.05R limit', () => {
+    for (const n of [2, 3, 4, 7]) expect(safeDistance(DEFAULT_CAMERA as [number, number, number], n)).toBeLessThan(1.0 * R);
+    expect(safeDistance([1, 1, 1])).toBeLessThan(1.05 * R);
+  });
+  it('never passes the real corner on any direction', () => {
     for (const dir of [[1, 1, 1], [-1, 1, -1], [1, 1, 0], [2, 1, 0.5]] as [number, number, number][]) {
-      const d = safeDistance(dir);
       const len = Math.hypot(...dir);
-      const support = (half * dir.reduce((a, v) => a + Math.abs(v), 0)) / len;
-      expect(d).toBeGreaterThanOrEqual(support + 0.2 - 1e-9);
+      const support = (geometryHalf() * dir.reduce((a, v) => a + Math.abs(v), 0)) / len;
+      expect(safeDistance(dir)).toBeGreaterThanOrEqual(support + 0.02 - 1e-9);
     }
-    expect(safeDistance([1, 1, 1])).toBeCloseTo(cubeRadius() - 0.02 * Math.sqrt(3) + 0.2 + 0.02 * Math.sqrt(3), 1);
   });
   it('scales out for the exploded view', () => {
-    expect(safeDistance([1, 1, 1], undefined, 0.2, 2)).toBeGreaterThan(safeDistance([1, 1, 1]) * 1.8);
+    expect(safeDistance([1, 1, 1], 3, 0.02, 2)).toBeGreaterThan(safeDistance([1, 1, 1]) * 1.8);
   });
 });

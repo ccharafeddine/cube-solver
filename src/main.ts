@@ -65,6 +65,8 @@ let pendingScramble = false;
 let followingSolution = false;
 
 const view = new CubeView($('viewport'));
+// Dev-only handle for browser checks (zoom limits, framing).
+if (import.meta.env.DEV) (window as unknown as { __view: CubeView }).__view = view;
 const net = new NetEditor($('net'));
 
 const fromUrl = fromHash(location.hash);

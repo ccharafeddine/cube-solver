@@ -25,7 +25,7 @@ interface Piece { mesh: THREE.Object3D; grid: THREE.Vector3; home: THREE.Matrix4
 export class CubeView {
   private renderer: THREE.WebGLRenderer;
   private scene = new THREE.Scene();
-  private camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+  private camera = new THREE.PerspectiveCamera(35, 1, 0.01, 100);
   private controls: OrbitControls;
   private root = new THREE.Group();
   private pieces: Piece[] = [];
@@ -116,11 +116,14 @@ export class CubeView {
    * exploded (camera zoom already pulls the picture back, so scale the box by
    * the live explode extent).
    */
+  /** Camera distance from the orbit target (for checks and tests). */
+  get cameraDistance() { return this.camera.position.distanceTo(this.controls.target); }
+
   private clampZoom() {
     const off = this.camera.position.clone().sub(this.controls.target);
     const d = off.length();
     const scale = 1 + (explodeExtent(this.n) - 1) * this.lastAmount;
-    const safe = safeDistance([off.x, off.y, off.z], undefined, 0.2, scale);
+    const safe = safeDistance([off.x, off.y, off.z], this.n, 0.02, scale);
     if (d < safe) this.camera.position.copy(this.controls.target).add(off.multiplyScalar(safe / d));
   }
 
