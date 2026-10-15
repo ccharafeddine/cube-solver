@@ -6,7 +6,7 @@ export type SkinId = 'matte' | 'aero' | 'neon' | 'brutal';
 export const SKINS: SkinId[] = ['matte', 'aero', 'neon', 'brutal'];
 export type Mode = 'light' | 'dark';
 /** Which light/dark variants each skin has. Single-mode skins ignore the light/dark/system choice. */
-export const SKIN_MODES: Record<SkinId, Mode[]> = { matte: ['light', 'dark'], aero: ['light', 'dark'], neon: ['dark'], brutal: ['light'] };
+export const SKIN_MODES: Record<SkinId, Mode[]> = { matte: ['light', 'dark'], aero: ['light', 'dark'], neon: ['light', 'dark'], brutal: ['light', 'dark'] };
 export const SKIN_LABELS: Record<SkinId, string> = { matte: 'Matte', aero: 'Frutiger Aero', neon: 'Neon', brutal: 'Neubrutalism' };
 /** The look a fresh install gets: calm matte plastic on a paper-grain background. */
 export const DEFAULT_SKIN: SkinId = 'matte';
@@ -37,8 +37,8 @@ export const SCENE_SKINS: Record<SkinId, { light: SceneSkin; dark: SceneSkin }> 
       ambient: 1.4, key: 0.8, sky: '#a8dbff', skyIntensity: 0.2, rim: '#3fb5f5', rimIntensity: 1.1 },
   },
   neon: {
-    light: { body: '#08070f', bodyRoughness: 0.5, stickerRoughness: 0.3, stickerClearcoat: 0.6, stickerClearcoatRoughness: 0.2,
-      ambient: 1.2, key: 1.1, sky: '#a46bff', skyIntensity: 0.6, rim: '#38e1ff', rimIntensity: 1.6 },
+    light: { body: '#15132a', bodyRoughness: 0.45, stickerRoughness: 0.3, stickerClearcoat: 0.6, stickerClearcoatRoughness: 0.2,
+      ambient: 1.6, key: 1.0, sky: '#d9ccff', skyIntensity: 0.4, rim: '#38e1ff', rimIntensity: 1.2 },
     dark: { body: '#08070f', bodyRoughness: 0.5, stickerRoughness: 0.3, stickerClearcoat: 0.6, stickerClearcoatRoughness: 0.2,
       ambient: 1.2, key: 1.1, sky: '#a46bff', skyIntensity: 0.6, rim: '#38e1ff', rimIntensity: 1.6 },
   },
@@ -47,7 +47,7 @@ export const SCENE_SKINS: Record<SkinId, { light: SceneSkin; dark: SceneSkin }> 
     light: { body: '#000000', bodyRoughness: 1, stickerRoughness: 1, stickerClearcoat: 0, stickerClearcoatRoughness: 1,
       ambient: 3.0, key: 0.45, sky: '#ffffff', skyIntensity: 0, rim: '#ffffff', rimIntensity: 0 },
     dark: { body: '#000000', bodyRoughness: 1, stickerRoughness: 1, stickerClearcoat: 0, stickerClearcoatRoughness: 1,
-      ambient: 3.0, key: 0.45, sky: '#ffffff', skyIntensity: 0, rim: '#ffffff', rimIntensity: 0 },
+      ambient: 2.6, key: 0.5, sky: '#ffffff', skyIntensity: 0, rim: '#ffffff', rimIntensity: 0 },
   },
   matte: {
     light: { body: '#1c1b19', bodyRoughness: 0.9, stickerRoughness: 0.75, stickerClearcoat: 0, stickerClearcoatRoughness: 1,

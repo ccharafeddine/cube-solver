@@ -27,7 +27,7 @@ describe('design tokens', () => {
     }
   });
   it('the dark variant only overrides tokens that exist', () => {
-    for (const sel of [":root[data-skin='aero'][data-theme='dark']", ":root[data-skin='matte'][data-theme='dark']"]) {
+    for (const sel of [":root[data-skin='aero'][data-theme='dark']", ":root[data-skin='matte'][data-theme='dark']", ":root[data-skin='neon'][data-theme='light']", ":root[data-skin='brutal'][data-theme='dark']"]) {
       const dark = block(sel);
       expect([...dark].filter((v) => !aero.has(v))).toEqual([]);
       expect(dark.size).toBeGreaterThan(25);
@@ -60,6 +60,17 @@ describe('design tokens', () => {
     expect(contrast('#3d3d3d', '#ffffff')).toBeGreaterThan(7);
     expect(contrast('#000000', '#ffd23f')).toBeGreaterThan(7);
   });
+  it('keeps text contrast accessible in neon light and neubrutalism dark', () => {
+    expect(contrast('#14112b', '#ffffff')).toBeGreaterThan(7);
+    expect(contrast('#4a4670', '#ffffff')).toBeGreaterThan(4.5);
+    expect(contrast('#ffffff', '#077a98')).toBeGreaterThan(4.5);
+    expect(contrast('#ffffff', '#0c7a48')).toBeGreaterThan(4.5);
+    expect(contrast('#6a2fd6', '#ffffff')).toBeGreaterThan(4.5);
+    expect(contrast('#fafafa', '#222222')).toBeGreaterThan(7);
+    expect(contrast('#c8c8c8', '#222222')).toBeGreaterThan(4.5);
+    expect(contrast('#000000', '#ff5ca8')).toBeGreaterThan(4.5);
+    expect(contrast('#ffd23f', '#222222')).toBeGreaterThan(4.5);
+  });
   it('keeps text contrast accessible in matte light and dark', () => {
     expect(contrast('#22201c', '#f7f4ee')).toBeGreaterThan(7);
     expect(contrast('#6b665c', '#f7f4ee')).toBeGreaterThan(4.5);
@@ -89,10 +100,9 @@ describe('skins', () => {
     expect(pickSkin('', 'aero')).toBe('aero');
     expect(pickSkin('?skin=bogus', 'nope')).toBe('matte');
   });
-  it('single-mode skins ignore the light/dark choice', () => {
-    expect(modeFor('neon', 'light')).toBe('dark');
-    expect(modeFor('brutal', 'dark')).toBe('light');
-    expect(modeFor('matte', 'dark')).toBe('dark');
+  it('every skin offers light and dark', () => {
+    for (const s of SKINS) expect(modeFor(s, 'light')).toBe('light');
+    for (const s of SKINS) expect(modeFor(s, 'dark')).toBe('dark');
   });
   it('resolves the theme from the saved choice or the OS', () => {
     expect(resolveTheme(null, true)).toBe('dark');

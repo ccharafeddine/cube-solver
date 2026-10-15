@@ -1,7 +1,6 @@
 /*
  * Design tokens. Components (style.css) use only these variables, so a skin
- * is just a block of values. Skins: matte (default, light + dark), aero (light + dark), neon (dark),
- * brutal (light).
+ * is just a block of values. Skins: matte (default, light + dark), aero (light + dark), neon and brutal; every skin has light and dark.
  * The 3D scene's matching parameters live in skins.ts.
  *
  * Every skin block must define the same set of variables; a unit test
@@ -181,7 +180,7 @@
   color-scheme: dark;
 }
 
-/* ---------- Neon futuristic, dark only: deep surfaces, glowing edges, faint grid ---------- */
+/* ---------- Neon futuristic, dark: deep surfaces, glowing edges, faint grid ---------- */
 :root[data-skin='neon'] {
   --border-w: 1px;
   --font: 'Segoe UI', 'Noto Sans', system-ui, sans-serif;
@@ -230,7 +229,46 @@
 }
 
 
-/* ---------- Neubrutalism, light only: flat colour, thick black outlines, hard offset shadows ---------- */
+/* ---------- Neon, light: bright clean surfaces, glowing cyan/violet edges, faint grid ---------- */
+:root[data-skin='neon'][data-theme='light'] {
+  --text: #14112b; --text-muted: #4a4670; --text-on-accent: #ffffff; --link: #6a2fd6;
+  --accent: #0a8fb0; --accent-2: #7a3ff0; --accent-green: #0f8a52; --accent-soft: rgb(10 143 176 / 0.12);
+  --good: #0f7a48; --bad: #c4124a;
+  --line: rgb(122 63 240 / 0.22);
+  --bg: #f4f6ff;
+  --bg-image: radial-gradient(ellipse at 50% -10%, #e6e0ff, transparent 60%),
+    repeating-linear-gradient(0deg, rgb(10 143 176 / 0.07) 0 1px, transparent 1px 48px),
+    repeating-linear-gradient(90deg, rgb(10 143 176 / 0.07) 0 1px, transparent 1px 48px),
+    linear-gradient(180deg, #f8f9ff, #eef0fb);
+  --surface: rgb(255 255 255 / 0.9);
+  --surface-solid: #ffffff;
+  --surface-2: #f2f3fc;
+  --surface-border: rgb(10 170 210 / 0.55);
+  --surface-edge: rgb(122 63 240 / 0.15);
+  --surface-highlight: inset 0 1px 0 rgb(255 255 255 / 0.9);
+  --header-bg: rgb(255 255 255 / 0.88);
+  --btn-bg: #ffffff;
+  --btn-bg-hover: #eefbff;
+  --btn-border: rgb(10 170 210 / 0.6);
+  --btn-text: #14112b;
+  --btn-primary-bg: linear-gradient(180deg, #0886a6, #077a98);
+  --btn-primary-hover: linear-gradient(180deg, #0a90b2, #0880a0);
+  --btn-primary-border: #38e1ff;
+  --btn-green-bg: linear-gradient(180deg, #0f8650, #0c7a48);
+  --btn-green-border: #4dff9a;
+  --btn-shadow: 0 0 10px rgb(56 225 255 / 0.35);
+  --btn-press-shadow: inset 0 0 8px rgb(122 63 240 / 0.3);
+  --shadow-1: 0 0 14px rgb(56 225 255 / 0.28), 0 0 1px rgb(164 107 255 / 0.8), 0 8px 24px rgb(40 30 90 / 0.08);
+  --shadow-pop: 0 0 30px rgb(164 107 255 / 0.3), 0 20px 50px rgb(40 30 90 / 0.18);
+  --focus: 0 0 0 2px #ffffff, 0 0 0 4px #7a3ff0;
+  --viewport-bg: radial-gradient(circle at 50% 40%, #ffffff, #e8ebfb 78%),
+    repeating-linear-gradient(0deg, rgb(10 143 176 / 0.08) 0 1px, transparent 1px 32px), repeating-linear-gradient(90deg, rgb(10 143 176 / 0.08) 0 1px, transparent 1px 32px);
+  --spot-dim: rgb(20 17 43 / 0.55);
+  --dialog-backdrop: rgb(20 17 43 / 0.3);
+  color-scheme: light;
+}
+
+/* ---------- Neubrutalism, light: flat colour, thick black outlines, hard offset shadows ---------- */
 :root[data-skin='brutal'] {
   --border-w: 3px;
   --font: 'Segoe UI', 'Arial Black', system-ui, sans-serif;
@@ -272,6 +310,40 @@
   --texture: none;
   --swatch-gloss: none;
   color-scheme: light;
+}
+
+/* ---------- Neubrutalism, dark: dark surfaces, thick light outlines, hard shadows in cube colours ---------- */
+:root[data-skin='brutal'][data-theme='dark'] {
+  --text: #fafafa; --text-muted: #c8c8c8; --text-on-accent: #000000; --link: #ffd23f;
+  --accent: #ff5ca8; --accent-2: #4dd2ff; --accent-green: #3ddc84; --accent-soft: rgb(255 92 168 / 0.2);
+  --good: #3ddc84; --bad: #ff6b6b;
+  --line: #fafafa;
+  --bg: #161616;
+  --bg-image: linear-gradient(#161616, #161616);
+  --surface: #222222;
+  --surface-solid: #222222;
+  --surface-2: #1a1a1a;
+  --surface-border: #fafafa;
+  --header-bg: #2b2b2b;
+  --btn-bg: #2b2b2b;
+  --btn-bg-hover: #3a3a3a;
+  --btn-border: #fafafa;
+  --btn-text: #fafafa;
+  --btn-primary-bg: #ff5ca8;
+  --btn-primary-hover: #ff7ab9;
+  --btn-primary-border: #fafafa;
+  --btn-green-bg: #3ddc84;
+  --btn-green-border: #fafafa;
+  --btn-shadow: 3px 3px 0 #ffd23f;
+  --btn-press-shadow: 0 0 0 #ffd23f;
+  --shadow-1: 5px 5px 0 #ff5ca8;
+  --shadow-pop: 8px 8px 0 #4dd2ff;
+  --focus: 0 0 0 3px #161616, 0 0 0 6px #ffd23f;
+  --viewport-bg: #1f3a4a;
+  --viewport-exploded-bg: #0d0d0d;
+  --spot-dim: rgb(0 0 0 / 0.7);
+  --dialog-backdrop: rgb(0 0 0 / 0.6);
+  color-scheme: dark;
 }
 
 /* Reduced transparency: solid surfaces, no blur. */

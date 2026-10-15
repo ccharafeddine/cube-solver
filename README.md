@@ -213,10 +213,10 @@ There are four themes. Pick one with the palette button in the header, or with *
 |---|---|---|
 | **Matte** (default) | Light, dark | Calm paper-grain background, flat solid panels, soft light, matte stickers |
 | **Frutiger Aero** | Light, dark | Glossy sky glass, bubbles and gel buttons |
-| **Neon** | Dark only | Deep surfaces, glowing cyan edges and a faint grid; pairs with the exploded view's glow lines |
-| **Neubrutalism** | Light only | Flat bold colours, thick black outlines and hard offset shadows |
+| **Neon** | Light, dark | Dark: deep surfaces, glowing cyan edges and a faint grid that pair with the exploded view's glow lines. Light: bright clean surfaces with the same glowing cyan/violet edges and grid |
+| **Neubrutalism** | Light, dark | Flat bold colours and thick outlines with hard offset shadows: black on cream in light, light outlines with shadows in cube colours on charcoal in dark |
 
-Light, Dark or System (follow the OS) applies to themes that have both; single-mode themes grey the switch out and say why. `?skin=neon` (or `matte`, `aero`, `brutal`) previews a theme without saving it. Every theme defines every token, which a test checks. Under reduced transparency, panels become solid and blur is turned off; reduced motion also removes the Neubrutalism press nudge. Contrast is checked in tests to meet WCAG AA for body text, muted text and text on buttons in every theme. Selects and their native option lists take solid colours from the theme so they stay readable on Windows.
+Every theme has light and dark, each with its own 3D lighting and plastic. Light, Dark or System applies to all of them; System follows the OS setting live, without a reload. `?skin=neon` (or `matte`, `aero`, `brutal`) previews a theme without saving it. Every theme defines every token, which a test checks. Under reduced transparency, panels become solid and blur is turned off; reduced motion also removes the Neubrutalism press nudge. Contrast is checked in tests to meet WCAG AA for body text, muted text and text on buttons in every theme. Selects and their native option lists take solid colours from the theme so they stay readable on Windows.
 
 <p align="center"><img src="docs/screenshot-theme-picker.png" width="700" alt="The Appearance picker with swatch previews of the four themes" /></p>
 <p align="center"><img src="docs/screenshot-brutal.png" width="700" alt="The Neubrutalism theme: flat colour, thick outlines, hard shadows" /></p>
