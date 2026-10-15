@@ -181,8 +181,7 @@ The dots across the top jump to any lesson, and **Show again** repeats the demon
 | **Import / export** tab | Import a facelet string, JSON or moves; copy facelets, JSON, the solution or a share link; download `.json` |
 | **?** | Shortcut sheet, with a link to the Tutorial menu |
 | **🎓** | Tutorial menu: notation lessons, quiz and app tour (resume or replay) |
-| **◐** | Light/dark theme |
-| **⟳** | Check for updates |
+| **⚙** | Settings: theme and light/dark/system, Check for updates, and About (the version). <kbd>Esc</kbd> closes it |
 
 **Facelet string format:** 54 letters (24 for the 2x2), one per sticker, faces in the order U, R, F, D, L, B, each read row by row as on the unfolded net, using the face letters as colours. A solved 3x3 is `UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB`. Share links use the same string: `#n=3&f=<facelets>`.
 
@@ -226,7 +225,7 @@ The look is built in two layers:
 | Components | `src/style.css` | Panels, buttons, tabs, toggles, dialogs, tour and coach cards. These read tokens only (a test fails if they use an undeclared one) |
 | Scene | `src/theme/skins.ts` | The 3D side of each skin: plastic colour and roughness, sticker clear-coat gloss, and ambient, key, sky and rim lights for light and dark |
 
-There are four themes. Pick one with the palette button in the header, or with **Appearance…** in the help menu. The choice applies instantly and is saved (`cube-solver-skin` and `cube-solver-theme` in `localStorage`).
+There are four themes. Pick one in **Settings** (the gear at the top right), or with **Settings…** in the help menu. Settings also holds Check for updates and the version (About). The choice applies instantly and is saved (`cube-solver-skin` and `cube-solver-theme` in `localStorage`).
 
 | Theme | Modes | Look |
 |---|---|---|

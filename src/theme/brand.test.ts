@@ -18,4 +18,11 @@ describe('brand', () => {
     const h1 = /<h1>([\s\S]*?)<\/h1>/.exec(html)![1];
     expect(h1).not.toMatch(/version|v\d/);
   });
+  it('one gear opens Settings, which holds the theme, mode, update check and version', () => {
+    const header = /<header>([\s\S]*?)<\/header>/.exec(html)![1];
+    expect(header).toContain('id="settings"');
+    expect(header).not.toMatch(/id="(theme|check-update)"/);
+    const dlg = /<dialog id="settings-dialog"[\s\S]*?<\/dialog>/.exec(html)![0];
+    for (const id of ['theme-skins', 'theme-modes', 'check-update', 'version', 'settings-close']) expect(dlg).toContain(`id="${id}"`);
+  });
 });

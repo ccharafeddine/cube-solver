@@ -27,8 +27,7 @@
       <div class="hdr-icons">
         <button id="tutorial" class="icon" aria-label="Tutorial: notation lessons and app tour" title="Tutorial"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/><path d="M22 9v6"/></svg></button>
         <button id="help" class="icon" aria-label="Keyboard shortcuts and help" title="Shortcuts and help (?)"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M9.3 9.2a2.8 2.8 0 0 1 5.4 1c0 1.9-2.7 2.3-2.7 4"/><circle cx="12" cy="17.3" r=".6" fill="currentColor"/></svg></button>
-        <button id="theme" class="icon" aria-label="Theme and appearance" title="Theme" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18c1.2 0 1.8-.9 1.8-1.8 0-1.2-.9-1.6-.9-2.6 0-1 .8-1.6 1.8-1.6H17a4 4 0 0 0 4-4C21 6.6 17 3 12 3z"/><circle cx="7.5" cy="11" r="1.2" fill="currentColor"/><circle cx="10" cy="7" r="1.2" fill="currentColor"/><circle cx="15" cy="7.5" r="1.2" fill="currentColor"/></svg></button>
-        <button id="check-update" class="icon" aria-label="Check for updates" title="Check for updates"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 0 1-14.3 4.9"/><path d="M4 12a8 8 0 0 1 14.3-4.9"/><path d="M18.5 3v4.2h-4.2"/><path d="M5.5 21v-4.2h4.2"/></svg></button>
+        <button id="settings" class="icon" aria-label="Settings: theme, updates and about" title="Settings" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
       </div>
     </header>
     <main>
@@ -111,8 +110,9 @@
         </div>
       </section>
     </main>
-    <dialog id="theme-dialog" aria-labelledby="theme-title">
-      <h2 id="theme-title">Appearance</h2>
+    <dialog id="settings-dialog" aria-labelledby="settings-title">
+      <h2 id="settings-title">Settings</h2>
+      <h3>Appearance</h3>
       <div id="theme-skins" class="skin-grid" role="radiogroup" aria-label="Theme"></div>
       <div class="row mode-row"><span id="mode-label">Mode</span>
         <div class="group" id="theme-modes" role="radiogroup" aria-labelledby="mode-label">
@@ -120,8 +120,11 @@
         </div>
       </div>
       <p id="theme-mode-note" class="muted"></p>
-      <p class="muted about">Cube Solver <span id="version"></span></p>
-      <div class="row"><button id="theme-close" class="primary">Done</button></div>
+      <h3>Updates</h3>
+      <div class="row"><button id="check-update">Check for updates</button><span id="update-msg" class="muted" aria-live="polite"></span></div>
+      <h3>About</h3>
+      <p class="about">Cube Solver <span id="version" class="mono"></span>. Solves 2x2 to 7x7 cubes, with ranked next moves and step-by-step methods. Works offline.</p>
+      <div class="row"><button id="settings-close" class="primary">Done</button></div>
     </dialog>
     <dialog id="help-dialog" aria-labelledby="help-title">
       <h2 id="help-title">Controls and shortcuts</h2>
@@ -143,7 +146,7 @@
         <tr><td><kbd>?</kbd></td><td>This help</td></tr>
       </table>
       <p class="muted">Moves are counted in quarter turns: a half turn like U2 counts as two.</p>
-      <div class="row"><button id="tour">Tutorial…</button><button id="help-appearance">Appearance…</button><button id="help-close" class="primary">Close</button></div>
+      <div class="row"><button id="tour">Tutorial…</button><button id="help-appearance">Settings…</button><button id="help-close" class="primary">Close</button></div>
     </dialog>
     <dialog id="tutorial-dialog" aria-labelledby="tut-title">
       <h2 id="tut-title">Tutorial</h2>

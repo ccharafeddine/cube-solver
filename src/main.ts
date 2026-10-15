@@ -680,7 +680,7 @@ window.addEventListener('hashchange', () => { const f = fromHash(location.hash);
 window.addEventListener('keydown', (e) => {
   const tag = (e.target as HTMLElement).tagName;
   if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-  if ($<HTMLDialogElement>('help-dialog').open || $<HTMLDialogElement>('tutorial-dialog').open || $<HTMLDialogElement>('theme-dialog').open) return;
+  if ($<HTMLDialogElement>('help-dialog').open || $<HTMLDialogElement>('tutorial-dialog').open || $<HTMLDialogElement>('settings-dialog').open) return;
   if (tutorial.capturesKeys) return;
   const k = e.key;
   if ((e.ctrlKey || e.metaKey) && k.toLowerCase() === 'z') { e.preventDefault(); return e.shiftKey ? redo() : undo(); }
@@ -803,13 +803,18 @@ document.querySelectorAll<HTMLButtonElement>('#theme-modes button').forEach((b) 
 });
 darkQuery.addEventListener('change', applyTheme);
 applyTheme();
-const openTheme = () => $<HTMLDialogElement>('theme-dialog').showModal();
-$('theme').onclick = openTheme;
-$('help-appearance').onclick = () => { $<HTMLDialogElement>('help-dialog').close(); openTheme(); };
-$('theme-close').onclick = () => $<HTMLDialogElement>('theme-dialog').close();
+// Settings: theme, light/dark, updates and About in one dialog (native <dialog>: Esc closes, focus stays inside).
+const settingsDialog = $<HTMLDialogElement>('settings-dialog');
+const openSettings = () => settingsDialog.showModal();
+$('settings').onclick = openSettings;
+$('help-appearance').onclick = () => { $<HTMLDialogElement>('help-dialog').close(); openSettings(); };
+$('settings-close').onclick = () => settingsDialog.close();
+// A click on the backdrop (outside the panel) closes it too.
+settingsDialog.addEventListener('click', (e) => { if (e.target === settingsDialog) settingsDialog.close(); });
 
 // ---------- update check ----------
 async function runUpdateCheck(manual: boolean) {
+  if (manual) $('update-msg').textContent = 'Checking…';
   const r = await checkForUpdate(__APP_VERSION__);
   const el = $('update-banner');
   if (r.kind === 'available') {
@@ -822,7 +827,9 @@ async function runUpdateCheck(manual: boolean) {
     a.onclick = (ev) => { ev.preventDefault(); void openExternal(r.url); };
     el.append(a);
     el.classList.remove('hidden');
+    $('update-msg').textContent = `Version ${r.latest} is available.`;
   } else if (manual) {
+    $('update-msg').textContent = r.kind === 'current' ? `Up to date (v${__APP_VERSION__}).` : `Could not check: ${r.message}.`;
     el.textContent = r.kind === 'current' ? `You have the latest version (v${__APP_VERSION__}).` : `Could not check for updates: ${r.message}.`;
     el.classList.remove('hidden');
     setTimeout(() => el.classList.add('hidden'), 5000);
