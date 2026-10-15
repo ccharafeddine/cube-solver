@@ -9,6 +9,7 @@
 
 /* ---------- Matte textured, light (default): paper grain, soft light ---------- */
 :root, :root[data-skin='matte'] {
+  --select-bg: #f7f4ee; --select-text: #22201c; --select-hover-bg: #ebe4d6; --select-hover-text: #22201c;
   /* Corners: small, crafted radii with a hairline double-line edge. */
   --corner-panel: 4px; --corner-card: 3px; --corner-control: 3px; --corner-chip: 2px;
   --corner-control-start: 3px 0 0 3px; --corner-control-end: 0 3px 3px 0;
@@ -59,6 +60,7 @@
 
 /* ---------- Matte textured, dark ---------- */
 :root[data-skin='matte'][data-theme='dark'] {
+  --select-bg: #2c2a26; --select-text: #ece6da; --select-hover-bg: #3a3631; --select-hover-text: #ece6da;
   --text: #ece6da; --text-muted: #b0a898; --text-on-accent: #1a1712; --link: #e8a35e;
   --accent: #d98a3d; --accent-2: #e8a35e; --accent-green: #8fb35f; --accent-soft: rgb(217 138 61 / 0.16);
   --good: #9cc46a; --bad: #ff8a7a;
@@ -94,6 +96,7 @@
 
 /* ---------- Frutiger Aero, light ---------- */
 :root[data-skin='aero'] {
+  --select-bg: #ffffff; --select-text: #0d2a3f; --select-hover-bg: #dcefff; --select-hover-text: #0d2a3f;
   /* Corners: soft radius on the top corners only, tighter at the bottom, with a gloss band. */
   --corner-panel: 20px 20px 6px 6px; --corner-card: 16px 16px 5px 5px; --corner-control: 12px 12px 5px 5px; --corner-chip: 999px;
   --corner-control-start: 12px 0 0 5px; --corner-control-end: 0 12px 5px 0;
@@ -152,6 +155,7 @@
 /* ---------- Frutiger Aero, dark: night-sky glass, same gloss ----------
  * main.ts always sets data-theme (from the saved choice or the OS setting). */
 :root[data-skin='aero'][data-theme='dark'] {
+  --select-bg: #164a6e; --select-text: #e6f5ff; --select-hover-bg: #215f8a; --select-hover-text: #ffffff;
   --corner-art: linear-gradient(180deg, rgb(190 235 255 / 0.16), rgb(190 235 255 / 0) 26px);
   --text: #e6f5ff; --text-muted: #9cc2db; --text-on-accent: #ffffff; --link: #7fd0ff;
   --accent: #3fb5f5; --accent-2: #1a8fd6; --accent-green: #5fd77a; --accent-soft: rgb(63 181 245 / 0.18);
@@ -195,6 +199,7 @@
 
 /* ---------- Neon futuristic, dark: deep surfaces, glowing edges, faint grid ---------- */
 :root[data-skin='neon'] {
+  --select-bg: #13102a; --select-text: #e9e6ff; --select-hover-bg: #231d4a; --select-hover-text: #ffffff;
   /* Corners: chamfered top-left and bottom-right, with a glowing line along each cut and an inner glow. */
   --corner-panel: 0; --corner-card: 0; --corner-control: 2px; --corner-chip: 2px;
   --corner-control-start: 2px 0 0 2px; --corner-control-end: 0 2px 2px 0;
@@ -251,6 +256,7 @@
 
 /* ---------- Neon, light: bright clean surfaces, glowing cyan/violet edges, faint grid ---------- */
 :root[data-skin='neon'][data-theme='light'] {
+  --select-bg: #ffffff; --select-text: #14112b; --select-hover-bg: #e3f8ff; --select-hover-text: #14112b;
   --text: #14112b; --text-muted: #4a4670; --text-on-accent: #ffffff; --link: #6a2fd6;
   --accent: #0a8fb0; --accent-2: #7a3ff0; --accent-green: #0f8a52; --accent-soft: rgb(10 143 176 / 0.12);
   --good: #0f7a48; --bad: #c4124a;
@@ -290,6 +296,7 @@
 
 /* ---------- Neubrutalism, light: flat colour, thick black outlines, hard offset shadows ---------- */
 :root[data-skin='brutal'] {
+  --select-bg: #ffffff; --select-text: #000000; --select-hover-bg: #fff1b8; --select-hover-text: #000000;
   /* Corners: nearly square, heavy outline and offset shadow do the work. */
   --corner-panel: 2px; --corner-card: 2px; --corner-control: 2px; --corner-chip: 0;
   --corner-control-start: 2px 0 0 2px; --corner-control-end: 0 2px 2px 0;
@@ -340,6 +347,7 @@
 
 /* ---------- Neubrutalism, dark: dark surfaces, thick light outlines, hard shadows in cube colours ---------- */
 :root[data-skin='brutal'][data-theme='dark'] {
+  --select-bg: #2b2b2b; --select-text: #fafafa; --select-hover-bg: #3d3d3d; --select-hover-text: #ffffff;
   --text: #fafafa; --text-muted: #c8c8c8; --text-on-accent: #000000; --link: #ffd23f;
   --accent: #ff5ca8; --accent-2: #4dd2ff; --accent-green: #3ddc84; --accent-soft: rgb(255 92 168 / 0.2);
   --good: #3ddc84; --bad: #ff6b6b;

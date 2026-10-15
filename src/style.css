@@ -44,7 +44,7 @@ button, select {
   padding: 6px 14px; cursor: pointer; box-shadow: var(--btn-shadow), inset 0 1px 0 rgb(255 255 255 / 0.6);
   transition: background 0.15s, box-shadow 0.15s, transform 0.08s, filter 0.15s;
 }
-button:hover:not(:disabled), select:hover { background: var(--btn-bg-hover); }
+button:hover:not(:disabled) { background: var(--btn-bg-hover); }
 button:active:not(:disabled) { transform: translateY(1px); box-shadow: var(--btn-press-shadow); }
 button:disabled { opacity: 0.45; cursor: default; filter: saturate(0.4); }
 button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visible { outline: none; box-shadow: var(--focus); }
@@ -61,10 +61,12 @@ button.icon { width: 36px; height: 36px; padding: 0; border-radius: 50%; display
 button.icon svg { width: 19px; height: 19px; }
 button.link { background: none; border: none; box-shadow: none; color: var(--link); text-decoration: underline; padding: 6px 4px; }
 button.link::after { display: none; }
-select { padding-right: 28px; appearance: none; color: var(--btn-text); background-color: var(--surface-solid);
-  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%), var(--btn-bg);
-  background-position: calc(100% - 15px) 55%, calc(100% - 10px) 55%, 0 0; background-size: 5px 5px, 5px 5px, 100% 100%; background-repeat: no-repeat; }
-select:hover { background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%), var(--btn-bg-hover); }
+/* Every select has its own tokens for each state, so generic button hover and gloss rules never touch it. */
+select { padding-right: 28px; appearance: none; color: var(--select-text); background-color: var(--select-bg);
+  --chev: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-image: var(--chev); background-position: calc(100% - 15px) 55%, calc(100% - 10px) 55%; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat; }
+select:hover, select:focus-visible, select:active, select:focus { color: var(--select-hover-text); background-color: var(--select-hover-bg);
+  background-image: var(--chev); background-position: calc(100% - 15px) 55%, calc(100% - 10px) 55%; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat; }
 .group { display: flex; border-radius: var(--corner-control); box-shadow: var(--btn-shadow); }
 .group button { border-radius: 0; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.5); }
 .group button + button { border-left: none; }

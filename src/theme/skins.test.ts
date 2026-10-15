@@ -4,6 +4,7 @@ import { SKINS, SCENE_SKINS, pickSkin, resolveTheme, DEFAULT_SKIN, modeFor } fro
 
 const css = readFileSync(new URL('./tokens.css', import.meta.url), 'utf-8');
 const style = readFileSync(new URL('../style.css', import.meta.url), 'utf-8');
+const html = readFileSync(new URL('../../index.html', import.meta.url), 'utf-8');
 
 /** Variables declared in the first rule whose selector contains `sel`. */
 function block(sel: string): Set<string> {
@@ -35,7 +36,7 @@ describe('design tokens', () => {
   });
   it('components use only declared tokens', () => {
     const used = new Set([...style.matchAll(/var\((--[a-z0-9-]+)/g)].map((m) => m[1]));
-    const declared = new Set([...aero, '--n', '--s']);
+    const declared = new Set([...aero, '--n', '--s', '--chev']);
     expect([...used].filter((v) => !declared.has(v))).toEqual([]);
   });
   it('panels, cards, controls and chips take their corners from the theme', () => {
@@ -43,6 +44,29 @@ describe('design tokens', () => {
     expect(style).toMatch(/\.card \{[^}]*border-radius: var\(--corner-card\)/);
     expect(style).toMatch(/border-radius: var\(--corner-control\)/);
     for (const t of ['--corner-panel', '--corner-card', '--corner-control', '--corner-chip', '--edge-detail', '--corner-art', '--panel-clip']) expect(aero.has(t), t).toBe(true);
+  });
+  it('every select stays AA-readable at rest and on hover, focus and active in all 8 variants', () => {
+    const val = (sel: string, name: string): string | undefined => {
+      const i = css.indexOf(sel); const open = css.indexOf('{', i), close = css.indexOf('\n}', open);
+      return css.slice(open, close).match(new RegExp(name + ':\\s*(#[0-9a-f]{6})'))?.[1];
+    };
+    const variants = [":root, :root[data-skin='matte'] {", ":root[data-skin='matte'][data-theme='dark'] {",
+      ":root[data-skin='aero'] {", ":root[data-skin='aero'][data-theme='dark'] {",
+      ":root[data-skin='neon'] {", ":root[data-skin='neon'][data-theme='light'] {",
+      ":root[data-skin='brutal'] {", ":root[data-skin='brutal'][data-theme='dark'] {"];
+    for (const sel of variants)
+      for (const [bg, fg] of [['--select-bg', '--select-text'], ['--select-hover-bg', '--select-hover-text']]) {
+        const b = val(sel, bg), f = val(sel, fg);
+        expect(b && f, `${sel} ${bg}`).toBeTruthy();
+        expect(contrast(f!, b!), `${sel} ${bg}`).toBeGreaterThan(4.5);
+      }
+    // Every select in the page is styled by the generic select rules (no id/class overrides) ...
+    const ids = [...html.matchAll(/<select[^>]*id="([^"]+)"/g)].map((m) => m[1]);
+    expect(ids.length).toBeGreaterThanOrEqual(3);
+    for (const id of ids) expect(style, id).not.toMatch(new RegExp(`#${id}[^{]*\\{[^}]*background`));
+    // ... which cover hover, focus and active, and the generic button hover no longer reaches selects.
+    expect(style).toMatch(/select:hover, select:focus-visible, select:active, select:focus \{ color: var\(--select-hover-text\); background-color: var\(--select-hover-bg\)/);
+    expect(style).not.toMatch(/select:hover \{ background:/);
   });
   it('respects reduced transparency and reduced motion', () => {
     expect(css).toMatch(/prefers-reduced-transparency: reduce/);
