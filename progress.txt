@@ -70,3 +70,15 @@ UNRELEASED (2026-10-14) - STANDARD VIEW, FRAMING, EXPLODED VIEW
   on 2x2-5x5), framing (fit at aspects 0.4-3.5). 104 total.
 - Not done: real bloom (UnrealBloomPass) - skipped for performance and simplicity; glow is faked with
   additive blending. 4x4+ exploded view untested (only 2x2/3x3 exist in the app).
+
+UNRELEASED (2026-10-14) - FRUTIGER AERO VISUAL OVERHAUL
+- Design-token layer src/theme/tokens.css (surfaces, gradients, gloss, radii, shadows, blur, accents, text,
+  texture) for skins aero (light + night-sky dark), neon, matte; components in style.css use tokens only.
+- Scene skin params src/theme/skins.ts (plastic, sticker clearcoat, ambient/key/sky/rim lights) applied
+  by CubeView.applySkin; stickers are MeshPhysicalMaterial with clearcoat in Aero.
+- Aero look: sky + bubble backdrop, glass panels with specular top edge, aqua gloss pill buttons, green
+  Scramble, segmented glass tabs, toggle switch, SVG header icons, glossy swatches/net, viewport sheen.
+- Theme always resolved into data-theme (saved choice or OS, live on OS change); ?skin= preview.
+- Reduced transparency -> solid panels, no blur; reduced motion -> no transitions/animations.
+- Tests: tokens complete per skin, components use only declared tokens, WCAG AA contrast, skin selection.
+- Not yet: neon/matte not exposed in UI; 2x2/quiz/mobile-tutorial/mobile-tour README shots still old look.

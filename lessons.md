@@ -60,3 +60,11 @@ Rules learned building Cube Solver. Read them before changing the build, the sol
 - The turn animation re-parents meshes and snaps them back to their home matrix. Running it while pieces are exploded would fling them home mid-air. Gate turns at the entry points, and also make `animate()` just recolour when the cube is exploded, as a safety net.
 - Make the explode controller reversible: start the new animation from the current eased amount and scale its duration by the distance left. Rapid toggling then never jumps.
 - For a "glow" without a post-processing pass, use additive blending on thin lines and points, on a darkened viewport background. It's cheap and reads as sci-fi.
+
+## Visual design system
+
+- A list-valued `background-size` cycles across *every* layer. Putting a tiled texture first and a stack of radial "bubble" gradients after it tiled half the bubbles into a wallpaper. Give each tiled layer its own pseudo-element.
+- Glossy aqua buttons need darker gradient midpoints than they look like they should. The white label sits over the middle band, so check contrast against that colour, not the light top.
+- Clear-coat stickers plus a sky hemisphere light washed out the top face. Lacquer works with a weak sky light, lower ambient and a slightly rough clear coat.
+- Floating cards over busy content (coach, welcome, tour) need near-opaque glass. Real translucency only works over calm backgrounds.
+- A test that every skin defines every token, and that components only use declared tokens, keeps "skins only swap variables" true as the CSS grows.

@@ -70,7 +70,8 @@
 **App**
 - Runs in the **browser**, installs as an offline **PWA**, and installs on **Windows** as a desktop app of about 2 MB (Tauri).
 - **Update check** against GitHub releases: automatic at startup in release builds, and on demand with ⟳.
-- Light/dark theme that follows the system until you choose. Settings are remembered.
+- **Frutiger Aero look:** glossy glass panels over a sky-and-bubbles backdrop, aqua pill buttons with a specular top half, a sky-blue and fresh-green palette, soft layered shadows, and lacquered stickers on the 3D cube. Light and dark (night-sky glass) variants follow the system until you pick one with the moon button.
+- Built on design tokens, so the planned neon and matte skins are just variable sets (preview with `?skin=neon` or `?skin=matte`). Respects reduced motion and reduced transparency (solid panels, no blur). Settings are remembered.
 - An interactive tutorial (below), a keyboard shortcut sheet, an error banner with Reload if anything goes wrong, and a solver that restarts itself if it crashes.
 - A responsive layout for phones and tablets. Every control has an accessible name, and keyboard focus is always visible.
 - The UI thread never runs solver work: everything heavy happens in a Web Worker, and solver tables are cached in IndexedDB.
@@ -196,6 +197,20 @@ The dots across the top jump to any lesson, and **Show again** repeats the demon
 
 The cube is modelled twice. The sticker model derives every move from 3D geometry, so it works for any size and the renderer uses the same coordinates. The cubie model uses Kociemba's conventions for the solvers. Tests apply every move in both models and check they agree.
 
+## Theming
+
+The look is built in two layers:
+
+| Layer | File | What it holds |
+|---|---|---|
+| Tokens | `src/theme/tokens.css` | Every surface, gradient, gloss, radius, shadow, blur, accent, text colour and texture, as CSS custom properties per skin (`:root[data-skin=…]`) with a dark variant |
+| Components | `src/style.css` | Panels, buttons, tabs, toggles, dialogs, tour and coach cards. These read tokens only (a test fails if they use an undeclared one) |
+| Scene | `src/theme/skins.ts` | The 3D side of each skin: plastic colour and roughness, sticker clear-coat gloss, and ambient, key, sky and rim lights for light and dark |
+
+The skins are **aero** (shipped and default), **neon** (futuristic dark) and **matte** (textured). The last two are complete variable sets that aren't offered in the UI yet. You can preview them with `?skin=neon` or `?skin=matte`, or by saving `cube-solver-skin` in `localStorage`. The dark variant is chosen through `data-theme`, which follows the OS until you pick one. Under reduced transparency, panels become solid and blur is turned off. Contrast is checked in tests to meet WCAG AA for body text, muted text and text on buttons.
+
+<p align="center"><img src="docs/screenshot-dark.png" width="700" alt="The Aero look in dark mode: night-sky glass panels" /></p>
+
 ## Building and packaging
 
 ### Web
@@ -271,6 +286,9 @@ src/
     explode.ts      exploded-view maths: easing, offsets, stagger, controller (pure, tested)
     framing.ts      camera distance that fits the cube for any FOV/aspect (pure, tested)
     net.ts          flat net editor
+  theme/
+    tokens.css      design tokens per skin (aero light/dark, neon, matte)
+    skins.ts        scene parameters per skin, skin and theme selection (tested with the tokens)
   tutorial/
     lessons.ts      lesson, quiz and tour content; attempt checking; saved progress (pure, tested)
     tutorial.ts     coach panel, demonstrations, quiz; starts the tour
