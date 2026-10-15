@@ -37,8 +37,9 @@ export const SCENE_SKINS: Record<SkinId, { light: SceneSkin; dark: SceneSkin }> 
       ambient: 1.4, key: 0.8, sky: '#a8dbff', skyIntensity: 0.2, rim: '#3fb5f5', rimIntensity: 1.1 },
   },
   neon: {
-    light: { body: '#15132a', bodyRoughness: 0.45, stickerRoughness: 0.3, stickerClearcoat: 0.6, stickerClearcoatRoughness: 0.2,
-      ambient: 1.6, key: 1.0, sky: '#d9ccff', skyIntensity: 0.4, rim: '#38e1ff', rimIntensity: 1.2 },
+    // Bright surroundings: softer gloss and key light so white stickers stay white without blowing out.
+    light: { body: '#15132a', bodyRoughness: 0.45, stickerRoughness: 0.55, stickerClearcoat: 0.2, stickerClearcoatRoughness: 0.5,
+      ambient: 1.55, key: 0.6, sky: '#ffffff', skyIntensity: 0.15, rim: '#38e1ff', rimIntensity: 0.25 },
     dark: { body: '#08070f', bodyRoughness: 0.5, stickerRoughness: 0.3, stickerClearcoat: 0.6, stickerClearcoatRoughness: 0.2,
       ambient: 1.2, key: 1.1, sky: '#a46bff', skyIntensity: 0.6, rim: '#38e1ff', rimIntensity: 1.6 },
   },

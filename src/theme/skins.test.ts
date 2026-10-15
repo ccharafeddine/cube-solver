@@ -92,6 +92,9 @@ describe('skins', () => {
     }
     expect(SCENE_SKINS.aero.light.stickerClearcoat).toBe(1); // glossy
     expect(SCENE_SKINS.matte.light.stickerClearcoat).toBe(0); // matte
+    // Neon light keeps white stickers from blowing out: soft gloss and key light.
+    expect(SCENE_SKINS.neon.light.stickerClearcoat).toBeLessThanOrEqual(0.25);
+    expect(SCENE_SKINS.neon.light.ambient + SCENE_SKINS.neon.light.key).toBeLessThanOrEqual(2);
   });
   it('picks a skin from the URL, then the saved choice, then matte', () => {
     expect(pickSkin('', null)).toBe(DEFAULT_SKIN);
