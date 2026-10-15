@@ -24,6 +24,8 @@ describe('brand', () => {
     expect(header).not.toMatch(/id="(theme|check-update)"/);
     const dlg = /<dialog id="settings-dialog"[\s\S]*?<\/dialog>/.exec(html)![0];
     for (const id of ['theme-skins', 'theme-modes', 'check-update', 'version', 'settings-close']) expect(dlg).toContain(`id="${id}"`);
+    // The web build removes this wrapper, so it must hold the whole Updates section.
+    expect(dlg).toMatch(/<div id="updates-section">\s*<h3>Updates<\/h3>[\s\S]*?id="check-update"[\s\S]*?<\/div>\s*<\/div>/);
   });
   it('every icon the manifest and page name exists, including the social card', () => {
     const manifest = JSON.parse(readFileSync(new URL('../../public/manifest.webmanifest', import.meta.url), 'utf-8'));

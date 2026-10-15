@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { fromFaceletString, toFaceletString, importText, toHash, fromHash, toJSON } from './share';
 import { History, inverseMove } from './history';
-import { compareVersions, checkForUpdate } from './update';
+import { compareVersions, checkForUpdate, updatesEnabled } from './update';
 import { dragToTurn } from './drag';
 import { applyMoves, applyTurn, isSolved, model, moveToTurn, solved, turnToMove, type Vec3 } from '../cube/facelets';
 import { parseMoves, formatMove } from '../cube/notation';
@@ -44,6 +44,10 @@ describe('history', () => {
 });
 
 describe('update check', () => {
+  it('runs only in the Tauri desktop app', () => {
+    expect(updatesEnabled({ __TAURI_INTERNALS__: {} })).toBe(true);
+    expect(updatesEnabled({})).toBe(false);
+  });
   it('compares versions', () => {
     expect(compareVersions('v1.2.0', '1.1.9')).toBeGreaterThan(0);
     expect(compareVersions('1.0.0', 'v1.0.0')).toBe(0);

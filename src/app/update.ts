@@ -1,4 +1,9 @@
 /** Update check against the latest GitHub release. */
+
+/** Only the Tauri desktop app checks for updates; the web/PWA build is always current. */
+export function updatesEnabled(win: object): boolean {
+  return '__TAURI_INTERNALS__' in win;
+}
 export const REPO = 'ccharafeddine/cube-solver';
 export const RELEASES_URL = `https://github.com/${REPO}/releases/latest`;
 

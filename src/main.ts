@@ -11,7 +11,7 @@ import type { Candidate } from './solver/rank';
 import { METHODS, type MethodId, type Step } from './solver/methods/index';
 import { History, inverseMove } from './app/history';
 import { fromHash, importText, toFaceletString, toHash, toJSON } from './app/share';
-import { checkForUpdate } from './app/update';
+import { checkForUpdate, updatesEnabled } from './app/update';
 import { playPaced, randomMoves, scrambleMs } from './app/pace';
 import { Tutorial } from './tutorial/tutorial';
 import { standardRotation } from './cube/orient';
@@ -841,8 +841,15 @@ async function openExternal(url: string) {
     await openUrl(url);
   } else window.open(url, '_blank', 'noopener');
 }
-$('check-update').onclick = () => void runUpdateCheck(true);
-if (import.meta.env.PROD) setTimeout(() => void runUpdateCheck(false), 3000);
+if (updatesEnabled(window)) {
+  $('check-update').onclick = () => void runUpdateCheck(true);
+  if (import.meta.env.PROD) setTimeout(() => void runUpdateCheck(false), 3000);
+} else {
+  // Web/PWA: always the latest version, so no Updates section, banner or check.
+  $('updates-section').remove();
+  $('update-banner').remove();
+  $('settings').setAttribute('aria-label', 'Settings: theme and about');
+}
 
 // ---------- performance watchdog ----------
 // In development, log any main-thread task over 50 ms: the UI must never block.
