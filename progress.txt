@@ -102,3 +102,4 @@ UNRELEASED (2026-10-14) - FRUTIGER AERO VISUAL OVERHAUL
 - 6x6: enabled, with slightly pillowed faces. Analysis queued before a sequence (scramble, method step) is dropped so a mid-sequence result never shows.
 - 7x7: enabled. History and solution lists update in place (1000+ move solutions).
 - Realism: hollow piece shells with ridges and inset stickers on every size; true spherical pillowing on 6x6/7x7 (pieces bend); Rubik's Revenge ball-and-groove 4x4 core and V-Cube cross for 5x5-7x7; mechanism parts double-sided so arm ends never vanish from inside. Sources in PLAN.md section 10.
+- Layout: the cube column takes all spare width (right column fixed at 420px, one column under 900px); the paint net scales to fit 2x2-7x7; play controls sit above a scrolling move list that follows the current move (history too); fixed-width/height labels so buttons never move. Checked at 1920x1080 and 1280x800 with a 7x7 solution playing.

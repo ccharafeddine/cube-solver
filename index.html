@@ -86,14 +86,14 @@
         <div id="progress" class="progress hidden"><div></div></div>
         <div class="card" id="solution-card" tabindex="-1">
           <div class="row spread"><h2>Solution</h2><span id="sol-count" class="muted"></span></div>
-          <div id="solution" class="mono" aria-label="Solution moves"></div>
-          <div class="row">
+          <div class="row sol-controls">
             <button id="sol-start" aria-label="Back to the start of the solution" title="Back to start">⏮</button>
             <button id="sol-back" aria-label="Step back" title="Step back (←)">‹</button>
             <button id="play" class="primary" title="Play or pause (Space)">▶ Play</button>
             <button id="sol-step" aria-label="Step forward" title="Step forward (→)">›</button>
             <button id="stop" title="Stop thinking and keep the best solution found so far">Stop search</button>
           </div>
+          <div id="solution" class="mono" aria-label="Solution moves"></div>
         </div>
         <div class="card" id="next-card">
           <div class="row spread"><h2>Next moves</h2><select id="topn" aria-label="How many candidates"><option value="3">Top 3</option><option value="5" selected>Top 5</option><option value="0">All</option></select></div>

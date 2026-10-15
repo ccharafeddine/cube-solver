@@ -1,3 +1,4 @@
+import { keepInView } from './ui/scroll';
 import './style.css';
 import { CubeView, COLORS, COLOR_NAMES } from './ui/scene';
 import { NetEditor } from './ui/net';
@@ -178,6 +179,7 @@ function renderSolution() {
       const c = 'mv' + (i < solutionPos ? ' done' : i === solutionPos ? ' next' : '');
       if (kids[i].className !== c) kids[i].className = c;
     }
+    keepInView(el, kids[Math.min(solutionPos, kids.length - 1)]);
     $('play').textContent = playing ? '⏸ Pause' : '▶ Play';
     return;
   }
@@ -192,6 +194,7 @@ function renderSolution() {
     s.onclick = () => playSolutionTo(i + 1);
     el.appendChild(s);
   });
+  el.scrollTop = 0;
   $('sol-count').textContent = solution.length ? `${qtmOf(solution)} QTM · ${solution.length} HTM` : '';
   $('play').textContent = playing ? '⏸ Pause' : '▶ Play';
 }
@@ -272,6 +275,7 @@ function renderHistory() {
     const c = cls(i);
     if (el.children[i].className !== c) el.children[i].className = c;
   }
+  keepInView(el, el.children[history.position]);
   renderHistoryFooter(list);
 }
 

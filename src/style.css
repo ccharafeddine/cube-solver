@@ -84,8 +84,10 @@ input[type='checkbox']:checked::after { transform: translateX(16px); }
 input[type='range'] { accent-color: var(--accent); }
 
 /* ---------- layout ---------- */
-main { display: grid; grid-template-columns: minmax(360px, 1.15fr) minmax(330px, 1fr); gap: 18px; padding: 18px; max-width: 1320px; margin: 0 auto; }
-#viewport { position: relative; height: min(58vh, 560px); min-height: 300px; border-radius: var(--corner-panel); touch-action: none; overflow: hidden;
+/* The left column (cube and its panel) takes all spare width; the right column stays one fixed width. */
+main { display: grid; grid-template-columns: minmax(0, 1fr) 420px; gap: 18px; padding: 18px; max-width: 1880px; margin: 0 auto; align-items: start; }
+.left, .right { min-width: 0; }
+#viewport { position: relative; height: clamp(300px, calc(100vh - 300px), 760px); min-height: 300px; border-radius: var(--corner-panel); touch-action: none; overflow: hidden;
   background: var(--viewport-bg); border: var(--border-w) solid var(--surface-border); box-shadow: var(--surface-highlight), 0 0 0 1px var(--surface-edge), var(--shadow-1);
   transition: background 0.6s ease; }
 /* A curved specular sheen across the top of the cube stage. */
@@ -122,7 +124,9 @@ input:not([type]), input[type='text'], textarea, #alg { color: var(--text); back
 #alg { flex: 1; min-width: 160px; padding: 7px 14px; }
 textarea { width: 100%; padding: 9px 12px; border-radius: var(--corner-control); resize: vertical; }
 
-#net { --n: 3; --s: clamp(16px, 3.4vw, 26px); display: grid; grid-template-columns: repeat(4, max-content); grid-template-rows: repeat(3, max-content); gap: 6px; margin: 8px 0; justify-content: center; }
+/* Net stickers shrink to fit the panel at any size: 4 faces of n stickers, 2px gaps, 3px padding, 6px between faces. */
+.tabpanel[data-panel='paint'] { container-type: inline-size; }
+#net { --n: 3; --s: clamp(6px, calc((100cqi - 34px - 8px * var(--n)) / (4 * var(--n))), 26px); display: grid; grid-template-columns: repeat(4, max-content); grid-template-rows: repeat(3, max-content); gap: 6px; margin: 8px 0; justify-content: center; }
 .net-face { display: grid; grid-template-columns: repeat(var(--n), var(--s)); gap: 2px; padding: 3px; background: #10161c; border-radius: 7px; box-shadow: 0 2px 6px rgb(0 30 60 / 0.25); }
 .net-sticker { width: var(--s); height: var(--s); padding: 0; border-radius: 4px; border: none; box-shadow: none; background-image: var(--swatch-gloss) !important; }
 .net-sticker:hover { outline: 2px solid var(--accent); }
@@ -132,10 +136,21 @@ textarea { width: 100%; padding: 9px 12px; border-radius: var(--corner-control);
 .status.thinking { border-left: 4px solid var(--accent); }
 .progress { height: 6px; border-radius: var(--radius-pill); background: var(--surface-2); margin: -4px 0 10px; overflow: hidden; box-shadow: inset 0 1px 2px rgb(0 30 60 / 0.2); }
 .progress div { height: 100%; width: 0; background: var(--btn-primary-bg); transition: width 0.3s; }
-#solution, #history { display: flex; flex-wrap: wrap; gap: 4px; min-height: 1.8em; font-size: 1.02rem; }
+#solution, #history { display: flex; flex-wrap: wrap; align-content: flex-start; gap: 4px; min-height: 1.8em; font-size: 1.02rem; overflow-y: auto; overscroll-behavior: contain; }
+/* Long solutions scroll inside their box; the play controls stay put above it. */
+#solution { max-height: 168px; }
+.sol-controls { position: sticky; top: 0; z-index: 1; margin: 6px 0 8px; }
+/* Fixed spots: labels that change text keep one width, live text keeps one height. */
+#play { min-width: 6.5em; }
+#sol-count, #hist-count { font-variant-numeric: tabular-nums; white-space: nowrap; }
+#status { min-height: 2.9em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+#cand-note { min-height: 2.6em; }
+#candidates { max-height: 260px; overflow-y: auto; }
+#method { max-height: 340px; overflow-y: auto; }
+.speed input { width: 110px; }
 .mv { padding: 2px 9px; border-radius: var(--corner-chip); box-shadow: none; font-family: inherit; }
 .mv.done { opacity: 0.45; } .mv.next { background: var(--btn-primary-bg); color: var(--text-on-accent); border-color: var(--btn-primary-border); }
-#history { max-height: 120px; overflow-y: auto; font-size: 0.9rem; }
+#history { max-height: 132px; font-size: 0.9rem; }
 .cand { display: grid; grid-template-columns: 1.6em 3.4em 1fr 3em; gap: 6px; width: 100%; text-align: left; margin-bottom: 6px; align-items: center; border-radius: var(--corner-control); }
 .cand .mvname { font-weight: 600; font-size: 1.05rem; }
 .cand .delta { font-weight: 700; text-align: right; } .cand.good .delta { color: var(--good); } .cand.bad .delta { color: var(--bad); }
@@ -188,6 +203,9 @@ kbd { font-family: inherit; font-size: 0.8rem; padding: 1px 7px; border: var(--b
 .coach, .tip, .tour-card { background: var(--corner-art), var(--surface-solid); box-shadow: var(--edge-detail), var(--surface-highlight), var(--shadow-pop); }
 @keyframes rise { from { opacity: 0; transform: translateY(12px); } }
 
+@media (max-width: 1100px) {
+  main { grid-template-columns: minmax(0, 1fr) 360px; }
+}
 @media (max-width: 900px) {
   main { grid-template-columns: 1fr; padding: 10px; gap: 12px; }
   #viewport { height: 52vh; }
@@ -246,3 +264,4 @@ kbd { font-family: inherit; font-size: 0.8rem; padding: 1px 7px; border: var(--b
  * and optional corner art in tokens.css. Big panels can also take a clip shape. */
 dialog, .tour-card, .card, .status, .coach, .tip { clip-path: var(--panel-clip); }
 #viewport { clip-path: var(--panel-clip); }
+#progress.hidden { display: block !important; visibility: hidden; }

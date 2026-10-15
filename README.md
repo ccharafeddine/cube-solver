@@ -80,6 +80,7 @@
 - An interactive **notation course** of 14 short lessons: the faces U D L R F B, prime ('), double (2), the slices M E S, wide moves (Rw), the rotations x y z, and quarter-turn counting. Each lesson spotlights the layer on the 3D cube, animates the move, then asks you to play it and checks your answer. Ends with a 6-question quiz.
 - A 10-step **spotlight tour** of the app. It highlights each part, lets you try it right there, and uses touch wording on phones.
 - Offered on first launch, can be skipped, and is always available from the 🎓 Tutorial menu, where you can resume where you stopped or replay. Progress is saved.
+- Wide-screen layout: the cube and its panel use all the spare width, the side panel keeps one width, and buttons never jump around. Long solutions and the history scroll in their own boxes, following the current move, with the play controls always in view. The paint map shrinks to fit even a 7x7.
 
 ## Download
 

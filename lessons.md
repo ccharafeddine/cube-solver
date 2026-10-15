@@ -90,3 +90,4 @@ Rules learned building Cube Solver. Read them before changing the build, the sol
 - Mechanism parts seen from inside the cube need DoubleSide (or closed geometry); one-sided discs vanish when the camera passes them.
 - Pillowing must bend the piece geometry, not lift stickers, or the stickers float above flat plastic. Use one sphere per face through its corners.
 - Drag-to-turn must use the in-face motion (a × normal) at the sticker's surface spot, not a × cubie-centre: near edges the out-of-face part dominates on screen and picks the wrong layer/direction on big cubes. Hidden objects still take raycasts in three.js, so filter by visible.
+- Keep controls in fixed spots: put long lists below their controls in a max-height box, scroll the box (not the page) to the current item, and reserve heights for live text (status, notes, progress bar with visibility instead of display).
