@@ -30,25 +30,12 @@ export function along(dir: [number, number, number], distance: number): [number,
   return [(dir[0] / len) * distance, (dir[1] / len) * distance, (dir[2] / len) * distance];
 }
 
-/** Closest zoom, as a fraction of the bounding-sphere radius: about halfway from the old limit to the face. */
-export const MIN_ZOOM = 0.8;
-
 /**
- * Half-size of the actual cube geometry for an n cube: the outer cubie faces
- * sit at grid (n - 1) + 0.98 and stickers at + 0.99, scaled to CUBE_SIZE.
+ * Closest the camera may come to the orbit target (world units, the cube is
+ * CUBE_SIZE across). Small enough to fly inside the cube and look at the
+ * core, axles, screws and springs. Faces are one-sided, so from inside a
+ * piece its walls are culled and never block the view; the near plane is 0.01.
  */
-export const geometryHalf = (n = 3) => ((n - 1 + 0.99) / n) * (CUBE_SIZE / 2);
-
-/**
- * Closest the camera may come along view direction `dir`: just outside the
- * cube's real surface in that direction (its support distance,
- * half * (|x| + |y| + |z|) for a unit direction: the face plane head-on, the
- * corner on a diagonal), and never nearer than MIN_ZOOM of the bounding
- * radius. `clearance` covers the near plane (0.01). `scale` grows the box
- * for the exploded view.
- */
-export function safeDistance(dir: [number, number, number], n = 3, clearance = 0.02, scale = 1): number {
-  const len = Math.hypot(...dir) || 1;
-  const support = (geometryHalf(n) * scale * (Math.abs(dir[0]) + Math.abs(dir[1]) + Math.abs(dir[2]))) / len;
-  return Math.max(MIN_ZOOM * cubeRadius() * scale, support + clearance);
-}
+export const MIN_DISTANCE = 0.08;
+/** Farthest zoom-out, as a multiple of the default framing distance. */
+export const MAX_ZOOM_OUT = 2.5;

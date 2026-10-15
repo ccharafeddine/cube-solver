@@ -80,3 +80,4 @@ Rules learned building Cube Solver. Read them before changing the build, the sol
 - Anything positioned relative to a staggered piece must use that piece's delay, or it leads the piece at the start of the animation. Better still, parent it to the piece.
 
 - Queueing a whole sequence into the view at once makes it speed up to drain the queue and freezes each turn's duration at enqueue time. Pace sequences one turn at a time and read the slider before each turn.
+- A support-distance clamp keeps the camera outside the cube, which blocks inspecting the mechanism. One-sided faces already cull from the inside, so a tiny fixed minDistance (0.08) with near 0.01 lets the camera fly in cleanly.

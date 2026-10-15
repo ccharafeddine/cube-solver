@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { fitDistance, cubeRadius, along, MARGIN, geometryHalf, safeDistance } from './framing';
+import { fitDistance, cubeRadius, along, MARGIN, MIN_DISTANCE, MAX_ZOOM_OUT, CUBE_SIZE } from './framing';
 import { DEFAULT_CAMERA } from '../cube/orient';
 
 /** Does a sphere at the origin fit, seen from distance d? Check every edge of the frustum. */
@@ -33,25 +33,17 @@ describe('framing', () => {
   });
 });
 
-describe('closest zoom', () => {
-  const R = cubeRadius();
-  it('head-on reaches about 0.8R, still outside the face', () => {
-    const d = safeDistance([0, 0, 1]);
-    expect(d).toBeLessThanOrEqual(0.8 * R + 1e-9);
-    expect(d).toBeGreaterThan(geometryHalf() + 0.01);
+describe('zoom limits', () => {
+  it('lets the camera fly inside the cube, close to the centre', () => {
+    // The cube's faces sit at CUBE_SIZE / 2; the closest zoom is far inside them.
+    expect(MIN_DISTANCE).toBeLessThan(CUBE_SIZE / 2 / 10);
+    expect(MIN_DISTANCE).toBeGreaterThanOrEqual(0.05);
+    expect(MIN_DISTANCE).toBeLessThanOrEqual(0.1);
   });
-  it('the default diagonal view comes clearly closer than the old 1.05R limit', () => {
-    for (const n of [2, 3, 4, 7]) expect(safeDistance(DEFAULT_CAMERA as [number, number, number], n)).toBeLessThan(1.0 * R);
-    expect(safeDistance([1, 1, 1])).toBeLessThan(1.05 * R);
+  it('still stops beyond the near plane, so the target point never clips', () => {
+    expect(MIN_DISTANCE).toBeGreaterThan(0.01);
   });
-  it('never passes the real corner on any direction', () => {
-    for (const dir of [[1, 1, 1], [-1, 1, -1], [1, 1, 0], [2, 1, 0.5]] as [number, number, number][]) {
-      const len = Math.hypot(...dir);
-      const support = (geometryHalf() * dir.reduce((a, v) => a + Math.abs(v), 0)) / len;
-      expect(safeDistance(dir)).toBeGreaterThanOrEqual(support + 0.02 - 1e-9);
-    }
-  });
-  it('scales out for the exploded view', () => {
-    expect(safeDistance([1, 1, 1], 3, 0.02, 2)).toBeGreaterThan(safeDistance([1, 1, 1]) * 1.8);
+  it('zooms out to 2.5x the default framing', () => {
+    expect(MAX_ZOOM_OUT).toBe(2.5);
   });
 });

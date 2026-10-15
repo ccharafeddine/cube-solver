@@ -153,7 +153,7 @@ The dots across the top jump to any lesson, and **Show again** repeats the demon
 | Drag a sticker | Turn that layer in the drag direction (outer layers and, on the 3x3, the middle slices) |
 | Drag the background | Rotate the view |
 | Right-drag, or <kbd>Shift</kbd>+drag | Rotate the view from anywhere, even starting on a sticker (it never turns a layer) |
-| Scroll / pinch | Zoom |
+| Scroll / pinch | Zoom (all the way inside the cube to see the mechanism) |
 | **Reset** (<kbd>Alt</kbd>+<kbd>R</kbd>) | Back to solved |
 | **Scramble** (<kbd>Alt</kbd>+<kbd>S</kbd>) | Random-state scramble; its notation appears in the move box |
 | ↶ / ↷ (<kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>Y</kbd> or <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd>) | Undo / redo a move |

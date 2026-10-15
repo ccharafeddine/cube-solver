@@ -12,7 +12,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { model, type State, type Turn, type Vec3 } from '../cube/facelets';
 import { dragToTurn } from '../app/drag';
 import { DEFAULT_CAMERA } from '../cube/orient';
-import { CUBE_SIZE, cubeRadius, fitDistance, along, MIN_ZOOM, safeDistance } from './framing';
+import { CUBE_SIZE, cubeRadius, fitDistance, along, MIN_DISTANCE, MAX_ZOOM_OUT } from './framing';
 import { SCENE_SKINS, type SceneSkin } from '../theme/skins';
 import { ExplodeController, explodeOffset, staggerDelay, spreadFor, explodeExtent, MECH, AXES, capPosition, footOffset, MECH3, foot3 } from './explode';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
@@ -60,7 +60,6 @@ export class CubeView {
     this.renderer.setAnimationLoop(() => {
       this.controls.update();
       this.updateExplode();
-      this.clampZoom();
       this.renderer.render(this.scene, this.camera);
     });
   }
@@ -99,9 +98,9 @@ export class CubeView {
     this.camera.up.set(0, 1, 0);
     this.camera.position.set(...along(DEFAULT_CAMERA, this.fit));
     this.camera.lookAt(0, 0, 0);
-    // The real limit is direction-dependent (see clampZoom); this is the head-on floor.
-    this.controls.minDistance = cubeRadius() * MIN_ZOOM;
-    this.controls.maxDistance = this.fit * 2.5;
+    // Close enough to go inside the cube and inspect the mechanism.
+    this.controls.minDistance = MIN_DISTANCE;
+    this.controls.maxDistance = this.fit * MAX_ZOOM_OUT;
     // Clear any damping momentum so the view stays exactly where it was put.
     this.controls.enableDamping = false;
     this.controls.update();
@@ -110,22 +109,8 @@ export class CubeView {
 
   /** Fitted camera distance for the current aspect (same for every cube size). */
   private fit = 0;
-  /**
-   * Keep the camera outside the cube however it is pointed: close to a face
-   * head-on, further back toward an edge or corner, and further again while
-   * exploded (camera zoom already pulls the picture back, so scale the box by
-   * the live explode extent).
-   */
   /** Camera distance from the orbit target (for checks and tests). */
   get cameraDistance() { return this.camera.position.distanceTo(this.controls.target); }
-
-  private clampZoom() {
-    const off = this.camera.position.clone().sub(this.controls.target);
-    const d = off.length();
-    const scale = 1 + (explodeExtent(this.n) - 1) * this.lastAmount;
-    const safe = safeDistance([off.x, off.y, off.z], this.n, 0.02, scale);
-    if (d < safe) this.camera.position.copy(this.controls.target).add(off.multiplyScalar(safe / d));
-  }
 
   private fitFor(aspect: number) { return fitDistance(cubeRadius(), this.camera.fov, aspect); }
 
@@ -140,7 +125,7 @@ export class CubeView {
     if (this.fit > 0) {
       const off = this.camera.position.clone().sub(this.controls.target);
       this.camera.position.copy(this.controls.target).add(off.multiplyScalar(fit / this.fit));
-      this.controls.maxDistance = fit * 2.5;
+      this.controls.maxDistance = fit * MAX_ZOOM_OUT;
     }
     this.fit = fit;
     this.baseZoom = 1;
