@@ -206,3 +206,36 @@ kbd { font-family: inherit; font-size: 0.8rem; padding: 1px 7px; border: var(--b
 :root[data-skin='brutal'] #scramble { text-shadow: none; }
 :root[data-skin='brutal'] .tabs button[aria-selected='true'] { text-shadow: none; }
 @media (prefers-reduced-motion: reduce) { :root[data-skin='brutal'] button:active:not(:disabled) { transform: none; } }
+
+/* ---------- theme picker ---------- */
+.skin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 10px; margin: 8px 0 12px; }
+.skin-card { display: flex; flex-direction: column; align-items: stretch; gap: 6px; padding: 8px; border-radius: var(--radius); font-weight: 600; }
+.skin-card[aria-checked='true'] { box-shadow: var(--focus); }
+.skin-card::after { display: none; }
+/* Previews use fixed colours: each shows what that skin looks like, whatever skin is active. */
+.skin-preview { position: relative; display: block; height: 64px; border-radius: 6px; overflow: hidden; border: 1px solid rgb(0 0 0 / 0.25); }
+.skin-preview i { position: absolute; display: block; }
+.skin-preview i:nth-child(1) { left: 0; right: 0; top: 0; height: 14px; }
+.skin-preview i:nth-child(2) { left: 8px; top: 22px; width: 46%; height: 32px; border-radius: 4px; }
+.skin-preview i:nth-child(3) { right: 10px; top: 24px; width: 26px; height: 26px; border-radius: 3px; }
+.skin-preview i:nth-child(4) { right: 42px; top: 34px; width: 16px; height: 16px; border-radius: 3px; }
+[data-preview='matte'] { background: #ece7dd; }
+[data-preview='matte'] i:nth-child(1) { background: #f7f4ee; border-bottom: 1px solid #d9d3c7; }
+[data-preview='matte'] i:nth-child(2) { background: #f7f4ee; border: 1px solid #d9d3c7; }
+[data-preview='matte'] i:nth-child(3) { background: #b5651d; } [data-preview='matte'] i:nth-child(4) { background: #5d7d3a; }
+[data-preview='aero'] { background: linear-gradient(180deg, #e8f6ff, #9fd4f2); }
+[data-preview='aero'] i:nth-child(1) { background: linear-gradient(180deg, #fff, #d6eefc); }
+[data-preview='aero'] i:nth-child(2) { background: rgb(255 255 255 / 0.75); border: 1px solid #fff; }
+[data-preview='aero'] i:nth-child(3) { background: linear-gradient(180deg, #3aa6e8, #0a5fa6); border-radius: 50%; } [data-preview='aero'] i:nth-child(4) { background: linear-gradient(180deg, #6cc96b, #1f7a2c); border-radius: 50%; }
+[data-preview='neon'] { background: #07060d; }
+[data-preview='neon'] i:nth-child(1) { background: #0a0916; border-bottom: 1px solid #38e1ff; }
+[data-preview='neon'] i:nth-child(2) { background: #12102a; border: 1px solid #38e1ff; box-shadow: 0 0 6px #38e1ff; }
+[data-preview='neon'] i:nth-child(3) { background: #38e1ff; box-shadow: 0 0 8px #38e1ff; } [data-preview='neon'] i:nth-child(4) { background: #a46bff; box-shadow: 0 0 8px #a46bff; }
+[data-preview='brutal'] { background: #fff4d6; border: 2px solid #000; }
+[data-preview='brutal'] i:nth-child(1) { background: #ffd23f; border-bottom: 2px solid #000; }
+[data-preview='brutal'] i:nth-child(2) { background: #fff; border: 2px solid #000; box-shadow: 3px 3px 0 #000; }
+[data-preview='brutal'] i:nth-child(3) { background: #ff5ca8; border: 2px solid #000; } [data-preview='brutal'] i:nth-child(4) { background: #3ddc84; border: 2px solid #000; }
+.mode-row { align-items: center; gap: 10px; }
+#theme-dialog { max-width: 620px; }
+/* The glass dome highlight over the viewport belongs to Aero only. */
+:root:not([data-skin='aero']) #viewport::before { display: none; }

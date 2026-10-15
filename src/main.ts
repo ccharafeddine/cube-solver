@@ -14,7 +14,7 @@ import { fromHash, importText, toFaceletString, toHash, toJSON } from './app/sha
 import { checkForUpdate } from './app/update';
 import { Tutorial } from './tutorial/tutorial';
 import { standardRotation } from './cube/orient';
-import { pickSkin, resolveTheme, modeFor, SCENE_SKINS } from './theme/skins';
+import { pickSkin, resolveTheme, modeFor, SCENE_SKINS, SKINS, SKIN_LABELS, SKIN_MODES, type SkinId } from './theme/skins';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const qtmOf = (ms: string[]) => ms.reduce((a, m) => a + (m.endsWith('2') ? 2 : 1), 0);
@@ -562,7 +562,7 @@ window.addEventListener('hashchange', () => { const f = fromHash(location.hash);
 window.addEventListener('keydown', (e) => {
   const tag = (e.target as HTMLElement).tagName;
   if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-  if ($<HTMLDialogElement>('help-dialog').open || $<HTMLDialogElement>('tutorial-dialog').open) return;
+  if ($<HTMLDialogElement>('help-dialog').open || $<HTMLDialogElement>('tutorial-dialog').open || $<HTMLDialogElement>('theme-dialog').open) return;
   if (tutorial.capturesKeys) return;
   const k = e.key;
   if ((e.ctrlKey || e.metaKey) && k.toLowerCase() === 'z') { e.preventDefault(); return e.shiftKey ? redo() : undo(); }
@@ -644,22 +644,51 @@ $('tut-close').onclick = () => $<HTMLDialogElement>('tutorial-dialog').close();
 if (!fromUrl) tutorial.offer($('onboarding'));
 
 // ---------- theme and skin ----------
-// The skin (matte by default) and light/dark are CSS variables plus scene parameters.
-const skin = pickSkin(location.search, localStorage.getItem('cube-solver-skin'));
-document.documentElement.dataset.skin = skin;
+// A skin (matte by default) plus light/dark: CSS variables and scene parameters.
+// The picker applies instantly and remembers the choice.
+let skin: SkinId = pickSkin(location.search, localStorage.getItem('cube-solver-skin'));
 const darkQuery = matchMedia('(prefers-color-scheme: dark)');
 function applyTheme() {
-  const t = modeFor(skin, resolveTheme(localStorage.getItem('cube-solver-theme'), darkQuery.matches));
+  const saved = localStorage.getItem('cube-solver-theme');
+  const t = modeFor(skin, resolveTheme(saved, darkQuery.matches));
+  document.documentElement.dataset.skin = skin;
   document.documentElement.dataset.theme = t;
   view.applySkin(SCENE_SKINS[skin][t]);
-  $('theme').setAttribute('aria-label', t === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', getComputedStyle(document.documentElement).getPropertyValue('--bg').trim());
+  // Reflect the state in the picker.
+  const mode = saved === 'light' || saved === 'dark' ? saved : 'system';
+  const single = SKIN_MODES[skin].length === 1;
+  document.querySelectorAll<HTMLButtonElement>('#theme-skins button').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.skin === skin)));
+  document.querySelectorAll<HTMLButtonElement>('#theme-modes button').forEach((b) => {
+    b.disabled = single;
+    b.setAttribute('aria-checked', String(b.dataset.mode === mode));
+    b.classList.toggle('on', !single && b.dataset.mode === mode);
+  });
+  $('theme-mode-note').textContent = single ? `${SKIN_LABELS[skin]} has a ${SKIN_MODES[skin][0]} look only.` : '';
 }
+for (const id of SKINS) {
+  const b = document.createElement('button');
+  b.className = 'skin-card';
+  b.dataset.skin = id;
+  b.setAttribute('role', 'radio');
+  b.innerHTML = `<span class="skin-preview" data-preview="${id}" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>${SKIN_LABELS[id]}</span>`;
+  b.onclick = () => { skin = id; localStorage.setItem('cube-solver-skin', id); applyTheme(); };
+  $('theme-skins').append(b);
+}
+document.querySelectorAll<HTMLButtonElement>('#theme-modes button').forEach((b) => {
+  b.onclick = () => {
+    if (b.dataset.mode === 'system') localStorage.removeItem('cube-solver-theme');
+    else localStorage.setItem('cube-solver-theme', b.dataset.mode!);
+    applyTheme();
+  };
+});
 darkQuery.addEventListener('change', applyTheme);
 applyTheme();
-$('theme').onclick = () => {
-  localStorage.setItem('cube-solver-theme', document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
-  applyTheme();
-};
+const openTheme = () => $<HTMLDialogElement>('theme-dialog').showModal();
+$('theme').onclick = openTheme;
+$('help-appearance').onclick = () => { $<HTMLDialogElement>('help-dialog').close(); openTheme(); };
+$('theme-close').onclick = () => $<HTMLDialogElement>('theme-dialog').close();
 
 // ---------- update check ----------
 async function runUpdateCheck(manual: boolean) {
