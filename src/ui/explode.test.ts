@@ -110,7 +110,7 @@ describe('state safety', () => {
   });
 });
 
-import { spreadFor, explodeExtent, MECH, AXES, capPosition, footOffset, MECH3, foot3, centreDistance3, centreFace3, screwHeadDistance3, capDistance3 } from './explode';
+import { spreadFor, explodeExtent, MECH, AXES, capPosition, footOffset, MECH3, foot3, centreDistance3, centreParts3, centreDelay3, ExplodeController as Ctl, DURATION_MS as DUR, STAGGER_MS as STG } from './explode';
 type Vec3 = [number, number, number];
 
 describe('2x2 explodes further, and the camera knows how far', () => {
@@ -160,26 +160,16 @@ describe('2x2 mechanism layout', () => {
 });
 
 describe('3x3 mechanism layout', () => {
-  it('nothing stands proud of a centre face: screw and spring sit inside the tube, the cap is flush', () => {
-    for (const a of [0, 0.5, 1]) {
-      expect(capDistance3(a) + MECH3.capThickness / 2).toBeCloseTo(centreFace3(a));
-      expect(screwHeadDistance3(a)).toBeLessThan(centreFace3(a) - MECH3.plate + 1e-9);
-    }
-    // At rest the head sits in the tube, under the plate, with the spring below it inside the tube.
-    const plateInner = centreFace3(0) - MECH3.plate;
-    expect(screwHeadDistance3(0)).toBeLessThan(plateInner);
-    expect(screwHeadDistance3(0) - MECH3.springLength).toBeGreaterThan(plateInner - MECH3.tubeLength);
-    expect(MECH3.armLength).toBeLessThan(2);
+  it('at rest the screw reaches the arm and the spring sits in the tube under the head', () => {
+    const p = centreParts3(0);
+    expect(p.screw[0]).toBeLessThanOrEqual(MECH3.armLength + 0.05);
+    expect(p.spring[0]).toBeGreaterThanOrEqual(p.tube[0]);
+    expect(p.screw[1]).toBeLessThanOrEqual(p.tube[1]);
     expect(MECH3.coreRadius).toBeLessThan(1);
   });
-  it('the screw reaches from under the plate into the arm', () => {
-    expect(screwHeadDistance3(0) - MECH3.screwLength).toBeLessThan(MECH3.armLength);
-  });
-  it('on explode the centre slides off the arm while the screw stays, so the screw shows', () => {
+  it('on explode the whole centre assembly slides off its arm', () => {
     expect(centreDistance3(1) - centreDistance3(0)).toBeCloseTo(2 * spreadFor(3));
-    expect(screwHeadDistance3(1)).toBe(screwHeadDistance3(0));
-    // The shell's open inner side has passed the screw head.
-    expect(centreDistance3(1) - 0.98).toBeGreaterThan(screwHeadDistance3(1));
+    expect(centreParts3(1).screw[0]).toBeGreaterThan(MECH3.armLength);
   });
   it('edge and corner feet point at the core, edges inside corners, outside the core', () => {
     for (const home of [[2, 2, 0], [0, -2, 2], [-2, 0, -2]] as Vec3[]) {
@@ -196,5 +186,42 @@ describe('3x3 mechanism layout', () => {
       expect(Math.hypot(...pad)).toBeLessThan(Math.hypot(...inner));
     }
     expect(MECH3.cornerPad).toBeGreaterThan(MECH3.edgePad);
+  });
+});
+
+describe('3x3 explode timeline', () => {
+  const sample = (fn: (amountFor: (dir: Vec3) => number) => void) => {
+    let t = 0;
+    const c = new Ctl(() => t);
+    const run = (until: number) => { const t0 = t; for (; t <= t0 + until; t += 10) fn((dir) => c.amount(centreDelay3(dir))); };
+    c.set(true); run(DUR + STG + 60);
+    c.set(false); run(300); // reverse mid-flight
+    c.set(true); run(DUR + STG + 60);
+    c.set(false); run(DUR + STG + 60);
+  };
+  it('every frame keeps screw and spring inside the tube and shell, never past the face', () => {
+    sample((amountFor) => {
+      for (const dir of AXES) {
+        const p = centreParts3(amountFor(dir));
+        for (const part of [p.screw, p.spring]) {
+          expect(part[0]).toBeGreaterThanOrEqual(p.shell[0] - 1e-9);
+          expect(part[1]).toBeLessThanOrEqual(p.shell[1] - MECH3.plate + 1e-9);
+          expect(part[0]).toBeGreaterThanOrEqual(p.tube[0] - 1e-9);
+        }
+      }
+    });
+  });
+  it('centre parts share the centre piece stagger', () => {
+    for (const dir of AXES) expect(centreDelay3(dir)).toBe(staggerDelay([dir[0] * 2, dir[1] * 2, dir[2] * 2]));
+  });
+  it('the assembly is rigid: screw and face keep a constant offset from the centre at every frame', () => {
+    const rest = centreParts3(0);
+    sample((amountFor) => {
+      for (const dir of AXES) {
+        const a = amountFor(dir), d = centreDistance3(a) - centreDistance3(0), p = centreParts3(a);
+        expect(p.screw[1] - rest.screw[1]).toBeCloseTo(d, 9);
+        expect(p.shell[1] - rest.shell[1]).toBeCloseTo(d, 9);
+      }
+    });
   });
 });

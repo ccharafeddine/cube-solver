@@ -73,11 +73,12 @@ export function footOffset(home: Vec3): Vec3 {
 /**
  * The 3x3 mechanism, in grid units (the assembled cube spans -3..3). Modelled on
  * a real 3x3: a fixed core with six axle arms; each centre is a hollow shell
- * open toward the core, with a flat outer face whose shallow recess holds a
- * flush cap, and an inner tube the arm enters. The screw goes from the recess
- * through the tube into the arm with the spring in the tube under its head;
- * nothing stands proud of the face. Exploding slides the centre off the arm,
- * leaving the screw and spring visible. Edges and corners have no holes: they are held only by
+ * open toward the core, with a flat outer face (the covered cap recess is
+ * folded into it) and an inner tube the arm enters. The screw goes from under
+ * the face through the tube into the arm with the spring in the tube under its
+ * head; nothing stands proud of the face. The screw and spring belong to the
+ * centre assembly: exploding slides the whole centre off its arm as one unit,
+ * and they show only through the open inner side. Edges and corners have no holes: they are held only by
  * their inner feet, edge feet in the track under the centres, corner feet under
  * the edges.
  */
@@ -90,13 +91,13 @@ export const MECH3 = {
   wall: 0.1,
   tubeRadius: 0.3,
   tubeLength: 1.3,
-  /** Screw head distance from the core, seated in the tube just under the plate. The screw stays with the arm. */
+  /** Screw head distance from the core at rest, seated in the tube just under the plate. */
   screwHead: 2.72,
-  screwLength: 1.3,
+  /** Long enough to reach the arm tip at rest, short enough to stay inside the tube. */
+  screwLength: 1.2,
+  screwHeadHeight: 0.09,
   /** The spring sits in the tube under the screw head. */
   springLength: 0.55,
-  /** The cap fills the shallow recess in the outer face, flush with it. */
-  capThickness: 0.06,
   /** Distance of foot pads from the core: edge feet in the centres' track, corner feet under the edges. */
   edgePad: 1.0,
   cornerPad: 1.3,
@@ -106,10 +107,22 @@ export const MECH3 = {
 export const centreDistance3 = (a: number) => 2 + 2 * spreadFor(3) * a;
 /** Outer face of a centre plate, a hair under its sticker (at +0.99) so the recess never shows through. */
 export const centreFace3 = (a: number) => centreDistance3(a) + 0.97;
-/** Screw head: fixed to the arm, so it stays put while the centre slides off it. */
-export const screwHeadDistance3 = (_a?: number) => MECH3.screwHead;
-/** Cap: sits in the recess, its top flush with the centre's outer face. */
-export const capDistance3 = (a: number) => centreFace3(a) - MECH3.capThickness / 2;
+/** Screw head: part of the centre assembly, so it travels rigidly with the centre. */
+export const screwHeadDistance3 = (a: number) => centreDistance3(a) + MECH3.screwHead - 2;
+
+/**
+ * Radial extent [inner, outer] of the screw, spring and shell of the centre at
+ * explode amount `a`. Everything stays inside the shell at every moment.
+ */
+export function centreParts3(a: number) {
+  const head = screwHeadDistance3(a), c = centreDistance3(a);
+  return {
+    shell: [c - 0.98, centreFace3(a)] as const,
+    tube: [centreFace3(a) - MECH3.plate - MECH3.tubeLength, centreFace3(a) - MECH3.plate] as const,
+    screw: [head - MECH3.screwLength, head + MECH3.screwHeadHeight / 2] as const,
+    spring: [head - 0.06 - MECH3.springLength, head - 0.06] as const,
+  };
+}
 
 /**
  * A 3x3 edge or corner foot, relative to the core: `inner` is the piece's
@@ -140,6 +153,13 @@ export function staggerDelay(home: Vec3, maxDelay = STAGGER_MS): number {
   const height = home[1] > 0 ? 0 : home[1] < 0 ? 0.5 : 0.25; // top, middle, bottom
   return maxDelay * clamp01(0.6 * angle + 0.4 * height * 2);
 }
+
+/**
+ * Start delay of the 3x3 centre on axis `dir`. Anything placed relative to the
+ * centre must use the same delay, or it runs ahead of the centre and pokes out
+ * of the face at the start of the animation.
+ */
+export const centreDelay3 = (dir: Vec3) => staggerDelay([dir[0] * 2, dir[1] * 2, dir[2] * 2]);
 
 export class ExplodeController {
   private from = 0;

@@ -14,7 +14,7 @@ import { dragToTurn } from '../app/drag';
 import { DEFAULT_CAMERA } from '../cube/orient';
 import { CUBE_SIZE, cubeRadius, fitDistance, along } from './framing';
 import { SCENE_SKINS, type SceneSkin } from '../theme/skins';
-import { ExplodeController, explodeOffset, staggerDelay, spreadFor, explodeExtent, MECH, AXES, capPosition, footOffset, MECH3, foot3, screwHeadDistance3, capDistance3 } from './explode';
+import { ExplodeController, explodeOffset, staggerDelay, spreadFor, explodeExtent, MECH, AXES, capPosition, footOffset, MECH3, foot3 } from './explode';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 
 export const COLORS = ['#ffffff', '#c41e3a', '#009e60', '#ffd500', '#ff5800', '#0051ba'];
@@ -172,29 +172,50 @@ export class CubeView {
   }
 
   /**
-   * A 3x3 centre: a flat outer plate with a shallow round recess (the cap
-   * fills it), four side walls, open toward the core, and an inner tube the
-   * core arm enters. Local +y points outward; ~300 triangles.
+   * A 3x3 centre: a flat outer plate (the covered cap recess is folded into
+   * it, so no circle ever shows on the face), four side walls, open toward the
+   * core, and an inner tube the core arm enters. Being one piece, it moves
+   * rigidly. Local +y points outward; ~100 triangles.
    */
-  private centreShell(dir: Vec3): THREE.Group {
-    const M = MECH3, body = this.bodyMat, h = 0.98, face = 0.97, recess = 0.05;
+  private metalMat = new THREE.MeshStandardMaterial({ color: 0xb8bec6, roughness: 0.35, metalness: 0.9 });
+  private screwGeo: THREE.BufferGeometry[] | null = null;
+
+  /** A 3x3 centre screw with its spring: head at the local origin, shaft and spring running toward the core (-y). */
+  private screwAssembly(): THREE.Group {
+    const M = MECH3;
+    if (!this.screwGeo) {
+      const shaft = new THREE.CylinderGeometry(0.07, 0.07, M.screwLength, 8);
+      shaft.translate(0, -M.screwLength / 2, 0);
+      const head = new THREE.CylinderGeometry(0.2, 0.2, M.screwHeadHeight, 16);
+      const turns = 6, pts: THREE.Vector3[] = [];
+      for (let i = 0; i <= turns * 16; i++) {
+        const t = i / (turns * 16), ang = t * turns * Math.PI * 2;
+        pts.push(new THREE.Vector3(Math.cos(ang) * 0.16, -0.06 - t * M.springLength, Math.sin(ang) * 0.16));
+      }
+      this.screwGeo = [shaft, head, new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), turns * 16, 0.028, 6, false)];
+    }
     const g = new THREE.Group();
-    const base = new THREE.Mesh(new THREE.BoxGeometry(2 * h, M.plate - recess, 2 * h), body);
-    base.position.y = face - recess - (M.plate - recess) / 2;
-    const sq = new THREE.Shape([new THREE.Vector2(-h, -h), new THREE.Vector2(h, -h), new THREE.Vector2(h, h), new THREE.Vector2(-h, h)]);
-    sq.holes.push(new THREE.Path().absarc(0, 0, 0.66, 0, Math.PI * 2, true));
-    const ringGeo = new THREE.ExtrudeGeometry(sq, { depth: recess, bevelEnabled: false, curveSegments: 20 });
-    ringGeo.rotateX(-Math.PI / 2);
-    const ring = new THREE.Mesh(ringGeo, body);
-    ring.position.y = face - recess;
+    for (const geo of this.screwGeo) g.add(new THREE.Mesh(geo, this.metalMat));
+    return g;
+  }
+
+  private centreShell(dir: Vec3): THREE.Group {
+    const M = MECH3, body = this.bodyMat, h = 0.98, face = 0.97;
+    const g = new THREE.Group();
+    // A flat, solid outer plate: the cap is folded into it (on a real cube it sits flush in a covered recess).
+    const base = new THREE.Mesh(new THREE.BoxGeometry(2 * h, M.plate, 2 * h), body);
+    base.position.y = face - M.plate / 2;
     const wallH = h + face - M.plate, wy = -h + wallH / 2;
     const xw = new THREE.BoxGeometry(M.wall, wallH, 2 * h), zw = new THREE.BoxGeometry(2 * h - 2 * M.wall, wallH, M.wall);
     const walls = [[h - M.wall / 2, 0, xw], [-(h - M.wall / 2), 0, xw], [0, h - M.wall / 2, zw], [0, -(h - M.wall / 2), zw]] as const;
-    g.add(base, ring);
+    g.add(base);
     for (const [wx, wz, geo] of walls) { const w = new THREE.Mesh(geo, body); w.position.set(wx, wy, wz); g.add(w); }
     const tube = new THREE.Mesh(new THREE.CylinderGeometry(M.tubeRadius, M.tubeRadius, M.tubeLength, 16, 1, true), body);
     tube.position.y = face - M.plate - M.tubeLength / 2;
-    g.add(tube);
+    // Screw and spring live in the tube and travel with the centre as one unit.
+    const screw = this.screwAssembly();
+    screw.position.y = M.screwHead - 2;
+    g.add(tube, screw);
     g.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(...dir));
     return g;
   }
@@ -228,7 +249,7 @@ export class CubeView {
   /** Zoom-out factor for an explode amount, so the spread pieces stay in frame. */
   private explodeZoom(a: number) { return 1 + (explodeExtent(this.n) * 1.04 - 1) * a; }
 
-  private mech: { group: THREE.Group; caps: { obj: THREE.Object3D; dir: Vec3; dist?: (a: number) => number }[]; feet: THREE.Object3D[] } | null = null;
+  private mech: { group: THREE.Group; caps: { obj: THREE.Object3D; dir: Vec3; dist?: (a: number) => number; delay?: number }[]; feet: THREE.Object3D[] } | null = null;
 
   /**
    * The inside of a real 2x2, revealed when exploded: six thin spindles meeting at the centre (no core block), with six
@@ -304,45 +325,24 @@ export class CubeView {
 
   /**
    * The inside of a real 3x3, revealed when exploded: the fixed core and arms,
-   * a screw and spring per centre that stay on the arm while the hollow centre
-   * slides off it, the flush centre caps riding in their recesses, and the inner feet of every edge and corner. Edges and
+   * the arms the hollow centres (with their screws and springs) slide off,
+   * and the inner feet of every edge and corner. Edges and
    * corners have no holes; only centres are screwed down. ~6k triangles.
    */
   private buildMechanism3() {
     const plastic = new THREE.MeshStandardMaterial({ color: 0x8a9099, roughness: 0.72, metalness: 0.02, emissive: 0x1c2430 });
     const darker = new THREE.MeshStandardMaterial({ color: 0x5c636c, roughness: 0.8, emissive: 0x141a22 });
-    const metal = new THREE.MeshStandardMaterial({ color: 0xb8bec6, roughness: 0.35, metalness: 0.9 });
     const M = MECH3, up = new THREE.Vector3(0, 1, 0);
     const group = new THREE.Group();
     group.visible = false;
     group.add(new THREE.Mesh(new THREE.SphereGeometry(M.coreRadius, 24, 16), darker));
     const armGeo = new THREE.CylinderGeometry(M.armRadius, M.armRadius * 1.2, M.armLength, 14);
     armGeo.translate(0, M.armLength / 2, 0);
-    // Screw: head at the local origin, shaft running down toward the core.
-    const shaftGeo = new THREE.CylinderGeometry(0.07, 0.07, M.screwLength, 8);
-    shaftGeo.translate(0, -M.screwLength / 2, 0);
-    const headGeo = new THREE.CylinderGeometry(0.2, 0.2, 0.09, 16);
-    // Spring: in the tube, under the head.
-    const turns = 6, pts: THREE.Vector3[] = [];
-    for (let i = 0; i <= turns * 16; i++) {
-      const t = i / (turns * 16), ang = t * turns * Math.PI * 2;
-      pts.push(new THREE.Vector3(Math.cos(ang) * 0.16, -0.06 - t * M.springLength, Math.sin(ang) * 0.16));
-    }
-    const springGeo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), turns * 16, 0.028, 6, false);
-    const capGeo = new THREE.CylinderGeometry(0.64, 0.64, M.capThickness, 24);
-    const movers: { obj: THREE.Object3D; dir: Vec3; dist: (a: number) => number }[] = [];
     for (const dir of AXES) {
       const q = new THREE.Quaternion().setFromUnitVectors(up, new THREE.Vector3(...dir));
       const arm = new THREE.Mesh(armGeo, darker);
       arm.quaternion.copy(q);
       group.add(arm);
-      const screw = new THREE.Group();
-      screw.quaternion.copy(q);
-      screw.add(new THREE.Mesh(shaftGeo, metal), new THREE.Mesh(headGeo, metal), new THREE.Mesh(springGeo, metal));
-      const cap = new THREE.Mesh(capGeo, plastic);
-      cap.quaternion.copy(q);
-      group.add(screw, cap);
-      movers.push({ obj: screw, dir, dist: screwHeadDistance3 }, { obj: cap, dir, dist: capDistance3 });
     }
     this.root.add(group);
     // Feet: part of each edge and corner, so they turn and explode with it.
@@ -368,7 +368,7 @@ export class CubeView {
       this.addPiece(foot, new THREE.Vector3(x, y, z));
       feet.push(foot);
     }
-    this.mech = { group, caps: movers, feet };
+    this.mech = { group, caps: [], feet };
   }
 
   /** Guide lines from each piece back to its home slot, ghost outlines of the slots, and a floor grid. */
@@ -426,7 +426,7 @@ export class CubeView {
       this.mech.group.visible = show;
       for (const f of this.mech.feet) f.visible = show;
       for (const c of this.mech.caps) {
-        const a = this.explode.amount(0);
+        const a = this.explode.amount(c.delay ?? 0);
         if (c.dist) { const d = c.dist(a); c.obj.position.set(c.dir[0] * d, c.dir[1] * d, c.dir[2] * d); continue; }
         const [x, y, z] = capPosition(c.dir, a);
         c.obj.position.set(x, y, z);

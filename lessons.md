@@ -76,3 +76,5 @@ Rules learned building Cube Solver. Read them before changing the build, the sol
 - A service worker from a production build on the same port can serve stale bundles to the dev server; unregister in dev.
 
 - Keep hidden inner geometry a hair below the sticker plane (0.97 vs 0.99); coplanar faces z-fight and show through stickers as ghost circles.
+
+- Anything positioned relative to a staggered piece must use that piece's delay, or it leads the piece at the start of the animation. Better still, parent it to the piece.
