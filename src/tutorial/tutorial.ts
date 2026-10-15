@@ -88,7 +88,7 @@ export class Tutorial {
     skip.onclick = done;
     slot.replaceChildren(
       el('b', { id: 'offer-title' }, 'Welcome to Cube Solver'),
-      el('p', {}, 'New to cube notation? A 5-minute interactive lesson teaches it on the cube, then a short tour shows you around. You can come back any time from the 🎓 Tutorial menu.'),
+      el('p', {}, 'New to cube notation? A 5-minute interactive lesson teaches it on the cube, and a short tour shows you around the app. Both are always in the 🎓 Tutorial menu.'),
       el('div', { className: 'row' }, skip, tour, learn),
     );
     slot.setAttribute('aria-labelledby', 'offer-title');

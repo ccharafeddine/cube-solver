@@ -63,7 +63,7 @@ describe('tour helpers', () => {
     const turn = TOUR.find((t) => t.id === 'turn')!;
     expect(stepBody(turn, true)).toBe(turn.touchBody);
     expect(stepBody(turn, false)).toBe(turn.body);
-    const solve = TOUR.find((t) => t.id === 'solve')!;
-    expect(stepBody(solve, true)).toBe(solve.body);
+    const method = TOUR.find((t) => t.id === 'method')!; // no touch variant: falls back
+    expect(stepBody(method, true)).toBe(method.body);
   });
 });

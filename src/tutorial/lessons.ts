@@ -132,7 +132,7 @@ export interface TourStep {
 
 export const TOUR: TourStep[] = [
   { id: 'cube', target: '#viewport', tab: 'turn', title: 'Your cube',
-    body: 'This is the cube you are solving. Everything else in the app reads from it: change it here and the solution, ranked moves and method breakdown update on their own.' },
+    body: 'This is your cube. Change it and everything else updates by itself: the solution, the ranked moves and the method breakdown.' },
   { id: 'rotate', target: '#viewport', tab: 'turn', title: 'Spin the view',
     body: 'Try it now: drag the empty background to spin the cube and look at any side. Right-drag or Shift-drag spins it from anywhere, even over stickers. The X, Y and Z buttons in the corner turn the whole cube a quarter turn (Shift-click for the other way). Scroll to zoom; Alt+V resets the view.',
     touchBody: 'Try it now: drag the empty area around the cube to spin it and look at any side. The X, Y and Z buttons in the corner turn the whole cube a quarter turn. Pinch to zoom.' },
@@ -146,16 +146,17 @@ export const TOUR: TourStep[] = [
     body: 'Try it now: press Scramble for a random position. Reset goes back to solved, the arrows undo and redo (Ctrl+Z / Ctrl+Y), and the slider sets animation speed.',
     touchBody: 'Try it now: tap Scramble for a random position. Reset goes back to solved, the arrows undo and redo, and the slider sets animation speed.' },
   { id: 'solve', target: '#solution-card', title: 'Solve it, fast or optimal',
-    body: 'The solver runs as soon as the cube changes. Press Play (or Space) to watch, ← → to step. The Fast/Optimal switch in the header picks a quick near-best answer or the proven shortest one.' },
+    body: 'The solver starts as soon as the cube changes. Press Play (or Space) to watch the solution, and ← → to step through it. In the header, Fast finds a near-shortest answer quickly and Optimal finds the proven shortest one.',
+    touchBody: 'The solver starts as soon as the cube changes. Tap Play to watch the solution, and the arrows to step through it. In the header, Fast finds a near-shortest answer quickly and Optimal finds the proven shortest one.' },
   { id: 'next', target: '#next-card', title: 'Ranked next moves',
-    body: 'Every possible next move with how far it leaves you from solved: green gets closer, red goes further, ≈ marks an estimate. Beginner mode in the header also favours turns that are easy by hand.' },
+    body: 'See every move you could make next, ranked by how close it gets you to solved. Each one shows how many moves would be left and the change: -1 in green is a step closer, ±0 makes no difference, +1 in red is a step back. ≈ marks an estimate. Turn on Beginner in the header to favour moves that are easy by hand.' },
   { id: 'method', target: '#method-card', title: 'Method breakdowns',
-    body: 'See the solve the way people learn it: layer by layer, CFOP, Roux or ZZ. Each named step plays on its own.' },
+    body: 'See the same solve the way people learn it: layer by layer, CFOP, Roux or ZZ. You can play each named step on its own.' },
   { id: 'history', target: '#history-card', title: 'History',
     body: 'Every move you play is listed here. Click any move to jump back to that point.',
     touchBody: 'Every move you play is listed here. Tap any move to jump back to that point.' },
   { id: 'share', target: '[data-panel="io"]', tab: 'io', title: 'Share and export',
-    body: 'Copy a share link, the facelet string, JSON or the solution, or paste one in to load a cube. That is the tour: replay it any time from the 🎓 Tutorial menu.' },
+    body: 'Copy a share link, the facelet string, JSON or the solution, or paste one in to load a cube. That is the end of the tour. You can replay it any time from the 🎓 Tutorial menu.' },
 ];
 
 export interface Progress {
