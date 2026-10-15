@@ -165,6 +165,8 @@ export interface Move {
   power: 1 | 2 | 3;
   /** Layers deep for wide moves (1 = outer layer only). */
   depth: number;
+  /** Turn only the `depth`-th layer instead of all layers down to it (SiGN `3R`). */
+  slice?: boolean;
 }
 
 export function moveToTurn(m: Move, n: number): Turn {
@@ -180,7 +182,9 @@ export function moveToTurn(m: Move, n: number): Turn {
     return { axis, layers: inner, q: m.face === 'S' ? m.power : 4 - m.power };
   }
   const [axis, sign] = FACE_AXIS[m.face];
-  const layers = sign > 0 ? all.slice(n - m.depth) : all.slice(0, m.depth);
+  const layers = m.slice
+    ? [sign > 0 ? all[n - m.depth] : all[m.depth - 1]]
+    : sign > 0 ? all.slice(n - m.depth) : all.slice(0, m.depth);
   // A clockwise turn of a negative face is counter-clockwise seen from +axis.
   return { axis, layers, q: sign > 0 ? m.power : 4 - m.power };
 }
@@ -214,6 +218,22 @@ export function turnToMove(t: Turn, n: number): Move | null {
     return { face: slice, power: (slice === 'S' ? q : 4 - q) as 1 | 2 | 3, depth: 1 };
   }
   return null;
+}
+
+/**
+ * Like turnToMove but names every single layer of any cube, inner ones in
+ * SiGN style: `2R` is the second layer from R, `3L'` the third from L. The
+ * middle layer of an odd cube is named from R, U or F.
+ */
+export function layerMove(t: Turn, n: number): Move {
+  const layer = t.layers[0];
+  const q = (((t.q % 4) + 4) % 4) as 1 | 2 | 3;
+  if (layer >= 0) {
+    const depth = (n - 1 - layer) / 2 + 1;
+    return { face: (['R', 'U', 'F'] as const)[t.axis], power: q, depth, slice: depth > 1 || undefined };
+  }
+  const depth = (layer + n - 1) / 2 + 1;
+  return { face: (['L', 'D', 'B'] as const)[t.axis], power: (4 - q) as 1 | 2 | 3, depth, slice: depth > 1 || undefined };
 }
 
 /** Colour counts per face colour, for setup validation hints. */

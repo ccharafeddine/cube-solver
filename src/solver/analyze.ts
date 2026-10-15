@@ -13,10 +13,12 @@ import { lowerBound, pieceStates } from './pdb';
 import { solveMethod } from './methods';
 import { rankCandidates, QUARTER_NAMES } from './rank';
 import type { AnalyzeRequest, AnalyzeResponse } from './protocol';
+import { analyzeBig } from './big/analyze';
 
 const qtmOf = (names: string[]) => names.reduce((n, m) => n + (m.endsWith('2') ? 2 : 1), 0);
 
 export function analyze(req: AnalyzeRequest, emit: (r: AnalyzeResponse) => void, shouldStop?: () => boolean): void {
+  if (req.n > 3) return analyzeBig(req, emit);
   const state = Uint8Array.from(req.state);
   if (req.n === 2) {
     const p = parse2(state);

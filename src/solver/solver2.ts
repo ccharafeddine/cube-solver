@@ -95,13 +95,10 @@ export type Parse2 = { ok: true; index: number } | { ok: false; error: string };
 /**
  * A 2x2 has no centres, so the colour scheme is read off the corner sitting in
  * DBL: its D, B and L colours define those faces, and each opposite face is
- * the one colour never seen on a corner with it.
+ * the one colour never seen on a corner with it. Returns the colour of each
+ * face U R F D L B, or null when the corners cannot belong to a real cube.
  */
-export function parse2(s: State): Parse2 {
-  if (s.length !== 24) return { ok: false, error: 'A 2x2 needs 24 stickers.' };
-  const counts = Array(6).fill(0);
-  for (const c of s) counts[c]++;
-  if (counts.some((k) => k !== 4)) return { ok: false, error: 'Each colour must appear on exactly 4 stickers.' };
+export function cornerScheme(s: State): number[] | null {
   const f = to3x3(s);
   const cornerSets = [
     [8, 9, 20], [6, 18, 38], [0, 36, 47], [2, 45, 11], [29, 26, 15], [27, 44, 24], [33, 53, 42], [35, 17, 51],
@@ -114,7 +111,17 @@ export function parse2(s: State): Parse2 {
   };
   const d = f[33], b = f[53], l = f[42];
   const scheme = [opposite(d), opposite(l), opposite(b), d, l, b]; // colour of U R F D L B
-  if (scheme.some((x) => x < 0) || new Set(scheme).size !== 6)
+  return scheme.some((x) => x < 0) || new Set(scheme).size !== 6 ? null : scheme;
+}
+
+export function parse2(s: State): Parse2 {
+  if (s.length !== 24) return { ok: false, error: 'A 2x2 needs 24 stickers.' };
+  const counts = Array(6).fill(0);
+  for (const c of s) counts[c]++;
+  if (counts.some((k) => k !== 4)) return { ok: false, error: 'Each colour must appear on exactly 4 stickers.' };
+  const f = to3x3(s);
+  const scheme = cornerScheme(s);
+  if (!scheme)
     return { ok: false, error: 'The colours do not form a real cube: some pair of colours shares a corner twice or never.' };
   const relabel = new Map(scheme.map((col, face) => [col, face]));
   const norm = f.map((x) => (x < 0 ? 0 : relabel.get(x)!));

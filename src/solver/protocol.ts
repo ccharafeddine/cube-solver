@@ -2,10 +2,15 @@ import type { Candidate } from './rank';
 import type { Step, MethodId } from './methods';
 
 export type Mode = 'fast' | 'optimal';
+/** Supported cube sizes. */
+export type Size = 2 | 3 | 4 | 5 | 6 | 7;
+export const SIZES: Size[] = [2, 3, 4, 5, 6, 7];
+/** Sizes the app offers so far (big cubes are switched on one size at a time). */
+export const ENABLED_SIZES: Size[] = [2, 3, 4];
 
 export interface AnalyzeRequest {
   id: number;
-  n: 2 | 3;
+  n: Size;
   state: number[];
   mode: Mode;
   /** Think time for the main solve, ms. */
