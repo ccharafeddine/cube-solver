@@ -38,6 +38,12 @@ describe('design tokens', () => {
     const declared = new Set([...aero, '--n', '--s']);
     expect([...used].filter((v) => !declared.has(v))).toEqual([]);
   });
+  it('panels, cards, controls and chips take their corners from the theme', () => {
+    expect(style).toMatch(/dialog \{[^}]*border-radius: var\(--corner-panel\)/);
+    expect(style).toMatch(/\.card \{[^}]*border-radius: var\(--corner-card\)/);
+    expect(style).toMatch(/border-radius: var\(--corner-control\)/);
+    for (const t of ['--corner-panel', '--corner-card', '--corner-control', '--corner-chip', '--edge-detail', '--corner-art', '--panel-clip']) expect(aero.has(t), t).toBe(true);
+  });
   it('respects reduced transparency and reduced motion', () => {
     expect(css).toMatch(/prefers-reduced-transparency: reduce/);
     expect(style).toMatch(/prefers-reduced-motion: reduce/);
