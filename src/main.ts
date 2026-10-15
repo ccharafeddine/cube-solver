@@ -14,7 +14,7 @@ import { fromHash, importText, toFaceletString, toHash, toJSON } from './app/sha
 import { checkForUpdate } from './app/update';
 import { Tutorial } from './tutorial/tutorial';
 import { standardRotation } from './cube/orient';
-import { pickSkin, resolveTheme, SCENE_SKINS } from './theme/skins';
+import { pickSkin, resolveTheme, modeFor, SCENE_SKINS } from './theme/skins';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const qtmOf = (ms: string[]) => ms.reduce((a, m) => a + (m.endsWith('2') ? 2 : 1), 0);
@@ -649,7 +649,7 @@ const skin = pickSkin(location.search, localStorage.getItem('cube-solver-skin'))
 document.documentElement.dataset.skin = skin;
 const darkQuery = matchMedia('(prefers-color-scheme: dark)');
 function applyTheme() {
-  const t = resolveTheme(localStorage.getItem('cube-solver-theme'), darkQuery.matches);
+  const t = modeFor(skin, resolveTheme(localStorage.getItem('cube-solver-theme'), darkQuery.matches));
   document.documentElement.dataset.theme = t;
   view.applySkin(SCENE_SKINS[skin][t]);
   $('theme').setAttribute('aria-label', t === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');

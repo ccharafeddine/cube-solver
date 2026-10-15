@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { SKINS, SCENE_SKINS, pickSkin, resolveTheme, DEFAULT_SKIN } from './skins';
+import { SKINS, SCENE_SKINS, pickSkin, resolveTheme, DEFAULT_SKIN, modeFor } from './skins';
 
 const css = readFileSync(new URL('./tokens.css', import.meta.url), 'utf-8');
 const style = readFileSync(new URL('../style.css', import.meta.url), 'utf-8');
@@ -20,7 +20,7 @@ describe('design tokens', () => {
   const aero = block(":root, :root[data-skin='matte'] {");
   it('every skin defines every token the default skin defines', () => {
     expect(aero.size).toBeGreaterThan(40);
-    for (const sel of [":root[data-skin='neon'] {", ":root[data-skin='aero'] {"]) {
+    for (const sel of [":root[data-skin='neon'] {", ":root[data-skin='aero'] {", ":root[data-skin='brutal'] {"]) {
       const b = block(sel);
       const missing = [...aero].filter((v) => !b.has(v));
       expect(missing, sel).toEqual([]);
@@ -51,6 +51,15 @@ describe('design tokens', () => {
     expect(contrast('#9cc2db', '#0d3050')).toBeGreaterThan(4.5);
     expect(contrast('#ffffff', '#0d66aa')).toBeGreaterThan(4.5); // dark primary button
   });
+  it('keeps text contrast accessible in neon and neubrutalism', () => {
+    expect(contrast('#e9e6ff', '#12102a')).toBeGreaterThan(7);
+    expect(contrast('#9d97c7', '#12102a')).toBeGreaterThan(4.5);
+    expect(contrast('#07060d', '#22b8e0')).toBeGreaterThan(4.5);
+    expect(contrast('#000000', '#ff5ca8')).toBeGreaterThan(4.5);
+    expect(contrast('#000000', '#3ddc84')).toBeGreaterThan(4.5);
+    expect(contrast('#3d3d3d', '#ffffff')).toBeGreaterThan(7);
+    expect(contrast('#000000', '#ffd23f')).toBeGreaterThan(7);
+  });
   it('keeps text contrast accessible in matte light and dark', () => {
     expect(contrast('#22201c', '#f7f4ee')).toBeGreaterThan(7);
     expect(contrast('#6b665c', '#f7f4ee')).toBeGreaterThan(4.5);
@@ -79,6 +88,11 @@ describe('skins', () => {
     expect(pickSkin('?skin=neon', 'aero')).toBe('neon');
     expect(pickSkin('', 'aero')).toBe('aero');
     expect(pickSkin('?skin=bogus', 'nope')).toBe('matte');
+  });
+  it('single-mode skins ignore the light/dark choice', () => {
+    expect(modeFor('neon', 'light')).toBe('dark');
+    expect(modeFor('brutal', 'dark')).toBe('light');
+    expect(modeFor('matte', 'dark')).toBe('dark');
   });
   it('resolves the theme from the saved choice or the OS', () => {
     expect(resolveTheme(null, true)).toBe('dark');

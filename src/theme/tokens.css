@@ -10,6 +10,7 @@
 
 /* ---------- Matte textured, light (default): paper grain, soft light ---------- */
 :root, :root[data-skin='matte'] {
+  --border-w: 1px;
   --font: 'Segoe UI', 'Noto Sans', system-ui, sans-serif;
   --font-mono: 'Cascadia Mono', 'Consolas', ui-monospace, monospace;
   --text: #22201c; --text-muted: #6b665c; --text-on-accent: #ffffff; --link: #8a4b14;
@@ -88,6 +89,7 @@
 
 /* ---------- Frutiger Aero, light ---------- */
 :root[data-skin='aero'] {
+  --border-w: 1px;
   --font: 'Segoe UI', 'Frutiger', 'Myriad Pro', 'Open Sans', 'Noto Sans', Ubuntu, system-ui, sans-serif;
   --font-mono: 'Cascadia Mono', 'Consolas', ui-monospace, monospace;
   --text: #0d2a3f; --text-muted: #45657c; --text-on-accent: #ffffff; --link: #0a5fa8;
@@ -179,8 +181,9 @@
   color-scheme: dark;
 }
 
-/* ---------- Neon futuristic, dark (planned skin: variables only) ---------- */
+/* ---------- Neon futuristic, dark only: deep surfaces, glowing edges, faint grid ---------- */
 :root[data-skin='neon'] {
+  --border-w: 1px;
   --font: 'Segoe UI', 'Noto Sans', system-ui, sans-serif;
   --font-mono: 'Cascadia Mono', 'Consolas', ui-monospace, monospace;
   --text: #e9e6ff; --text-muted: #9d97c7; --text-on-accent: #07060d; --link: #7fe9ff;
@@ -188,11 +191,14 @@
   --good: #4dff9a; --bad: #ff5c8a;
   --line: rgb(140 120 255 / 0.22);
   --bg: #07060d;
-  --bg-image: radial-gradient(ellipse at 50% -10%, #1d1640, transparent 60%), linear-gradient(180deg, #07060d, #0c0a18);
+  --bg-image: radial-gradient(ellipse at 50% -10%, #1d1640, transparent 60%),
+    repeating-linear-gradient(0deg, rgb(56 225 255 / 0.05) 0 1px, transparent 1px 48px),
+    repeating-linear-gradient(90deg, rgb(56 225 255 / 0.05) 0 1px, transparent 1px 48px),
+    linear-gradient(180deg, #07060d, #0c0a18);
   --surface: linear-gradient(180deg, rgb(26 22 52 / 0.85), rgb(14 12 30 / 0.85));
   --surface-solid: #12102a;
   --surface-2: rgb(8 7 18 / 0.8);
-  --surface-border: rgb(140 120 255 / 0.3);
+  --surface-border: rgb(56 225 255 / 0.38);
   --surface-edge: rgb(0 0 0 / 0.5);
   --surface-highlight: inset 0 1px 0 rgb(164 107 255 / 0.25), inset 0 -1px 0 rgb(0 0 0 / 0.3);
   --blur: 10px;
@@ -210,10 +216,11 @@
   --btn-shadow: 0 0 10px rgb(56 225 255 / 0.15);
   --btn-press-shadow: inset 0 0 10px rgb(56 225 255 / 0.35);
   --radius-sm: 6px; --radius: 10px; --radius-lg: 14px; --radius-pill: 999px;
-  --shadow-1: 0 0 0 1px rgb(56 225 255 / 0.06), 0 10px 30px rgb(0 0 0 / 0.5);
+  --shadow-1: 0 0 12px rgb(56 225 255 / 0.18), 0 0 1px rgb(164 107 255 / 0.6), 0 10px 30px rgb(0 0 0 / 0.5);
   --shadow-pop: 0 0 30px rgb(164 107 255 / 0.25), 0 20px 50px rgb(0 0 0 / 0.6);
   --focus: 0 0 0 2px #07060d, 0 0 0 4px #38e1ff;
-  --viewport-bg: radial-gradient(circle at 50% 40%, #1a1636, #07060d 78%);
+  --viewport-bg: radial-gradient(circle at 50% 40%, #1a1636, #07060d 78%),
+    repeating-linear-gradient(0deg, rgb(56 225 255 / 0.05) 0 1px, transparent 1px 32px), repeating-linear-gradient(90deg, rgb(56 225 255 / 0.05) 0 1px, transparent 1px 32px);
   --viewport-exploded-bg: radial-gradient(circle at 50% 40%, #1a1636, #07060d 78%);
   --spot-dim: rgb(3 2 8 / 0.78);
   --dialog-backdrop: rgb(0 0 0 / 0.6);
@@ -222,6 +229,50 @@
   color-scheme: dark;
 }
 
+
+/* ---------- Neubrutalism, light only: flat colour, thick black outlines, hard offset shadows ---------- */
+:root[data-skin='brutal'] {
+  --border-w: 3px;
+  --font: 'Segoe UI', 'Arial Black', system-ui, sans-serif;
+  --font-mono: 'Cascadia Mono', 'Consolas', ui-monospace, monospace;
+  --text: #000000; --text-muted: #3d3d3d; --text-on-accent: #000000; --link: #1b3fd6;
+  --accent: #ff5ca8; --accent-2: #1b3fd6; --accent-green: #3ddc84; --accent-soft: rgb(255 92 168 / 0.2);
+  --good: #0b7a35; --bad: #c4001a;
+  --line: #000000;
+  --bg: #fff4d6;
+  --bg-image: linear-gradient(#fff4d6, #fff4d6);
+  --surface: #ffffff;
+  --surface-solid: #ffffff;
+  --surface-2: #fff9e8;
+  --surface-border: #000000;
+  --surface-edge: transparent;
+  --surface-highlight: 0 0 0 0 transparent;
+  --blur: 0px;
+  --header-bg: #ffd23f;
+  --btn-bg: #ffffff;
+  --btn-bg-hover: #fff1b8;
+  --btn-border: #000000;
+  --btn-text: #000000;
+  --btn-primary-bg: #ff5ca8;
+  --btn-primary-hover: #ff7ab9;
+  --btn-primary-border: #000000;
+  --btn-green-bg: #3ddc84;
+  --btn-green-border: #000000;
+  --btn-gloss: none;
+  --btn-shadow: 3px 3px 0 #000000;
+  --btn-press-shadow: 0 0 0 #000000;
+  --radius-sm: 4px; --radius: 6px; --radius-lg: 8px; --radius-pill: 8px;
+  --shadow-1: 5px 5px 0 #000000;
+  --shadow-pop: 8px 8px 0 #000000;
+  --focus: 0 0 0 3px #ffffff, 0 0 0 6px #1b3fd6;
+  --viewport-bg: #a5e3ff;
+  --viewport-exploded-bg: #1d1d1d;
+  --spot-dim: rgb(0 0 0 / 0.6);
+  --dialog-backdrop: rgb(0 0 0 / 0.45);
+  --texture: none;
+  --swatch-gloss: none;
+  color-scheme: light;
+}
 
 /* Reduced transparency: solid surfaces, no blur. */
 @media (prefers-reduced-transparency: reduce) {
