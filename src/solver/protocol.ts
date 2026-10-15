@@ -18,6 +18,8 @@ export interface AnalyzeRequest {
   method: MethodId;
   /** Just the quick main solution (used to turn a random state into scramble moves). */
   solveOnly?: boolean;
+  /** Warm-up only: load or build this size's tables and answer nothing useful (id < 0). */
+  warm?: boolean;
 }
 
 export type AnalyzeResponse =

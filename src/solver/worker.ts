@@ -21,7 +21,9 @@ async function ensureTables(id: number) {
 
 self.onmessage = async (e: MessageEvent<AnalyzeRequest>) => {
   try {
-    if (e.data.n === 3 && !e.data.solveOnly) await ensureTables(e.data.id);
+    if (e.data.n === 3 && (e.data.warm || !e.data.solveOnly)) await ensureTables(e.data.id);
+    // A warm-up solves its (random) state once so the move and pruning tables are built, and stays quiet.
+    if (e.data.warm) { analyze({ ...e.data, solveOnly: true }, () => {}); return; }
     analyze(e.data, (r) => self.postMessage(r));
   } catch (err) {
     self.postMessage({ id: e.data.id, kind: 'invalid', error: `Solver error: ${(err as Error).message}` });

@@ -2,7 +2,7 @@ import { keepInView } from './ui/scroll';
 import './style.css';
 import { CubeView, COLORS, COLOR_NAMES } from './ui/scene';
 import { NetEditor } from './ui/net';
-import { applyTurn, colorCounts, isSolved, layerMove, moveToTurn, solved, turnToMove, type State } from './cube/facelets';
+import { applyMoves, applyTurn, colorCounts, isSolved, layerMove, moveToTurn, solved, turnToMove, type State } from './cube/facelets';
 import { formatMove, invertMoves, parseMoves } from './cube/notation';
 import { solvedCubie, toFacelets, parity, type Cubie } from './cube/cubie';
 import { randomState2 } from './solver/solver2';
@@ -11,7 +11,7 @@ import type { Candidate } from './solver/rank';
 import { METHODS, type MethodId, type Step } from './solver/methods/index';
 import { History, inverseMove } from './app/history';
 import { fromHash, importText, toFaceletString, toHash, toJSON } from './app/share';
-import { checkForUpdate, updatesEnabled } from './app/update';
+import { checkForUpdate } from './app/update';
 import { playPaced, randomMoves, scrambleMs } from './app/pace';
 import { Tutorial } from './tutorial/tutorial';
 import { standardRotation } from './cube/orient';
@@ -86,9 +86,33 @@ let worker: Worker | null = null;
 let workerBusy = false;
 let reqId = 0;
 
+/**
+ * A solver worker costs about a second to start (module load, then the
+ * two-phase move tables and the pattern databases). Cancelling means
+ * terminating it, so a spare is kept warm in the background: replacing the
+ * worker takes the spare, and a new spare warms up once the page is idle.
+ */
+const spawnWorker = () => new Worker(new URL('./solver/worker.ts', import.meta.url), { type: 'module' });
+function warmWorker(w: Worker) {
+  const base = { mode: 'fast' as const, timeMs: 300, method: settings.method, warm: true };
+  w.postMessage({ ...base, id: -1, n: 3, state: Array.from(toFacelets(randomCubie3())) } satisfies AnalyzeRequest);
+  w.postMessage({ ...base, id: -2, n: 2, state: Array.from(corners(toFacelets(randomState2()))) } satisfies AnalyzeRequest);
+}
+let spare: Worker | null = null;
+let spareTimer = 0;
+function scheduleSpare() {
+  clearTimeout(spareTimer);
+  spareTimer = window.setTimeout(() => {
+    if (spare) return;
+    spare = spawnWorker();
+    warmWorker(spare);
+  }, 400);
+}
 function newWorker() {
   worker?.terminate();
-  worker = new Worker(new URL('./solver/worker.ts', import.meta.url), { type: 'module' });
+  worker = spare ?? spawnWorker();
+  spare = null;
+  scheduleSpare();
   worker.onmessage = (e: MessageEvent<AnalyzeResponse>) => onResult(e.data);
   worker.onerror = (e) => {
     workerBusy = false;
@@ -99,17 +123,40 @@ function newWorker() {
 }
 
 let analyzeTimer = 0;
+/** Send one analysis of `s` to a free worker; returns its request id. */
+function postAnalysis(s: State): number {
+  if (!worker || workerBusy) newWorker();
+  workerBusy = true;
+  const req: AnalyzeRequest = {
+    id: ++reqId, n, state: Array.from(s), mode: settings.mode,
+    timeMs: settings.thinkMs, method: settings.method,
+  };
+  worker!.postMessage(req);
+  return req.id;
+}
+
+/**
+ * Look-ahead: while a sequence (a scramble, a method step) is playing, the
+ * position it ends on is already being solved. Results are held back until
+ * the cube gets there, then shown at once, so the solution appears as the
+ * last turn lands instead of starting from scratch.
+ */
+let ahead: { id: number; key: string; held: AnalyzeResponse[] } | null = null;
+const keyOf = (s: State) => `${n}:${s.join('')}`;
+
 function requestAnalysis() {
   clearTimeout(analyzeTimer);
+  if (ahead && ahead.key === keyOf(state) && ahead.id === reqId) {
+    const held = ahead.held;
+    ahead = null;
+    if (!held.some((r) => r.kind === 'result' || r.kind === 'invalid')) setStatus('thinking', 'Solving…');
+    held.forEach(onResult);
+    return;
+  }
+  ahead = null;
   analyzeTimer = window.setTimeout(() => {
-    if (!worker || workerBusy) newWorker();
-    workerBusy = true;
-    const req: AnalyzeRequest = {
-      id: ++reqId, n, state: Array.from(state), mode: settings.mode,
-      timeMs: settings.thinkMs, method: settings.method,
-    };
     setStatus('thinking', settings.mode === 'optimal' && n === 3 ? 'Searching for the optimal solution…' : 'Solving…');
-    worker!.postMessage(req);
+    postAnalysis(state);
   }, 120);
 }
 
@@ -123,6 +170,7 @@ function stopAnalysis() {
 
 function onResult(r: AnalyzeResponse) {
   if (r.id !== reqId) return;
+  if (ahead && ahead.id === r.id) { ahead.held.push(r); return; }
   if (r.kind === 'status') return setStatus('thinking', r.text);
   if (r.kind === 'progress') {
     const p = $('progress');
@@ -334,7 +382,12 @@ async function playSequence(moves: string[], asScramble = false) {
   // Any analysis queued or running is for a position about to go stale: drop it until the sequence ends.
   clearTimeout(analyzeTimer);
   if (workerBusy) { newWorker(); workerBusy = false; }
-  if (asScramble) setStatus('thinking', 'Mixing up the cube…');
+  ahead = null;
+  try {
+    const target = applyMoves(state, n, parseMoves(moves.join(' ')));
+    ahead = { id: postAnalysis(target), key: keyOf(target), held: [] };
+  } catch { /* moves the model cannot apply ahead: analyse at the end as usual */ }
+  if (asScramble) setStatus('thinking', 'Mixing up the cube… (working out the solution meanwhile)');
   const done = await playPaced(moves, {
     play: (m) => {
       if (view.exploded) { turnsBlocked(); return false; }
@@ -481,7 +534,51 @@ function corners(f: State): State {
  * solved at scramble pace and recorded in the history, so Undo walks back
  * through it turn by turn.
  */
-let scrambleWorker: Worker | null = null;
+/**
+ * The scrambler: one long-lived worker that turns random states into scramble
+ * moves. The next scramble for each small size is worked out ahead of time,
+ * so pressing Scramble starts turning at once.
+ */
+let scrambler: Worker | null = null;
+let scrambleReq = 0;
+const nextScramble = new Map<number, string[]>();
+const pendingScramble = new Map<number, number>();
+let waitingScramble: { size: number; run: number } | null = null;
+function getScrambler(): Worker {
+  if (scrambler) return scrambler;
+  const w = spawnWorker();
+  w.onmessage = (e: MessageEvent<AnalyzeResponse>) => {
+    const r = e.data;
+    if (r.kind !== 'result' || !r.final) return;
+    const size = [...pendingScramble].find(([, id]) => id === r.id)?.[0];
+    if (size === undefined) return;
+    pendingScramble.delete(size);
+    nextScramble.set(size, invertMoves(parseMoves(r.solution.join(' '))).map(formatMove));
+    // Someone pressed Scramble before it was ready: start now (unless they moved on).
+    if (waitingScramble?.size === size) {
+      const wait = waitingScramble;
+      waitingScramble = null;
+      if (wait.run === sequenceRun && size === n) startScramble(size);
+    }
+  };
+  w.onerror = () => { scrambler = null; pendingScramble.clear(); };
+  scrambler = w;
+  return w;
+}
+function prefetchScramble(size: number) {
+  if (size > 3 || nextScramble.has(size) || pendingScramble.has(size)) return;
+  const f = toFacelets(size === 2 ? randomState2() : randomCubie3());
+  const id = ++scrambleReq;
+  pendingScramble.set(size, id);
+  getScrambler().postMessage({ id, n: size as Size, state: Array.from(size === 2 ? corners(f) : f), mode: 'fast', timeMs: 300, method: settings.method, solveOnly: true } satisfies AnalyzeRequest);
+}
+function startScramble(size: number) {
+  const moves = nextScramble.get(size)!;
+  nextScramble.delete(size);
+  $<HTMLInputElement>('alg').value = moves.join(' ');
+  void playSequence(moves, true);
+  prefetchScramble(size);
+}
 const BIG_SCRAMBLE: Record<number, number> = { 4: 40, 5: 60, 6: 80, 7: 100 };
 function scramble() {
   if (turnsBlocked()) return;
@@ -494,27 +591,14 @@ function scramble() {
     void playSequence(moves, true);
     return;
   }
-  const f = toFacelets(size === 2 ? randomState2() : randomCubie3());
-  const target = size === 2 ? corners(f) : f;
   setBaseline(solved(size));
-  const run = sequenceRun;
+  if (nextScramble.has(size)) return startScramble(size);
+  // Not worked out yet (pressed right after load): say so, and start the moment it is.
   setStatus('thinking', 'Mixing up the cube…');
-  scrambleWorker?.terminate();
-  const w = new Worker(new URL('./solver/worker.ts', import.meta.url), { type: 'module' });
-  scrambleWorker = w;
-  w.onmessage = (e: MessageEvent<AnalyzeResponse>) => {
-    const r = e.data;
-    if (r.kind === 'status' || r.kind === 'progress' || (r.kind === 'result' && !r.final)) return;
-    w.terminate();
-    if (scrambleWorker === w) scrambleWorker = null;
-    // Something else happened meanwhile (a reset, a move): drop this scramble.
-    if (run !== sequenceRun || size !== n || r.kind !== 'result') return;
-    const moves = invertMoves(parseMoves(r.solution.join(' '))).map(formatMove);
-    $<HTMLInputElement>('alg').value = moves.join(' ');
-    void playSequence(moves, true);
-  };
-  w.postMessage({ id: 1, n: size, state: Array.from(target), mode: 'fast', timeMs: 300, method: settings.method, solveOnly: true } satisfies AnalyzeRequest);
+  waitingScramble = { size, run: sequenceRun };
+  prefetchScramble(size);
 }
+
 
 function paint(i: number) {
   if (paintColor === null) {
@@ -841,15 +925,8 @@ async function openExternal(url: string) {
     await openUrl(url);
   } else window.open(url, '_blank', 'noopener');
 }
-if (updatesEnabled(window)) {
-  $('check-update').onclick = () => void runUpdateCheck(true);
-  if (import.meta.env.PROD) setTimeout(() => void runUpdateCheck(false), 3000);
-} else {
-  // Web/PWA: always the latest version, so no Updates section, banner or check.
-  $('updates-section').remove();
-  $('update-banner').remove();
-  $('settings').setAttribute('aria-label', 'Settings: theme and about');
-}
+$('check-update').onclick = () => void runUpdateCheck(true);
+if (import.meta.env.PROD) setTimeout(() => void runUpdateCheck(false), 3000);
 
 // ---------- performance watchdog ----------
 // In development, log any main-thread task over 50 ms: the UI must never block.
@@ -862,6 +939,9 @@ if (import.meta.env.DEV && 'PerformanceObserver' in window) {
 $('version').textContent = `v${__APP_VERSION__}`;
 syncControls();
 requestAnalysis();
+// Warm up in the background once the first analysis is under way: the next
+// scramble for this size (then the other small size), and a spare solver.
+setTimeout(() => { prefetchScramble(n); prefetchScramble(n === 2 ? 3 : 2); scheduleSpare(); }, 200);
 
 // Offline support when served as a PWA (not in dev, not inside Tauri).
 if (import.meta.env.PROD && 'serviceWorker' in navigator && location.protocol.startsWith('http') && !('__TAURI_INTERNALS__' in window)) {
