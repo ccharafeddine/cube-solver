@@ -154,7 +154,7 @@ The dots across the top jump to any lesson, and **Show again** repeats the demon
 | **Reset** (<kbd>Alt</kbd>+<kbd>R</kbd>) | Back to solved |
 | **Scramble** (<kbd>Alt</kbd>+<kbd>S</kbd>) | Random-state scramble; its notation appears in the move box |
 | ↶ / ↷ (<kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>Y</kbd> or <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd>) | Undo / redo a move |
-| **Reset view** (<kbd>Alt</kbd>+<kbd>V</kbd>) | The standard view: white on top, green in front (so red is R and orange is L), seen from slightly above with the front-right corner toward you. Also undoes any x/y/z rotations, played as rotation moves so history stays consistent |
+| **Reset view** (<kbd>Alt</kbd>+<kbd>V</kbd>) | The standard view: white on top, green in front (so red is R and orange is L), seen from slightly above with the front-right corner toward you. The camera is re-centred on the cube and its distance is fitted to the window (field of view and aspect), so the whole cube shows with a margin on any screen. The first load uses the same framing. Also undoes any x/y/z rotations, played as rotation moves so history stays consistent |
 | **Speed** slider | Animation speed |
 | <kbd>U</kbd> <kbd>R</kbd> <kbd>F</kbd> <kbd>D</kbd> <kbd>L</kbd> <kbd>B</kbd> | Turn a face clockwise; with <kbd>Shift</kbd>, counter-clockwise |
 | <kbd>M</kbd> <kbd>E</kbd> <kbd>S</kbd> | Middle slices (3x3 only) |
@@ -265,6 +265,7 @@ src/
     update.ts       GitHub release check
   ui/
     scene.ts        three.js view: meshes, turn animation queue, pointer input
+    framing.ts      camera distance that fits the cube for any FOV/aspect (pure, tested)
     net.ts          flat net editor
   tutorial/
     lessons.ts      lesson, quiz and tour content; attempt checking; saved progress (pure, tested)

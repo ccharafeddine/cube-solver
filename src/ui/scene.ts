@@ -12,6 +12,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { model, type State, type Turn, type Vec3 } from '../cube/facelets';
 import { dragToTurn } from '../app/drag';
 import { DEFAULT_CAMERA } from '../cube/orient';
+import { CUBE_SIZE, cubeRadius, fitDistance, along } from './framing';
 import { ExplodeController, explodeOffset, staggerDelay } from './explode';
 
 /** Extra zoom-out at full explode; the exploded cube is about 1.6x wider. */
@@ -42,12 +43,9 @@ export class CubeView {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     this.renderer.setPixelRatio(window.devicePixelRatio);
     host.appendChild(this.renderer.domElement);
-    this.camera.position.set(...DEFAULT_CAMERA);
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enablePan = false;
     this.controls.enableDamping = true;
-    this.controls.minDistance = 4;
-    this.controls.maxDistance = 14;
     // Right-drag always spins the view (panning is off, so the right button is free).
     this.controls.mouseButtons.RIGHT = THREE.MOUSE.ROTATE;
     this.scene.add(this.root, new THREE.AmbientLight(0xffffff, 2.2));
@@ -56,6 +54,8 @@ export class CubeView {
     this.scene.add(sun);
     new ResizeObserver(() => this.resize()).observe(host);
     this.resize();
+    // The first load uses exactly the reset framing.
+    this.resetView();
     this.listenForClicks();
     this.renderer.setAnimationLoop(() => {
       this.controls.update();
@@ -66,17 +66,38 @@ export class CubeView {
 
   /** Camera back to the standard view: slightly above, front-right corner toward you. */
   resetView() {
-    this.camera.position.set(...DEFAULT_CAMERA);
+    this.fit = this.fitFor(this.camera.aspect);
     this.controls.target.set(0, 0, 0);
+    this.camera.up.set(0, 1, 0);
+    this.camera.position.set(...along(DEFAULT_CAMERA, this.fit));
+    this.camera.lookAt(0, 0, 0);
+    this.controls.minDistance = cubeRadius() * 1.05;
+    this.controls.maxDistance = this.fit * 2.5;
+    // Clear any damping momentum so the view stays exactly where it was put.
+    this.controls.enableDamping = false;
+    this.controls.update();
+    this.controls.enableDamping = true;
   }
+
+  /** Fitted camera distance for the current aspect (same for every cube size). */
+  private fit = 0;
+  private fitFor(aspect: number) { return fitDistance(cubeRadius(), this.camera.fov, aspect); }
 
   private resize() {
     const { clientWidth: w, clientHeight: h } = this.host;
     if (!w || !h) return;
     this.renderer.setSize(w, h);
     this.camera.aspect = w / h;
-    // Portrait screens: zoom out so the whole cube fits the narrow width.
-    this.baseZoom = Math.min(1, (w / h) * 1.15);
+    // Keep the cube framed when the window changes shape: scale the distance
+    // by the new fit, so a user's own zoom level is kept proportionally.
+    const fit = this.fitFor(w / h);
+    if (this.fit > 0) {
+      const off = this.camera.position.clone().sub(this.controls.target);
+      this.camera.position.copy(this.controls.target).add(off.multiplyScalar(fit / this.fit));
+      this.controls.maxDistance = fit * 2.5;
+    }
+    this.fit = fit;
+    this.baseZoom = 1;
     this.camera.zoom = this.baseZoom / (1 + EXPLODE_ZOOM_OUT * this.lastAmount);
     this.camera.updateProjectionMatrix();
   }
@@ -91,7 +112,7 @@ export class CubeView {
     this.pieces = [];
     this.stickerMeshes = [];
     // Grid coordinates run -(n-1)..n-1 in steps of 2; scale to a ~2.6 unit cube.
-    const s = 2.6 / (2 * n);
+    const s = CUBE_SIZE / (2 * n);
     this.root.scale.setScalar(s);
     const body = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.6 });
     const box = new THREE.BoxGeometry(1.96, 1.96, 1.96);
