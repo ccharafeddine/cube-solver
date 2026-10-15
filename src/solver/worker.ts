@@ -21,7 +21,7 @@ async function ensureTables(id: number) {
 
 self.onmessage = async (e: MessageEvent<AnalyzeRequest>) => {
   try {
-    if (e.data.n === 3) await ensureTables(e.data.id);
+    if (e.data.n === 3 && !e.data.solveOnly) await ensureTables(e.data.id);
     analyze(e.data, (r) => self.postMessage(r));
   } catch (err) {
     self.postMessage({ id: e.data.id, kind: 'invalid', error: `Solver error: ${(err as Error).message}` });

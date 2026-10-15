@@ -2,7 +2,7 @@ import './style.css';
 import { CubeView, COLORS, COLOR_NAMES } from './ui/scene';
 import { NetEditor } from './ui/net';
 import { applyTurn, colorCounts, isSolved, moveToTurn, solved, turnToMove, type State } from './cube/facelets';
-import { formatMove, formatMoves, invertMoves, parseMoves } from './cube/notation';
+import { formatMove, invertMoves, parseMoves } from './cube/notation';
 import { solvedCubie, toFacelets, parity, type Cubie } from './cube/cubie';
 import { randomState2 } from './solver/solver2';
 import type { AnalyzeRequest, AnalyzeResponse, Mode } from './solver/protocol';
@@ -11,7 +11,7 @@ import { METHODS, type MethodId, type Step } from './solver/methods/index';
 import { History, inverseMove } from './app/history';
 import { fromHash, importText, toFaceletString, toHash, toJSON } from './app/share';
 import { checkForUpdate } from './app/update';
-import { playPaced } from './app/pace';
+import { playPaced, scrambleMs } from './app/pace';
 import { Tutorial } from './tutorial/tutorial';
 import { standardRotation } from './cube/orient';
 import { pickSkin, resolveTheme, modeFor, SCENE_SKINS, SKINS, SKIN_LABELS, SKIN_MODES, type SkinId } from './theme/skins';
@@ -59,7 +59,8 @@ let solution: string[] = [];
 let solutionPos = 0;
 let playing = false;
 let paintColor: number | null = null;
-let pendingScramble = false;
+/** History positions 1..scrambleLen are scramble turns (played and undone at scramble pace). */
+let scrambleLen = 0;
 /** Set while playing solution moves, so the (still valid) solution is not recomputed. */
 let followingSolution = false;
 
@@ -141,10 +142,6 @@ function onResult(r: AnalyzeResponse) {
   solution = r.solution;
   solutionPos = 0;
   if (r.final) { workerBusy = false; $('progress').classList.add('hidden'); }
-  if (r.final && pendingScramble) {
-    pendingScramble = false;
-    $<HTMLInputElement>('alg').value = formatMoves(invertMoves(parseMoves(solution.join(' '))));
-  }
   const text = isSolved(state, n) ? 'Solved!' : r.optimal
     ? `Optimal: ${r.qtm} quarter turns (proven shortest)`
     : `${r.final ? 'Best found' : 'Searching… best so far'}: ${r.qtm} quarter turns`;
@@ -237,13 +234,13 @@ function renderHistory() {
   start.className = 'mv' + (history.position === 0 ? ' next' : '');
   start.textContent = '•';
   start.title = 'Back to the start';
-  start.onclick = () => jumpHistory(0);
+  start.onclick = () => void jumpHistory(0);
   el.appendChild(start);
   list.forEach((m, i) => {
     const b = document.createElement('button');
     b.className = 'mv' + (i < history.position ? '' : ' done') + (i + 1 === history.position ? ' next' : '');
     b.textContent = m;
-    b.onclick = () => jumpHistory(i + 1);
+    b.onclick = () => void jumpHistory(i + 1);
     el.appendChild(b);
   });
   $('hist-count').textContent = list.length ? `${history.position}/${list.length} · ${qtmOf(list.slice(0, history.position))} QTM` : 'No moves yet';
@@ -253,13 +250,13 @@ function renderHistory() {
 
 // ---------- actions ----------
 /** Animate one move (notation) and update the model. */
-function animateMove(m: string) {
+function animateMove(m: string, ms = turnMs()) {
   const mv = parseMoves(m)[0];
   if (mv.depth >= n) mv.depth = Math.max(1, n - 1);
   if (n === 2 && 'MES'.includes(mv.face)) return;
   const t = moveToTurn(mv, n);
   state = applyTurn(state, n, t);
-  void view.animate(t, state, turnMs());
+  void view.animate(t, state, ms);
 }
 
 /**
@@ -276,11 +273,11 @@ function turnsBlocked(): boolean {
 }
 let hintTimer = 0;
 
-function playMove(m: string, analyze = true) {
+function playMove(m: string, analyze = true, ms = turnMs()) {
   if (tutorial?.blocksInput) return;
   if (turnsBlocked()) return;
   history.push(m);
-  animateMove(m);
+  animateMove(m, ms);
   net.setState(state, n);
   renderHistory();
   if (analyze && !followingSolution) requestAnalysis();
@@ -295,15 +292,16 @@ let sequenceRun = 0;
  * speed slider's pace, like solution playback, instead of queueing every turn
  * at once (which the view speeds up to drain a long queue).
  */
-async function playSequence(moves: string[]) {
+async function playSequence(moves: string[], asScramble = false) {
   const run = ++sequenceRun;
   const done = await playPaced(moves, {
     play: (m) => {
       if (view.exploded) { turnsBlocked(); return false; }
-      playMove(m, false);
+      playMove(m, false, asScramble ? scrambleMs(turnMs()) : turnMs());
+      if (asScramble) { scrambleLen = history.position; renderHistory(); }
     },
     idle: () => view.idle(),
-    gapMs: () => turnMs() * 0.25,
+    gapMs: () => (asScramble ? scrambleMs(turnMs()) * 0.15 : turnMs() * 0.25),
     cancelled: () => run !== sequenceRun,
   });
   if (done || run === sequenceRun) requestAnalysis();
@@ -329,8 +327,10 @@ function stepSolution() {
   return true;
 }
 
+/** One move back: along the solution if one is being followed, otherwise back through the history. */
 function stepSolutionBack() {
-  if (solutionPos === 0 || turnsBlocked()) return;
+  if (solutionPos === 0) { undo(); return; }
+  if (turnsBlocked()) return;
   const m = history.back();
   if (!m) return;
   solutionPos--;
@@ -358,7 +358,7 @@ function undo() {
   const m = history.back();
   if (!m) return;
   if (solutionPos > 0) solutionPos--;
-  animateMove(inverseMove(m));
+  animateMove(inverseMove(m), paceAt(history.position));
   render();
   requestAnalysis();
 }
@@ -367,14 +367,36 @@ function redo() {
   if (turnsBlocked()) return;
   const m = history.forward();
   if (!m) return;
-  animateMove(m);
+  animateMove(m, paceAt(history.position - 1));
   render();
   requestAnalysis();
 }
 
-function jumpHistory(pos: number) {
-  sequenceRun++;
-  state = history.jump(pos);
+/** Turn length for the history move at index i (0-based): scramble turns replay at scramble pace. */
+const paceAt = (i: number) => (i < scrambleLen ? scrambleMs(turnMs()) : turnMs());
+
+/**
+ * Walk the history to `pos`, forwards or backwards, one animated turn at a
+ * time at the slider's pace. Any other action (undo, a new move, a reset)
+ * cancels the walk where it is.
+ */
+async function jumpHistory(pos: number) {
+  const run = ++sequenceRun;
+  if (turnsBlocked()) return;
+  playing = false;
+  solutionPos = 0;
+  while (history.position !== pos && run === sequenceRun) {
+    const back = pos < history.position;
+    const m = back ? history.back() : history.forward();
+    if (!m) break;
+    const ms = paceAt(back ? history.position : history.position - 1);
+    animateMove(back ? inverseMove(m) : m, ms);
+    net.setState(state, n);
+    renderHistory();
+    await view.idle();
+    if (run !== sequenceRun) return;
+    await sleep(ms * 0.15);
+  }
   render();
   requestAnalysis();
 }
@@ -382,6 +404,7 @@ function jumpHistory(pos: number) {
 /** Replace the cube outright (reset, scramble, paint, import). */
 function setBaseline(s: State, size: 2 | 3 = n) {
   sequenceRun++;
+  scrambleLen = 0;
   if (size !== n) { n = size; settings.n = n; persist(); view.build(n); net.build(n); syncControls(); }
   state = s;
   history.reset(state, n);
@@ -411,10 +434,36 @@ function corners(f: State): State {
   return out;
 }
 
+/**
+ * Scramble move by move, like a person mixing a cube: a random state is
+ * turned into moves (the inverse of its quick solution), then played from
+ * solved at scramble pace and recorded in the history, so Undo walks back
+ * through it turn by turn.
+ */
+let scrambleWorker: Worker | null = null;
 function scramble() {
-  const f = toFacelets(n === 2 ? randomState2() : randomCubie3());
-  pendingScramble = true;
-  setBaseline(n === 2 ? corners(f) : f);
+  if (turnsBlocked()) return;
+  const size = n;
+  const f = toFacelets(size === 2 ? randomState2() : randomCubie3());
+  const target = size === 2 ? corners(f) : f;
+  setBaseline(solved(size));
+  const run = sequenceRun;
+  setStatus('thinking', 'Mixing up the cube…');
+  scrambleWorker?.terminate();
+  const w = new Worker(new URL('./solver/worker.ts', import.meta.url), { type: 'module' });
+  scrambleWorker = w;
+  w.onmessage = (e: MessageEvent<AnalyzeResponse>) => {
+    const r = e.data;
+    if (r.kind === 'status' || r.kind === 'progress' || (r.kind === 'result' && !r.final)) return;
+    w.terminate();
+    if (scrambleWorker === w) scrambleWorker = null;
+    // Something else happened meanwhile (a reset, a move): drop this scramble.
+    if (run !== sequenceRun || size !== n || r.kind !== 'result') return;
+    const moves = invertMoves(parseMoves(r.solution.join(' '))).map(formatMove);
+    $<HTMLInputElement>('alg').value = moves.join(' ');
+    void playSequence(moves, true);
+  };
+  w.postMessage({ id: 1, n: size, state: Array.from(target), mode: 'fast', timeMs: 300, method: settings.method, solveOnly: true } satisfies AnalyzeRequest);
 }
 
 function paint(i: number) {

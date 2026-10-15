@@ -50,6 +50,7 @@ export function analyze(req: AnalyzeRequest, emit: (r: AnalyzeResponse) => void,
   });
   if (!fast.ok) return emit({ id: req.id, kind: 'invalid', error: fast.error });
   let solution = fast.moves.map(moveName);
+  if (req.solveOnly) return emit({ id: req.id, kind: 'result', final: true, solution, qtm: qtmOf(solution), optimal: false });
   let optimal = solution.length === 0;
   let note: string | undefined;
 

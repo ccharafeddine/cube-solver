@@ -11,6 +11,8 @@ export interface AnalyzeRequest {
   /** Think time for the main solve, ms. */
   timeMs: number;
   method: MethodId;
+  /** Just the quick main solution (used to turn a random state into scramble moves). */
+  solveOnly?: boolean;
 }
 
 export type AnalyzeResponse =
