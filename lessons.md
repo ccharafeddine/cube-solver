@@ -70,3 +70,7 @@ Rules learned building Cube Solver. Read them before changing the build, the sol
 - A test that every skin defines every token, and that components only use declared tokens, keeps "skins only swap variables" true as the CSS grows.
 
 - Mechanism parts that must turn with a cubie belong in the same piece list as the cubie; everything else is positioned from the explode amount each frame and hidden near zero so it never pokes through the assembled cube.
+
+- Native <option> popups on Windows ignore gradient backgrounds and inherit colour oddly: always give select and option a solid background-color and color from the theme.
+- Theme previews should use fixed colours, not tokens, so each swatch shows its own theme whatever theme is active.
+- A service worker from a production build on the same port can serve stale bundles to the dev server; unregister in dev.

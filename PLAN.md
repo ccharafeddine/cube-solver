@@ -143,6 +143,8 @@ The repo's `progress.txt` and `lessons.md` were **not found** on the PC. They ar
 ### Backlog
 - **4x4 and 5x5** by reduction (centres, then edge pairing, then parity fixes, then the 3x3 solver). The sticker model and the renderer already handle any N.
 - **Camera scanning:** a bottom-bar option that scans a real cube with the webcam and shows the scanned state digitally for confirmation.
+- **Theme: Y2K chrome.** Liquid-metal gradients, iridescent highlights and bubbly type. Held back because chrome needs environment-map reflections on the 3D cube to look right (a heavier scene than the token layer covers), and the busy metallic surfaces make text contrast hard to keep at AA.
+- **Theme: retro pixel.** Pixel font, stepped 1-bit borders and a dithered background. Held back because a pixel font hurts the readability of notation (U' vs U2), it needs a bundled font licence check, and a convincing look wants a pixelated render pass for the cube rather than just new variables.
 
 ## 9. Decisions (confirmed by the owner)
 

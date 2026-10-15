@@ -207,9 +207,19 @@ The look is built in two layers:
 | Components | `src/style.css` | Panels, buttons, tabs, toggles, dialogs, tour and coach cards. These read tokens only (a test fails if they use an undeclared one) |
 | Scene | `src/theme/skins.ts` | The 3D side of each skin: plastic colour and roughness, sticker clear-coat gloss, and ambient, key, sky and rim lights for light and dark |
 
-The skins are **aero** (shipped and default), **neon** (futuristic dark) and **matte** (textured). The last two are complete variable sets that aren't offered in the UI yet. You can preview them with `?skin=neon` or `?skin=matte`, or by saving `cube-solver-skin` in `localStorage`. The dark variant is chosen through `data-theme`, which follows the OS until you pick one. Under reduced transparency, panels become solid and blur is turned off. Contrast is checked in tests to meet WCAG AA for body text, muted text and text on buttons.
+There are four themes. Pick one with the palette button in the header, or with **Appearance…** in the help menu. The choice applies instantly and is saved (`cube-solver-skin` and `cube-solver-theme` in `localStorage`).
 
-<p align="center"><img src="docs/screenshot-dark.png" width="700" alt="The Aero look in dark mode: night-sky glass panels" /></p>
+| Theme | Modes | Look |
+|---|---|---|
+| **Matte** (default) | Light, dark | Calm paper-grain background, flat solid panels, soft light, matte stickers |
+| **Frutiger Aero** | Light, dark | Glossy sky glass, bubbles and gel buttons |
+| **Neon** | Dark only | Deep surfaces, glowing cyan edges and a faint grid; pairs with the exploded view's glow lines |
+| **Neubrutalism** | Light only | Flat bold colours, thick black outlines and hard offset shadows |
+
+Light, Dark or System (follow the OS) applies to themes that have both; single-mode themes grey the switch out and say why. `?skin=neon` (or `matte`, `aero`, `brutal`) previews a theme without saving it. Every theme defines every token, which a test checks. Under reduced transparency, panels become solid and blur is turned off; reduced motion also removes the Neubrutalism press nudge. Contrast is checked in tests to meet WCAG AA for body text, muted text and text on buttons in every theme. Selects and their native option lists take solid colours from the theme so they stay readable on Windows.
+
+<p align="center"><img src="docs/screenshot-theme-picker.png" width="700" alt="The Appearance picker with swatch previews of the four themes" /></p>
+<p align="center"><img src="docs/screenshot-brutal.png" width="700" alt="The Neubrutalism theme: flat colour, thick outlines, hard shadows" /></p>
 
 ## Building and packaging
 

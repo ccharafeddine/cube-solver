@@ -84,3 +84,6 @@ UNRELEASED (2026-10-14) - FRUTIGER AERO VISUAL OVERHAUL
 - Not yet: neon/matte not exposed in UI; 2x2/quiz/mobile-tutorial/mobile-tour README shots still old look.
 
 - Exploded 2x2 now spreads farther (spread 1.6, camera fitted to the spread) and reveals an internal mechanism: core hub, six axle arms with springs, screws and centre caps, and a foot under each corner. Hidden while assembled.
+
+- Themes: matte textured is now the default (light and dark). Frutiger Aero stays as an option; neon (dark, glowing edges, grid) and neubrutalism (light, thick outlines, hard shadows) are complete. Palette button and Appearance… open a picker with swatch previews and Light/Dark/System. Y2K chrome and retro pixel are on the PLAN backlog.
+- Fixed: the think-time select was unreadable (native option popup colours); a dev-mode guard drops stale service workers; the 2x2 mechanism is lighter and larger, with no central core block.
