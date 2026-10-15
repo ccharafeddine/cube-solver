@@ -53,3 +53,20 @@ UNRELEASED (2026-10-14) - SPOTLIGHT TOUR, ORBIT GESTURES, X/Y/Z BUTTONS
   spin the view from anywhere without turning layers; help, README and tour mention it.
 - On-screen X/Y/Z buttons in the cube view: same moves as the x/y/z keys, Shift-click = prime.
 - Tests: spotlight.test.ts (geometry, filtering, counter, touch wording) + tour content tests; 85 total.
+
+UNRELEASED (2026-10-14) - STANDARD VIEW, FRAMING, EXPLODED VIEW
+- Standard orientation (src/cube/orient.ts): white U / green F for any n (centres on odd sizes, the DLB
+  corner on even). Reset view (button, Alt+V) restores the camera and plays the x/y/z rotation that
+  undoes any whole-cube rotations (via history, so solutions stay valid).
+- Framing (src/ui/framing.ts): OrbitControls target (0,0,0), camera distance fitted to the bounding sphere,
+  FOV and aspect with 12% margin; resize rescales the distance; first load = reset framing. Checked at
+  1360x860, 1920x820, 820x1180 and 390x844 (centred, fully visible).
+- Exploded view (src/ui/explode.ts + scene): G or the Explode button; outward along home vectors (0.6x),
+  easeInOutCubic 900 ms + 160 ms sweep stagger, reversible mid-flight; dashed additive guide lines, ghost
+  slot outlines, home dots, fading grid, dark viewport; camera zooms out with the spread.
+  Turns/undo/redo/playback are blocked while exploded (hint shown), scene.animate never animates while
+  exploded (safety net), toggling waits for queued turns. Painting and orbit work. Reduced motion = instant.
+- Tests: explode (easing, offsets, stagger bounds, controller reversal, turn gating), orient (24 rotations
+  on 2x2-5x5), framing (fit at aspects 0.4-3.5). 104 total.
+- Not done: real bloom (UnrealBloomPass) - skipped for performance and simplicity; glow is faked with
+  additive blending. 4x4+ exploded view untested (only 2x2/3x3 exist in the app).

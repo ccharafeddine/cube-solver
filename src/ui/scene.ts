@@ -15,8 +15,8 @@ import { DEFAULT_CAMERA } from '../cube/orient';
 import { CUBE_SIZE, cubeRadius, fitDistance, along } from './framing';
 import { ExplodeController, explodeOffset, staggerDelay } from './explode';
 
-/** Extra zoom-out at full explode; the exploded cube is about 1.6x wider. */
-const EXPLODE_ZOOM_OUT = 0.75;
+/** Extra zoom-out at full explode; the exploded cube is about 1.6x wider, but the grid frames it. */
+const EXPLODE_ZOOM_OUT = 0.5;
 export const COLORS = ['#ffffff', '#c41e3a', '#009e60', '#ffd500', '#ff5800', '#0051ba'];
 export const COLOR_NAMES = ['White', 'Red', 'Green', 'Yellow', 'Orange', 'Blue'];
 

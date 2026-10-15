@@ -50,3 +50,13 @@ Rules learned building Cube Solver. Read them before changing the build, the sol
 - Overlay buttons inside the 3D viewport must not be swallowed by the capture-phase drag handler. Bail out unless the event target is the canvas itself.
 - Tour keys belong in a capture-phase listener with `stopPropagation`, or ← → would also step the solution underneath.
 - Keep placement pure (`holeRect`, `dimRects`, `placeCard`) and test it with numbers. Then the DOM class only measures and applies.
+
+## Camera and exploded view
+
+- Fit the camera from the bounding sphere: `distance = r * margin / sin(min(vFov/2, atan(tan(vFov/2) * aspect)))`. A fixed camera position with a zoom tweak for portrait screens left the cube too close and off centre in some windows.
+- On resize, scale the camera distance by the ratio of the new fit to the old one. That keeps the user's own zoom level instead of snapping back.
+- Reset the OrbitControls target and turn damping off for one `update()`. Otherwise leftover momentum drifts the view after a reset.
+- Standard orientation on even cubes has no centres to read. Use a corner that the app's own face moves (R, U, F) never move: the DLB corner. Then any x/y/z rotation can be undone exactly.
+- The turn animation re-parents meshes and snaps them back to their home matrix. Running it while pieces are exploded would fling them home mid-air. Gate turns at the entry points, and also make `animate()` just recolour when the cube is exploded, as a safety net.
+- Make the explode controller reversible: start the new animation from the current eased amount and scale its duration by the distance left. Rapid toggling then never jumps.
+- For a "glow" without a post-processing pass, use additive blending on thin lines and points, on a darkened viewport background. It's cheap and reads as sci-fi.

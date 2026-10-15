@@ -50,6 +50,8 @@
 - **Reset**, random-state **Scramble** (every position equally likely; the scramble's notation is shown), **undo/redo**, and a **move history** you can click to jump to any point.
 - **Import/export:** facelet string (Kociemba's URFDLB format), JSON (state, moves and solution), the solution as text, a downloadable `.json`, and **share links** that carry the cube state in the URL.
 
+- **Exploded view** (**Explode** button in the cube view, or <kbd>G</kbd>) works on 2x2 and 3x3. Every piece glides outward along the line from the cube's centre to its home slot, so corners travel furthest and centres least. The motion is ease-in-out over 0.9 s, with a slight sweep around the cube. Dashed cyan guide lines trace each piece back to its slot, faint violet ghost outlines mark the empty slots, and a perspective grid fades in below. **Assemble** (or <kbd>G</kbd> again) reverses smoothly from wherever the animation is. While exploded, orbiting and painting still work, and layer turns, undo/redo and solution playback pause with a short hint, so the cube's state can never get out of step with the picture. Reduced motion makes it instant.
+
 **Solving**
 - **2x2: always optimal.** A complete table of all 3,674,160 positions (built in under a second) gives the shortest solution and the exact distance for every candidate move.
 - **3x3 Fast:** Kociemba's two-phase algorithm. It finds about 20 moves in milliseconds, keeps improving while it thinks, and streams every better solution to the screen. Positions within about 12 quarter turns of solved are also proven optimal automatically.
@@ -159,6 +161,7 @@ The dots across the top jump to any lesson, and **Show again** repeats the demon
 | <kbd>U</kbd> <kbd>R</kbd> <kbd>F</kbd> <kbd>D</kbd> <kbd>L</kbd> <kbd>B</kbd> | Turn a face clockwise; with <kbd>Shift</kbd>, counter-clockwise |
 | <kbd>M</kbd> <kbd>E</kbd> <kbd>S</kbd> | Middle slices (3x3 only) |
 | <kbd>X</kbd> <kbd>Y</kbd> <kbd>Z</kbd>, or the **X Y Z** buttons on the cube | Rotate the whole cube a quarter turn (x like R, y like U, z like F); <kbd>Shift</kbd>+key or <kbd>Shift</kbd>+click for the prime. Rotations move no pieces |
+| <kbd>G</kbd>, or **Explode** / **Assemble** | Exploded view on and off. Turns pause while exploded; orbiting and painting work |
 | <kbd>2</kbd> / <kbd>3</kbd>, or the **2x2 / 3x3** buttons | Switch cube size (starts solved) |
 | **Fast / Optimal** | 3x3 solver mode |
 | **Beginner** | Blend ease-by-hand into the ranking |
@@ -265,6 +268,7 @@ src/
     update.ts       GitHub release check
   ui/
     scene.ts        three.js view: meshes, turn animation queue, pointer input
+    explode.ts      exploded-view maths: easing, offsets, stagger, controller (pure, tested)
     framing.ts      camera distance that fits the cube for any FOV/aspect (pure, tested)
     net.ts          flat net editor
   tutorial/
