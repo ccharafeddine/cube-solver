@@ -18,6 +18,59 @@ const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
 
 /** How far pieces move, as a fraction of their home distance from the centre. */
 export const SPREAD = 0.6;
+/** The 2x2 explodes further: few pieces, and the mechanism inside is worth seeing. */
+export const spreadFor = (n: number) => (n === 2 ? 1.6 : 0.9);
+
+/**
+ * How much bigger the exploded cube is than the assembled one (outer extent
+ * along an axis). The camera zooms out by this factor so everything stays in frame.
+ */
+export function explodeExtent(n: number, spread = spreadFor(n)): number {
+  const m = n - 1; // outermost cubie centre (grid units); cubies are 2 wide
+  return (m * (1 + spread) + 1) / (m + 1);
+}
+
+/**
+ * The 2x2 mechanism, in grid units (the assembled cube spans -2..2). Modelled
+ * on a real 2x2: a core hub with six axle arms, a hidden centre cap riding on
+ * each arm, held by a screw with a spring, and an inner foot on every corner
+ * that tucks under the caps around the core.
+ */
+export const MECH = {
+  coreRadius: 0.55,
+  armLength: 1.25,
+  armRadius: 0.13,
+  /** Distance of each cap's centre from the core, and its size. */
+  capDistance: 1.05,
+  capRadius: 0.78,
+  capThickness: 0.24,
+  springInner: 0.35,
+  springOuter: 0.95,
+  /** Caps separate a little further than the core on explode, but much less than corners. */
+  capSpread: 0.75,
+  /** Corner foot: a stem from the piece's inner corner toward the core, ending in a pad. */
+  footStem: 0.95,
+  footPad: 0.62,
+};
+
+export const AXES: Vec3[] = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
+
+/** Centre-cap position along axis `dir` at explode amount `a`. */
+export function capPosition(dir: Vec3, a: number): Vec3 {
+  const d = MECH.capDistance + MECH.capSpread * a;
+  return [dir[0] * d, dir[1] * d, dir[2] * d];
+}
+
+/**
+ * Where a corner's foot pad sits relative to the corner's own centre
+ * (`home` is the corner centre, e.g. [1, 1, 1]): pointing at the core, past
+ * the piece's inner corner.
+ */
+export function footOffset(home: Vec3): Vec3 {
+  const len = Math.hypot(...home);
+  const k = (Math.hypot(1, 1, 1) + MECH.footStem * 0.5) / len;
+  return [-home[0] * k, -home[1] * k, -home[2] * k];
+}
 export const DURATION_MS = 900;
 export const STAGGER_MS = 160;
 

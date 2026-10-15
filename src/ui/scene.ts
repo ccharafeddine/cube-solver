@@ -14,10 +14,9 @@ import { dragToTurn } from '../app/drag';
 import { DEFAULT_CAMERA } from '../cube/orient';
 import { CUBE_SIZE, cubeRadius, fitDistance, along } from './framing';
 import { SCENE_SKINS, type SceneSkin } from '../theme/skins';
-import { ExplodeController, explodeOffset, staggerDelay } from './explode';
+import { ExplodeController, explodeOffset, staggerDelay, spreadFor, explodeExtent, MECH, AXES, capPosition, footOffset } from './explode';
+import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 
-/** Extra zoom-out at full explode; the exploded cube is about 1.6x wider, but the grid frames it. */
-const EXPLODE_ZOOM_OUT = 0.5;
 export const COLORS = ['#ffffff', '#c41e3a', '#009e60', '#ffd500', '#ff5800', '#0051ba'];
 export const COLOR_NAMES = ['White', 'Red', 'Green', 'Yellow', 'Orange', 'Blue'];
 
@@ -126,7 +125,7 @@ export class CubeView {
     }
     this.fit = fit;
     this.baseZoom = 1;
-    this.camera.zoom = this.baseZoom / (1 + EXPLODE_ZOOM_OUT * this.lastAmount);
+    this.camera.zoom = this.baseZoom / this.explodeZoom(this.lastAmount);
     this.camera.updateProjectionMatrix();
   }
 
@@ -136,6 +135,7 @@ export class CubeView {
     this.lit = null;
     this.explode.set(false, true);
     this.explodeFx = null;
+    this.mech = null;
     this.root.clear();
     this.pieces = [];
     this.stickerMeshes = [];
@@ -165,6 +165,7 @@ export class CubeView {
       this.stickerMeshes.push(mesh);
       this.addPiece(mesh, new THREE.Vector3(st.pos[0], st.pos[1], st.pos[2]));
     });
+    if (n === 2) this.buildMechanism();
   }
 
   private addPiece(mesh: THREE.Object3D, grid = mesh.position.clone()) {
@@ -193,6 +194,81 @@ export class CubeView {
 
   get explodeTarget() { return this.explode.target; }
 
+  /** Zoom-out factor for an explode amount, so the spread pieces stay in frame. */
+  private explodeZoom(a: number) { return 1 + (explodeExtent(this.n) * 1.04 - 1) * a; }
+
+  private mech: { group: THREE.Group; caps: { obj: THREE.Object3D; dir: Vec3 }[]; feet: THREE.Object3D[] } | null = null;
+
+  /**
+   * The inside of a real 2x2, revealed when exploded: a core hub with six
+   * axle arms, a hidden centre cap on each arm held by a screw and spring,
+   * and an inner foot on every corner. Matte grey plastic, ~4k triangles.
+   */
+  private buildMechanism() {
+    const plastic = new THREE.MeshStandardMaterial({ color: 0x3a3f45, roughness: 0.78, metalness: 0.02 });
+    const darker = new THREE.MeshStandardMaterial({ color: 0x24282c, roughness: 0.85 });
+    const metal = new THREE.MeshStandardMaterial({ color: 0xb8bec6, roughness: 0.35, metalness: 0.9 });
+    const group = new THREE.Group();
+    group.visible = false;
+    // Core: a sphere with six arms along the face axes.
+    group.add(new THREE.Mesh(new THREE.SphereGeometry(MECH.coreRadius, 24, 16), darker));
+    const armGeo = new THREE.CylinderGeometry(MECH.armRadius, MECH.armRadius * 1.15, MECH.armLength, 12);
+    armGeo.translate(0, MECH.armLength / 2, 0);
+    const capGeo = new RoundedBoxGeometry(MECH.capRadius * 1.5, MECH.capThickness, MECH.capRadius * 1.5, 2, 0.08);
+    const capRing = new THREE.CylinderGeometry(MECH.capRadius * 0.42, MECH.capRadius * 0.42, MECH.capThickness * 1.3, 20);
+    const screwGeo = new THREE.CylinderGeometry(0.06, 0.06, 1.05, 8);
+    const headGeo = new THREE.CylinderGeometry(0.17, 0.17, 0.08, 16);
+    // A coil spring: a helix tube around the screw.
+    const turns = 5, pts: THREE.Vector3[] = [];
+    for (let i = 0; i <= turns * 16; i++) {
+      const t = i / (turns * 16), ang = t * turns * Math.PI * 2;
+      pts.push(new THREE.Vector3(Math.cos(ang) * 0.14, MECH.springInner + t * (MECH.springOuter - MECH.springInner), Math.sin(ang) * 0.14));
+    }
+    const springGeo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), turns * 16, 0.025, 6, false);
+    const caps: { obj: THREE.Object3D; dir: Vec3 }[] = [];
+    const up = new THREE.Vector3(0, 1, 0);
+    for (const dir of AXES) {
+      const q = new THREE.Quaternion().setFromUnitVectors(up, new THREE.Vector3(...dir));
+      const arm = new THREE.Mesh(armGeo, darker);
+      arm.quaternion.copy(q);
+      const spring = new THREE.Mesh(springGeo, metal);
+      spring.quaternion.copy(q);
+      group.add(arm, spring);
+      // The cap carries its screw (head on the outside).
+      const cap = new THREE.Group();
+      cap.quaternion.copy(q);
+      cap.add(new THREE.Mesh(capGeo, plastic), new THREE.Mesh(capRing, darker));
+      const screw = new THREE.Mesh(screwGeo, metal);
+      screw.position.y = -0.4;
+      const head = new THREE.Mesh(headGeo, metal);
+      head.position.y = MECH.capThickness * 0.65 + 0.04;
+      cap.add(screw, head);
+      group.add(cap);
+      caps.push({ obj: cap, dir });
+    }
+    this.root.add(group);
+    // Corner feet: part of each corner piece, so they turn and explode with it.
+    const stemGeo = new THREE.CylinderGeometry(0.22, 0.3, MECH.footStem, 12);
+    const padGeo = new RoundedBoxGeometry(MECH.footPad, MECH.footPad * 0.55, MECH.footPad, 2, 0.1);
+    const feet: THREE.Object3D[] = [];
+    for (const x of [-1, 1]) for (const y of [-1, 1]) for (const z of [-1, 1]) {
+      const home: Vec3 = [x, y, z];
+      const inward = new THREE.Vector3(-x, -y, -z).normalize();
+      const foot = new THREE.Group();
+      const [fx, fy, fz] = footOffset(home);
+      foot.position.set(x + fx, y + fy, z + fz);
+      foot.quaternion.setFromUnitVectors(up, inward.clone().negate());
+      const stem = new THREE.Mesh(stemGeo, plastic);
+      stem.position.y = MECH.footStem / 2;
+      const pad = new THREE.Mesh(padGeo, plastic);
+      foot.add(stem, pad);
+      foot.visible = false;
+      this.addPiece(foot, new THREE.Vector3(x, y, z));
+      feet.push(foot);
+    }
+    this.mech = { group, caps, feet };
+  }
+
   /** Guide lines from each piece back to its home slot, ghost outlines of the slots, and a floor grid. */
   private buildExplodeFx() {
     const group = new THREE.Group();
@@ -218,10 +294,11 @@ export class CubeView {
     }
     const dots = new THREE.Points(new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(homes, 3)), dotMat);
     group.add(dots);
-    const grid = new THREE.GridHelper(m * 6 + 8, (m * 6 + 8) / 2, accent, accent);
+    const gsize = Math.ceil(m * (1 + spreadFor(this.n)) * 4 + 10);
+    const grid = new THREE.GridHelper(gsize, gsize / 2, accent, accent);
     const gridMat = grid.material as THREE.LineBasicMaterial;
     gridMat.transparent = true; gridMat.opacity = 0; gridMat.depthWrite = false;
-    grid.position.y = -(m + 1) * (1 + 0.6) - 1.2;
+    grid.position.y = -(m * (1 + spreadFor(this.n)) + 1) - 1.2;
     group.add(grid);
     this.root.add(group);
     this.explodeFx = { group, lines, mats: [lineMat, ghostMat, dotMat, gridMat], base: [0.9, 0.4, 0.95, 0.18] };
@@ -234,13 +311,22 @@ export class CubeView {
     if (!moving && overall === this.lastAmount) return;
     this.lastAmount = overall;
     // Pull the camera back as the pieces spread, so the exploded cube stays in frame.
-    this.camera.zoom = this.baseZoom / (1 + EXPLODE_ZOOM_OUT * overall);
+    this.camera.zoom = this.baseZoom / this.explodeZoom(overall);
     this.camera.updateProjectionMatrix();
     const off = new THREE.Vector3();
     for (const p of this.pieces) {
       const a = this.explode.amount(p.delay);
-      const [ox, oy, oz] = explodeOffset([p.grid.x, p.grid.y, p.grid.z], a);
+      const [ox, oy, oz] = explodeOffset([p.grid.x, p.grid.y, p.grid.z], a, spreadFor(this.n));
       p.mesh.position.copy(p.homePos).add(off.set(ox, oy, oz));
+    }
+    if (this.mech) {
+      const show = overall > 0.002;
+      this.mech.group.visible = show;
+      for (const f of this.mech.feet) f.visible = show;
+      for (const c of this.mech.caps) {
+        const [x, y, z] = capPosition(c.dir, this.explode.amount(0));
+        c.obj.position.set(x, y, z);
+      }
     }
     const fx = this.explodeFx;
     if (!fx) return;
@@ -248,7 +334,7 @@ export class CubeView {
     fx.mats.forEach((m, i) => { (m as THREE.Material & { opacity: number }).opacity = fx.base[i] * overall; });
     for (const l of fx.lines) {
       const a = this.explode.amount(l.delay);
-      const [ox, oy, oz] = explodeOffset([l.home.x, l.home.y, l.home.z], a);
+      const [ox, oy, oz] = explodeOffset([l.home.x, l.home.y, l.home.z], a, spreadFor(this.n));
       const pos = l.line.geometry.attributes.position as THREE.BufferAttribute;
       pos.setXYZ(1, l.home.x + ox, l.home.y + oy, l.home.z + oz);
       pos.needsUpdate = true;

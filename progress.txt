@@ -82,3 +82,5 @@ UNRELEASED (2026-10-14) - FRUTIGER AERO VISUAL OVERHAUL
 - Reduced transparency -> solid panels, no blur; reduced motion -> no transitions/animations.
 - Tests: tokens complete per skin, components use only declared tokens, WCAG AA contrast, skin selection.
 - Not yet: neon/matte not exposed in UI; 2x2/quiz/mobile-tutorial/mobile-tour README shots still old look.
+
+- Exploded 2x2 now spreads farther (spread 1.6, camera fitted to the spread) and reveals an internal mechanism: core hub, six axle arms with springs, screws and centre caps, and a foot under each corner. Hidden while assembled.

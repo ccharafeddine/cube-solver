@@ -68,3 +68,5 @@ Rules learned building Cube Solver. Read them before changing the build, the sol
 - Clear-coat stickers plus a sky hemisphere light washed out the top face. Lacquer works with a weak sky light, lower ambient and a slightly rough clear coat.
 - Floating cards over busy content (coach, welcome, tour) need near-opaque glass. Real translucency only works over calm backgrounds.
 - A test that every skin defines every token, and that components only use declared tokens, keeps "skins only swap variables" true as the CSS grows.
+
+- Mechanism parts that must turn with a cubie belong in the same piece list as the cubie; everything else is positioned from the explode amount each frame and hidden near zero so it never pokes through the assembled cube.

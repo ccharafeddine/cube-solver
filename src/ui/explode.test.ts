@@ -109,3 +109,51 @@ describe('state safety', () => {
     expect(s).toEqual(copy);
   });
 });
+
+import { spreadFor, explodeExtent, MECH, AXES, capPosition, footOffset } from './explode';
+
+describe('2x2 explodes further, and the camera knows how far', () => {
+  it('spreads the 2x2 more than the 3x3', () => {
+    expect(spreadFor(2)).toBeGreaterThan(spreadFor(3));
+    expect(spreadFor(2)).toBeGreaterThanOrEqual(1.5);
+  });
+  it('extent is 1 when assembled and matches the outermost exploded piece', () => {
+    expect(explodeExtent(2, 0)).toBe(1);
+    // 2x2 corner centre at 1 moves to 1 + 1.6, plus half a cubie: 3.6 of an assembled 2.
+    expect(explodeExtent(2, 1.6)).toBeCloseTo(3.6 / 2);
+    expect(explodeExtent(3)).toBeGreaterThan(1);
+  });
+});
+
+describe('2x2 mechanism layout', () => {
+  it('hides inside the assembled cube', () => {
+    for (const d of AXES) {
+      const p = capPosition(d, 0);
+      // The cap's outer face stays inside the cube (which spans -2..2).
+      expect(Math.max(...p.map(Math.abs)) + MECH.capThickness / 2).toBeLessThan(2);
+    }
+    expect(MECH.armLength).toBeLessThan(2);
+    expect(MECH.coreRadius).toBeLessThan(MECH.capDistance);
+  });
+  it('caps separate along their axis on explode, less than the corners do', () => {
+    for (const d of AXES) {
+      const a0 = capPosition(d, 0), a1 = capPosition(d, 1);
+      const moved = Math.hypot(a1[0] - a0[0], a1[1] - a0[1], a1[2] - a0[2]);
+      expect(moved).toBeGreaterThan(0);
+      expect(moved).toBeLessThan(spreadFor(2));
+      // Still along the axis.
+      expect(a1.filter((x) => x !== 0)).toHaveLength(1);
+    }
+  });
+  it('every corner foot points at the core and reaches past the inner corner', () => {
+    for (const x of [-1, 1]) for (const y of [-1, 1]) for (const z of [-1, 1]) {
+      const h: [number, number, number] = [x, y, z];
+      const f = footOffset(h);
+      const pad = h.map((v, i) => v + f[i]);
+      // Opposite direction to the home vector...
+      expect(f.every((v, i) => Math.sign(v) === -Math.sign(h[i]))).toBe(true);
+      // ...and the pad ends up in the other octant, under the caps near the core.
+      expect(pad.every((v, i) => Math.sign(v) === -Math.sign(h[i]) || Math.abs(v) < 0.5)).toBe(true);
+    }
+  });
+});
