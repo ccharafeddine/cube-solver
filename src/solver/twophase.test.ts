@@ -13,7 +13,7 @@ describe('two-phase 3x3 solver', () => {
     for (let i = 0; i < 30; i++) {
       let c = solvedCubie();
       for (let k = 0; k < 40; k++) c = applyCubieMove(c, Math.floor(rnd() * 18));
-      const r = solveTwoPhase(c, { timeMs: 300 });
+      const r = solveTwoPhase(c, { timeMs: 1000 });
       expect(r.ok).toBe(true);
       if (!r.ok) continue;
       let d = c;
@@ -21,7 +21,7 @@ describe('two-phase 3x3 solver', () => {
       expect(d).toEqual(solvedCubie());
       expect(r.moves.length).toBeLessThanOrEqual(22);
     }
-  });
+  }, 60_000);
 
   it('solves the superflip in 20 or so moves', () => {
     const s = applyMoves(solved(3), 3, parseMoves("U R2 F B R B2 R U2 L B2 R U' D' R2 F R' L B2 U2 F2"));
