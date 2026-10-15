@@ -48,6 +48,13 @@ main { display: grid; grid-template-columns: minmax(360px, 1.15fr) minmax(330px,
 .rotate-row { position: absolute; top: 10px; right: 10px; z-index: 2; display: flex; gap: 4px; }
 .rotate-row button { width: 32px; height: 32px; padding: 0; font-weight: 600; font-size: 0.85rem; border-radius: 8px;
   background: color-mix(in srgb, var(--panel) 80%, transparent); backdrop-filter: blur(6px); opacity: 0.8; }
+.explode-btn { position: absolute; right: 10px; bottom: 10px; z-index: 2; font-size: 0.85rem; padding: 6px 12px; border-radius: 999px; letter-spacing: 0.04em;
+  background: color-mix(in srgb, var(--panel) 80%, transparent); backdrop-filter: blur(6px); }
+.explode-btn[aria-pressed='true'] { background: #0b0a14; color: #7fe9ff; border-color: #38e1ff; box-shadow: 0 0 12px rgb(56 225 255 / 0.45); }
+.explode-hint { position: absolute; left: 50%; bottom: 52px; transform: translateX(-50%); z-index: 2; padding: 6px 12px; border-radius: 999px; font-size: 0.85rem;
+  background: rgb(11 10 20 / 0.85); color: #cdf6ff; border: 1px solid rgb(56 225 255 / 0.5); white-space: nowrap; }
+#viewport { transition: background 0.6s ease; }
+#viewport.exploded { background: radial-gradient(circle at 50% 40%, #1a1636, #07060d 78%); }
 .rotate-row button:hover, .rotate-row button:focus-visible { opacity: 1; }
 .bar, .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
 .spread { justify-content: space-between; }

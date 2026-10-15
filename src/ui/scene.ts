@@ -11,11 +11,14 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { model, type State, type Turn, type Vec3 } from '../cube/facelets';
 import { dragToTurn } from '../app/drag';
+import { ExplodeController, explodeOffset, staggerDelay } from './explode';
 
+/** Extra zoom-out at full explode; the exploded cube is about 1.6x wider. */
+const EXPLODE_ZOOM_OUT = 0.75;
 export const COLORS = ['#ffffff', '#c41e3a', '#009e60', '#ffd500', '#ff5800', '#0051ba'];
 export const COLOR_NAMES = ['White', 'Red', 'Green', 'Yellow', 'Orange', 'Blue'];
 
-interface Piece { mesh: THREE.Object3D; grid: THREE.Vector3; home: THREE.Matrix4 }
+interface Piece { mesh: THREE.Object3D; grid: THREE.Vector3; home: THREE.Matrix4; homePos: THREE.Vector3; delay: number }
 
 export class CubeView {
   private renderer: THREE.WebGLRenderer;
@@ -55,6 +58,7 @@ export class CubeView {
     this.listenForClicks();
     this.renderer.setAnimationLoop(() => {
       this.controls.update();
+      this.updateExplode();
       this.renderer.render(this.scene, this.camera);
     });
   }
@@ -70,7 +74,8 @@ export class CubeView {
     this.renderer.setSize(w, h);
     this.camera.aspect = w / h;
     // Portrait screens: zoom out so the whole cube fits the narrow width.
-    this.camera.zoom = Math.min(1, (w / h) * 1.15);
+    this.baseZoom = Math.min(1, (w / h) * 1.15);
+    this.camera.zoom = this.baseZoom / (1 + EXPLODE_ZOOM_OUT * this.lastAmount);
     this.camera.updateProjectionMatrix();
   }
 
@@ -78,6 +83,8 @@ export class CubeView {
   build(n: number) {
     this.n = n;
     this.lit = null;
+    this.explode.set(false, true);
+    this.explodeFx = null;
     this.root.clear();
     this.pieces = [];
     this.stickerMeshes = [];
@@ -111,7 +118,90 @@ export class CubeView {
   private addPiece(mesh: THREE.Object3D, grid = mesh.position.clone()) {
     mesh.updateMatrix();
     this.root.add(mesh);
-    this.pieces.push({ mesh, grid: grid.clone(), home: mesh.matrix.clone() });
+    this.pieces.push({ mesh, grid: grid.clone(), home: mesh.matrix.clone(), homePos: mesh.position.clone(), delay: staggerDelay([grid.x, grid.y, grid.z]) });
+  }
+
+  // ---------- exploded view ----------
+  private explode = new ExplodeController();
+  private explodeFx: { group: THREE.Group; lines: { line: THREE.Line; home: THREE.Vector3; delay: number }[]; mats: THREE.Material[]; base: number[] } | null = null;
+  private lastAmount = 0;
+  private baseZoom = 1;
+  onExplodeChange: (exploded: boolean) => void = () => {};
+
+  /** True while exploded or moving: layer turns must wait. */
+  get exploded() { return !this.explode.assembled; }
+
+  /** Explode (true) or reassemble (false). Waits for queued turns to finish first. */
+  async setExploded(on: boolean) {
+    await this.idle();
+    if (on && !this.explodeFx) this.buildExplodeFx();
+    this.explode.set(on, matchMedia('(prefers-reduced-motion: reduce)').matches);
+    this.onExplodeChange(on);
+  }
+
+  get explodeTarget() { return this.explode.target; }
+
+  /** Guide lines from each piece back to its home slot, ghost outlines of the slots, and a floor grid. */
+  private buildExplodeFx() {
+    const group = new THREE.Group();
+    const accent = new THREE.Color('#8b5cf6'), cyan = new THREE.Color('#38e1ff');
+    const lineMat = new THREE.LineDashedMaterial({ color: cyan, transparent: true, opacity: 0, dashSize: 0.18, gapSize: 0.12, blending: THREE.AdditiveBlending, depthWrite: false });
+    const ghostMat = new THREE.LineBasicMaterial({ color: accent, transparent: true, opacity: 0, depthWrite: false });
+    const dotMat = new THREE.PointsMaterial({ color: cyan, size: 0.22, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false });
+    const m = this.n - 1;
+    const lines: { line: THREE.Line; home: THREE.Vector3; delay: number }[] = [];
+    const ghostGeo = new THREE.EdgesGeometry(new THREE.BoxGeometry(1.96, 1.96, 1.96));
+    const homes: number[] = [];
+    for (let x = -m; x <= m; x += 2) for (let y = -m; y <= m; y += 2) for (let z = -m; z <= m; z += 2) {
+      if (Math.max(Math.abs(x), Math.abs(y), Math.abs(z)) !== m) continue;
+      const home = new THREE.Vector3(x, y, z);
+      const geo = new THREE.BufferGeometry().setFromPoints([home.clone(), home.clone()]);
+      const line = new THREE.Line(geo, lineMat);
+      group.add(line);
+      lines.push({ line, home, delay: staggerDelay([x, y, z]) });
+      const ghost = new THREE.LineSegments(ghostGeo, ghostMat);
+      ghost.position.copy(home);
+      group.add(ghost);
+      homes.push(x, y, z);
+    }
+    const dots = new THREE.Points(new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(homes, 3)), dotMat);
+    group.add(dots);
+    const grid = new THREE.GridHelper(m * 6 + 8, (m * 6 + 8) / 2, accent, accent);
+    const gridMat = grid.material as THREE.LineBasicMaterial;
+    gridMat.transparent = true; gridMat.opacity = 0; gridMat.depthWrite = false;
+    grid.position.y = -(m + 1) * (1 + 0.6) - 1.2;
+    group.add(grid);
+    this.root.add(group);
+    this.explodeFx = { group, lines, mats: [lineMat, ghostMat, dotMat, gridMat], base: [0.9, 0.4, 0.95, 0.18] };
+  }
+
+  /** Per frame: place pieces and effects for the current explode amount. */
+  private updateExplode() {
+    const moving = this.explode.animating;
+    const overall = this.explode.amount(0);
+    if (!moving && overall === this.lastAmount) return;
+    this.lastAmount = overall;
+    // Pull the camera back as the pieces spread, so the exploded cube stays in frame.
+    this.camera.zoom = this.baseZoom / (1 + EXPLODE_ZOOM_OUT * overall);
+    this.camera.updateProjectionMatrix();
+    const off = new THREE.Vector3();
+    for (const p of this.pieces) {
+      const a = this.explode.amount(p.delay);
+      const [ox, oy, oz] = explodeOffset([p.grid.x, p.grid.y, p.grid.z], a);
+      p.mesh.position.copy(p.homePos).add(off.set(ox, oy, oz));
+    }
+    const fx = this.explodeFx;
+    if (!fx) return;
+    fx.group.visible = overall > 0.001;
+    fx.mats.forEach((m, i) => { (m as THREE.Material & { opacity: number }).opacity = fx.base[i] * overall; });
+    for (const l of fx.lines) {
+      const a = this.explode.amount(l.delay);
+      const [ox, oy, oz] = explodeOffset([l.home.x, l.home.y, l.home.z], a);
+      const pos = l.line.geometry.attributes.position as THREE.BufferAttribute;
+      pos.setXYZ(1, l.home.x + ox, l.home.y + oy, l.home.z + oz);
+      pos.needsUpdate = true;
+      l.line.computeLineDistances();
+    }
   }
 
   private lastState: State | null = null;
@@ -148,6 +238,9 @@ export class CubeView {
    * cube never lags far behind the model.
    */
   animate(turn: Turn, after: State, ms = 220): Promise<void> {
+    // Safety net: the turn animation assumes pieces sit at home. If the cube
+    // is exploded, show the new state without animating (the model stays right).
+    if (this.exploded) { this.setState(after); return this.busy; }
     this.pending++;
     this.busy = this.busy.then(() => {
       const speedUp = Math.min(4, 1 + (this.pending - 1) * 0.5);
@@ -257,6 +350,8 @@ export class CubeView {
         host.setPointerCapture(e.pointerId);
         return;
       }
+      // Exploded and not painting: any drag orbits the view.
+      if (this.exploded && !this.paintMode) return;
       const sticker = this.hitSticker(e);
       if (sticker === null) return; // background: let OrbitControls orbit
       e.stopPropagation();
@@ -276,7 +371,7 @@ export class CubeView {
         return;
       }
       e.stopPropagation();
-      if (turned || this.paintMode) return;
+      if (turned || this.paintMode || this.exploded) return;
       const dx = e.clientX - start.x, dy = e.clientY - start.y;
       if (Math.hypot(dx, dy) < 12) return;
       const st = model(this.n).stickers[start.sticker];

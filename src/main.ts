@@ -262,8 +262,23 @@ function animateMove(m: string) {
   void view.animate(t, state, turnMs());
 }
 
+/**
+ * Layer turns wait while the cube is exploded (or moving apart/together):
+ * the model only changes when the view can show the change faithfully.
+ */
+function turnsBlocked(): boolean {
+  if (!view.exploded) return false;
+  $('explode-hint').textContent = 'Exploded view: turns are paused. Press Assemble (G) to turn layers again.';
+  $('explode-hint').classList.remove('hidden');
+  clearTimeout(hintTimer);
+  hintTimer = window.setTimeout(() => $('explode-hint').classList.add('hidden'), 2600);
+  return true;
+}
+let hintTimer = 0;
+
 function playMove(m: string, analyze = true) {
   if (tutorial?.blocksInput) return;
+  if (turnsBlocked()) return;
   history.push(m);
   animateMove(m);
   net.setState(state, n);
@@ -287,6 +302,7 @@ function doMoves(text: string) {
 }
 
 function stepSolution() {
+  if (turnsBlocked()) { playing = false; renderSolution(); return false; }
   if (solutionPos >= solution.length) { playing = false; renderSolution(); return false; }
   followingSolution = true;
   playMove(solution[solutionPos++]);
@@ -297,7 +313,7 @@ function stepSolution() {
 }
 
 function stepSolutionBack() {
-  if (solutionPos === 0) return;
+  if (solutionPos === 0 || turnsBlocked()) return;
   const m = history.back();
   if (!m) return;
   solutionPos--;
@@ -320,6 +336,7 @@ async function togglePlay() {
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 function undo() {
+  if (turnsBlocked()) return;
   const m = history.back();
   if (!m) return;
   if (solutionPos > 0) solutionPos--;
@@ -329,6 +346,7 @@ function undo() {
 }
 
 function redo() {
+  if (turnsBlocked()) return;
   const m = history.forward();
   if (!m) return;
   animateMove(m);
@@ -469,6 +487,19 @@ document.querySelectorAll<HTMLButtonElement>('[data-rot]').forEach((b) => {
   b.onclick = (e) => playMove(b.dataset.rot! + (e.shiftKey ? "'" : ''));
 });
 
+// Exploded view: a view-only toggle (G). Painting still works; turns wait.
+const explodeBtn = $<HTMLButtonElement>('explode');
+const toggleExplode = () => void view.setExploded(!view.explodeTarget);
+explodeBtn.onclick = toggleExplode;
+view.onExplodeChange = (on) => {
+  explodeBtn.setAttribute('aria-pressed', String(on));
+  explodeBtn.textContent = on ? 'Assemble' : 'Explode';
+  explodeBtn.title = on ? 'Put the pieces back together (G)' : 'Exploded view: spread the pieces out (G)';
+  $('viewport').classList.toggle('exploded', on);
+  document.querySelectorAll<HTMLButtonElement>('[data-rot]').forEach((b) => (b.disabled = on));
+  if (!on) $('explode-hint').classList.add('hidden');
+};
+
 const palette = $('palette');
 COLORS.forEach((c, i) => {
   const b = document.createElement('button');
@@ -533,6 +564,7 @@ window.addEventListener('keydown', (e) => {
     return;
   }
   if (k === '?') { openHelp(); return; }
+  if (k === 'g' || k === 'G') { toggleExplode(); return; }
   if (k === 'Escape') { paintColor = null; playing = false; syncControls(); return; }
   if (k === ' ' && (e.target as HTMLElement).tagName !== 'BUTTON') { e.preventDefault(); void togglePlay(); return; }
   if (k === 'ArrowRight') { e.preventDefault(); playing = false; stepSolution(); return; }
@@ -556,6 +588,7 @@ let beforeLessons: { state: State; n: 2 | 3; moves: string[] } | null = null;
 const tutorial: Tutorial = new Tutorial({
   view,
   enterLessons() {
+    if (view.explodeTarget) void view.setExploded(false);
     if (!beforeLessons) beforeLessons = { state, n, moves: history.list.slice(0, history.position) };
     selectTab('turn');
     setBaseline(solved(3), 3);

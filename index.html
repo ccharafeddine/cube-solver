@@ -36,6 +36,8 @@
       <section class="left">
         <div id="viewport" aria-label="3D cube. Drag a sticker to turn its layer; drag the background, right-drag or Shift-drag to rotate the view." role="region">
           <div id="onboarding" class="tip hidden" role="dialog" aria-live="polite"></div>
+          <button id="explode" class="explode-btn" aria-pressed="false" title="Exploded view: spread the pieces out (G)" aria-label="Exploded view (G)">Explode</button>
+          <div id="explode-hint" class="explode-hint hidden" role="status"></div>
           <div id="rotate-row" class="rotate-row" role="toolbar" aria-label="Rotate the whole cube">
             <button data-rot="x" class="mono" title="Rotate the whole cube like R (x). Shift-click: x'" aria-label="Rotate whole cube x; Shift-click for x prime">X</button>
             <button data-rot="y" class="mono" title="Rotate the whole cube like U (y). Shift-click: y'" aria-label="Rotate whole cube y; Shift-click for y prime">Y</button>
@@ -126,6 +128,7 @@
         <tr><td><kbd>Alt</kbd>+<kbd>V</kbd></td><td>Reset the view</td></tr>
         <tr><td><kbd>2</kbd> / <kbd>3</kbd></td><td>Switch to 2x2 / 3x3</td></tr>
         <tr><td><kbd>1</kbd>–<kbd>6</kbd> (Paint tab)</td><td>Pick a paint colour; <kbd>0</kbd> or <kbd>Esc</kbd> stops painting</td></tr>
+        <tr><td><kbd>G</kbd> or <b>Explode</b></td><td>Exploded view: spread the pieces out, or assemble them again. Turns pause while exploded; painting and orbiting still work</td></tr>
         <tr><td><kbd>?</kbd></td><td>This help</td></tr>
       </table>
       <p class="muted">Move counts use the quarter-turn metric: a half turn (U2) counts as two.</p>
