@@ -3,9 +3,9 @@
 <h1 align="center">Cube Solver</h1>
 
 <p align="center">
-  Set up any 2x2 or 3x3 Rubik's cube, by scrambling, turning or painting stickers, and get<br />
-  optimal or near-optimal solutions, ranked next moves, and step-by-step CFOP, Roux, ZZ<br />
-  or layer-by-layer breakdowns, all animated on a 3D cube you can grab and turn.
+  Set up any cube from 2x2 to 7x7, by scrambling, turning or painting stickers, and get<br />
+  solutions (optimal on the 2x2 and 3x3), next moves ranked by distance, and step-by-step<br />
+  breakdowns, all animated on a true-to-life 3D cube you can grab, turn, zoom into and take apart.
 </p>
 
 <p align="center">
@@ -38,50 +38,45 @@
 
 ## Contents
 
-[Features](#features) · [Download](#download) · [Quick start](#quick-start) · [Tutorial](#tutorial) · [Controls](#controls-and-shortcuts) · [Solvers](#how-the-solvers-work) · [Web / PWA / desktop builds](#building-and-packaging) · [Troubleshooting](#troubleshooting) · [Architecture](#architecture) · [Testing](#testing) · [Releasing](#releasing) · [License](#license)
+[Features](#features) · [Download](#download) · [Quick start](#quick-start) · [Tutorial](#tutorial) · [Controls](#controls-and-shortcuts) · [Solvers](#how-the-solvers-work) · [The 3D cube](#the-3d-cube) · [Theming](#theming) · [Builds](#building-and-packaging) · [Troubleshooting](#troubleshooting) · [Architecture](#architecture) · [Testing](#testing) · [Releasing](#releasing) · [Brand assets](#brand-assets) · [License](#license)
 
 ## Features
 
-**Cubes and input**
-- 2x2 to 7x7 cubes in 3D modelled on the real puzzles: hollow pieces with inset stickers, and the 6x6 and 7x7 with pillowed (spherical) faces. Drag a sticker to turn its layer, with mouse, pen or touch. Drag the background to look around (or right-drag / Shift-drag from anywhere), and scroll or pinch to zoom.
-- Keyboard turns for every face (U R F D L B), the middle slices (M E S) and whole-cube rotations (x y z). Add Shift for counter-clockwise. Small **X Y Z** buttons in the corner of the cube view do the same whole-cube rotations (Shift-click for prime).
-- A move pad with all 36 turns, and a box for typing algorithms in standard notation (`R U R' U'`, `F2`, `M'`, `Rw`, `x`).
-- **Setup:** paint any sticker from the colour menu, either on the 3D cube or on a **flat 2D net editor**. The net is all buttons, so it works from the keyboard and with screen readers.
-- **Solvability check:** impossible states are explained, for example wrong colour counts, a corner that can't exist, a twisted corner, a flipped edge, or two swapped pieces (parity).
-- **Reset**, random-state **Scramble** (every position equally likely). The scramble plays turn by turn, a bit quicker than normal playback, and every turn goes into the history, so **Undo** walks back through it one turn at a time until the cube is solved again. Click any move in the **history** to walk there, forwards or backwards, one animated turn at a time.
-- **Import/export:** facelet string (Kociemba's URFDLB format), JSON (state, moves and solution), the solution as text, a downloadable `.json`, and **share links** that carry the cube state in the URL.
+**Cubes**
+- **Six sizes, 2x2 to 7x7**, switched with the size buttons or keys <kbd>2</kbd>–<kbd>7</kbd>. Every size starts solved.
+- **True to life in 3D:** hollow plastic pieces with rounded edges, and stickers set slightly into each piece with a black ridge around them, in every theme. The 2x2 to 5x5 are flat; the 6x6 and 7x7 have **pillowed faces** like the V-Cube 6b and 7, a true spherical curve through each face's corners that bends the pieces themselves.
+- **Exploded view** on every size shows the real mechanism inside (see [The 3D cube](#the-3d-cube)).
+- **Zoom right into the cube:** scroll or pinch from 2.5x out to a few hundredths of a cubie from the centre, to look at the mechanism from inside.
 
-- **Exploded view** (**Explode** button in the cube view, or <kbd>G</kbd>) works on 2x2 and 3x3. Every piece glides outward along the line from the cube's centre to its home slot, so corners travel furthest and centres least. The motion is ease-in-out over 0.9 s, with a slight sweep around the cube. Dashed cyan guide lines trace each piece back to its slot, faint violet ghost outlines mark the empty slots, and a perspective grid fades in below. **Assemble** (or <kbd>G</kbd> again) reverses smoothly from wherever the animation is. While exploded, orbiting and painting still work, and layer turns, undo/redo and solution playback pause with a short hint, so the cube's state can never get out of step with the picture. Reduced motion makes it instant. On the 2x2 the pieces spread farther, the camera pulls back to keep everything in frame, and the internal mechanism appears: six thin axle spindles meeting at the centre (no core block), springs and screws under hidden centre caps that lift slightly clear, and the foot on each corner that clips under the caps, so the corners float around the axles. On the 3x3 the inside of a real cube appears: a fixed core with six arms, and hollow centres, each a shell open toward the core with an inner tube the arm enters. The centre's outer face is flat (the covered cap recess is folded into it). The screw runs from under the face through the tube into the arm, with the spring in the tube under its head, so nothing ever shows on the face. The screw and spring belong to the centre: on explode each whole centre assembly slides off its arm as one rigid unit, and the screw and spring show only through its open inner side. Edges and corners have no holes; edge feet ride in the track under the centres and corner feet sit under the edges. The mechanism is matte grey plastic and only shows while exploded.
+**Turning and setup**
+- **Drag a sticker** to turn its layer, with mouse, pen or touch, on any size and any layer, from any viewing angle. Drag the background (or right-drag / <kbd>Shift</kbd>-drag anywhere) to look around.
+- **Keyboard:** U R F D L B turn the faces, M E S the 3x3 slices, x y z rotate the whole cube; <kbd>Shift</kbd> for counter-clockwise. **X Y Z** buttons on the cube view do the rotations too.
+- A **move pad** and a box for typing algorithms (`R U R' U'`, `F2`, `M'`, `Rw`, `x`, and on big cubes SiGN layers such as `2R` or `3Rw`).
+- **Paint** a real cube's colours on the 3D cube or on a flat **net** that scales to fit any size. The net is all buttons, so it works from the keyboard and with screen readers.
+- **Solvability check:** impossible states are explained (wrong colour counts, impossible or twisted corners, flipped edges, parity).
+- **Import / export:** facelet strings, JSON, the solution as text, a downloadable `.json`, and **share links** that carry the cube in the URL.
+
+**Scrambles, history and playback**
+- **Scramble** plays turn by turn, a little faster than normal playback (about 1.75x the speed slider, 60–260 ms a turn), and every turn goes into the history. Random-state on the 2x2 and 3x3; random single-layer turns on big cubes (40 on a 4x4 up to 100 on a 7x7).
+- **Two-way timeline:** the **History** list shows every move, scrambles included. Click any move to walk there, forwards or backwards, one animated turn at a time; **Undo**/**Redo** step through it.
+- **Solution timeline:** play/pause, step forward and back, back to start, or click any move to play up to it. Long solutions scroll in their own box that follows the current move, with the controls always in view.
+- **Speed slider** sets the pace of every animation: turns, solutions, method steps and scrambles. The system's reduced-motion setting is respected.
 
 **Solving**
-- **2x2: always optimal.** A complete table of all 3,674,160 positions (built in under a second) gives the shortest solution and the exact distance for every candidate move.
-- **3x3 Fast:** Kociemba's two-phase algorithm. It finds about 20 moves in milliseconds, keeps improving while it thinks, and streams every better solution to the screen. Positions within about 12 quarter turns of solved are also proven optimal automatically.
-- **3x3 Optimal:** Korf-style IDA* with five pattern databases (two corner groups and three five-edge groups) for the proven-shortest solution in quarter turns. It shows live progress (depth proven, positions searched) and can be stopped at any time. If the think time runs out, you get the fast solution plus how far the proof reached.
-- **Ranked next moves:** all 12 quarter turns, each with its distance to solved and the change it makes (-1 is progress). Proven distances are shown plainly; estimates are marked with ≈. Ties are broken by a proven lower bound.
-- **Method breakdowns** for the 3x3:
-  - **Layer by layer:** cross, first-layer corners, middle layer, then the last layer in four steps.
-  - **CFOP:** cross, four F2L pairs (the easiest pair first), then two-look OLL and two-look PLL.
-  - **Roux:** first block, second block, CMLL, then the last six edges with M and U.
-  - **ZZ:** EOLine (edge orientation solved exactly, then DF and DB placed), F2L with R, U and L only, then the last layer.
-
-  Each step is named and counted. Play any step on its own, or play them all.
-- **Notation everywhere:** standard WCA notation. Counts use the **quarter-turn metric** (U2 counts as two), with the half-turn count alongside.
-- **Playback:** play/pause, step forward and back, back to start, click any move to play up to it, and adjustable animation speed. Long queues speed up automatically, and the system's reduced-motion setting is respected.
+- **2x2: always optimal** from a complete table of all 3,674,160 positions.
+- **3x3 Fast:** Kociemba's two-phase algorithm, about 20 moves in milliseconds, improving while it thinks.
+- **3x3 Optimal:** IDA* with pattern databases for the proven-shortest solution, with live progress and a Stop button.
+- **4x4 to 7x7: reduction**, the way people solve them by hand: parity, centres, edges, then the 3x3 stage.
+- **Next moves ranked by distance:** every possible turn with how far it leaves you from solved and the change it makes (−1 is progress). Proven distances are shown plainly; estimates are marked ≈ (always on big cubes).
+- **Methods:** Layer by layer, CFOP, Roux and ZZ on the 3x3; the reduction steps on big cubes. Each step is named and counted; play one step or all of them.
+- Counts use the **quarter-turn metric** (U2 counts as two), with the half-turn count alongside.
 
 **App**
-- Runs in the **browser**, installs as an offline **PWA**, and installs on **Windows** as a desktop app of about 2 MB (Tauri).
-- **Update check** against GitHub releases: automatic at startup in release builds, and on demand with ⟳.
-- **Frutiger Aero look:** glossy glass panels over a sky-and-bubbles backdrop, aqua pill buttons with a specular top half, a sky-blue and fresh-green palette, soft layered shadows, and lacquered stickers on the 3D cube. Light and dark (night-sky glass) variants follow the system until you pick one with the moon button.
-- Built on design tokens, so the planned neon and matte skins are just variable sets (preview with `?skin=neon` or `?skin=matte`). Respects reduced motion and reduced transparency (solid panels, no blur). Settings are remembered.
-- An interactive tutorial (below), a keyboard shortcut sheet, an error banner with Reload if anything goes wrong, and a solver that restarts itself if it crashes.
-- A responsive layout for phones and tablets. Every control has an accessible name, and keyboard focus is always visible.
-- The UI thread never runs solver work: everything heavy happens in a Web Worker, and solver tables are cached in IndexedDB.
-
-**Tutorial**
-- An interactive **notation course** of 14 short lessons: the faces U D L R F B, prime ('), double (2), the slices M E S, wide moves (Rw), the rotations x y z, and quarter-turn counting. Each lesson spotlights the layer on the 3D cube, animates the move, then asks you to play it and checks your answer. Ends with a 6-question quiz.
-- A 10-step **spotlight tour** of the app. It highlights each part, lets you try it right there, and uses touch wording on phones.
-- Offered on first launch, can be skipped, and is always available from the 🎓 Tutorial menu, where you can resume where you stopped or replay. Progress is saved.
-- Wide-screen layout: the cube and its panel use all the spare width, the side panel keeps one width, and buttons never jump around. Long solutions and the history scroll in their own boxes, following the current move, with the play controls always in view. The paint map shrinks to fit even a 7x7.
+- Runs in the **browser**, installs as an offline **PWA**, and installs on **Windows** as a desktop app of about 2 MB (Tauri 2).
+- **Four themes** (Matte, Frutiger Aero, Neon, Neubrutalism), each light and dark, in **Settings** (⚙) with the update check and About.
+- An interactive **tutorial** and app **tour**, a shortcut sheet, an error banner with Reload, and a solver that restarts itself if it crashes.
+- A wide-screen layout whose buttons stay put: fixed panel heights and a reserved scrollbar gutter, so nothing shifts as solutions and analysis change. It folds to one column on phones and tablets. Every control has an accessible name and visible focus.
+- Solver work never runs on the UI thread: it happens in a Web Worker, and solver tables are cached in IndexedDB.
 
 ## Download
 
@@ -141,7 +136,7 @@ The dots across the top jump to any lesson, and **Show again** repeats the demon
 11. Share and export
 
 - **Try it in place.** Clicks inside the spotlight reach the real control. A step can ask you to spin the view, drag a sticker or press Scramble, and the tour stays open. The dimmed area is four click-catching rectangles around the hole, not a full-screen blocker.
-- **Navigation.** An "N of 10" counter, plus **Skip**, **Back** and **Next** (**Done** on the last step). The ← → keys move between steps. **Esc** or clicking the dimmed area closes the tour. Nothing advances on its own.
+- **Navigation.** An "N of 11" counter, plus **Skip**, **Back** and **Next** (**Done** on the last step). The ← → keys move between steps. **Esc** or clicking the dimmed area closes the tour. Nothing advances on its own.
 - **Placement.** The card parks beside large targets such as the 3D cube, and below or above small ones, always on screen. On phones it docks to the bottom. Each target is scrolled into view first, and everything repositions on resize and scroll.
 - **Adapting.** Steps whose target isn't visible, such as the 3x3-only method card on a 2x2, are dropped. On touch screens the steps say "tap" and "swipe" instead of "click" and "drag".
 - **Accessibility.** The card is a modal dialog with a focus trap. Tab stays inside it, and closing returns focus to where you were.
@@ -153,21 +148,21 @@ The dots across the top jump to any lesson, and **Show again** repeats the demon
 
 | Control | What it does |
 |---|---|
-| Drag a sticker | Turn that layer in the drag direction (outer layers and, on the 3x3, the middle slices) |
+| Drag a sticker | Turn that layer in the drag direction: any layer, any size, any viewing angle |
 | Drag the background | Rotate the view |
 | Right-drag, or <kbd>Shift</kbd>+drag | Rotate the view from anywhere, even starting on a sticker (it never turns a layer) |
-| Scroll / pinch | Zoom (all the way inside the cube to see the mechanism) |
+| Scroll / pinch | Zoom, from 2.5x out to right inside the cube to see the mechanism |
 | **Reset** (<kbd>Alt</kbd>+<kbd>R</kbd>) | Back to solved |
 | **Scramble** (<kbd>Alt</kbd>+<kbd>S</kbd>) | Random-state scramble, played turn by turn from solved (about 1.75x the slider speed, 60-260 ms a turn) and recorded in the history; its moves appear in the move box. Undo or any new action stops it where it is |
 | ↶ / ↷ (<kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>Y</kbd> or <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd>) | Undo / redo a move |
 | **Reset view** (<kbd>Alt</kbd>+<kbd>V</kbd>) | The standard view: white on top, green in front (so red is R and orange is L), seen from slightly above with the front-right corner toward you. The camera is re-centred on the cube and its distance is fitted to the window (field of view and aspect), so the whole cube shows with a margin on any screen. The first load uses the same framing. Also undoes any x/y/z rotations, played as rotation moves so history stays consistent |
-| **Speed** slider | Animation speed |
+| **Speed** slider | Pace of every animation: turns, solution and method playback, scrambles |
 | <kbd>U</kbd> <kbd>R</kbd> <kbd>F</kbd> <kbd>D</kbd> <kbd>L</kbd> <kbd>B</kbd> | Turn a face clockwise; with <kbd>Shift</kbd>, counter-clockwise |
 | <kbd>M</kbd> <kbd>E</kbd> <kbd>S</kbd> | Middle slices (3x3 only) |
 | <kbd>X</kbd> <kbd>Y</kbd> <kbd>Z</kbd>, or the **X Y Z** buttons on the cube | Rotate the whole cube a quarter turn (x like R, y like U, z like F); <kbd>Shift</kbd>+key or <kbd>Shift</kbd>+click for the prime. Rotations move no pieces |
-| <kbd>G</kbd>, or **Explode** / **Assemble** | Exploded view on and off. Turns pause while exploded; orbiting and painting work |
-| <kbd>2</kbd> / <kbd>3</kbd>, or the **2x2 / 3x3** buttons | Switch cube size (starts solved) |
-| **Fast / Optimal** | 3x3 solver mode |
+| <kbd>G</kbd>, or **Explode** / **Assemble** | Exploded view with the mechanism, on every size. Turns pause while exploded; orbiting and painting work |
+| <kbd>2</kbd>–<kbd>7</kbd>, or the size buttons | Switch cube size, 2x2 to 7x7 (starts solved) |
+| **Fast / Optimal** | 3x3 solver mode (the 2x2 is always optimal; big cubes use reduction) |
 | **Think** | Time limit for the search (1–60 s) |
 | <kbd>Space</kbd> / **▶ Play** | Play or pause the solution |
 | <kbd>→</kbd> / <kbd>←</kbd>, **›** / **‹** | Step the solution forward / back |
@@ -175,7 +170,7 @@ The dots across the top jump to any lesson, and **Show again** repeats the demon
 | Click a solution move | Play up to that move |
 | Click a candidate | Play that move |
 | **Stop search** | Stop thinking and keep the best solution so far |
-| **Method** menu | Layer by layer, CFOP, Roux or ZZ; **Play step** / **Play all steps** |
+| **Method** menu | Layer by layer, CFOP, Roux or ZZ on the 3x3; reduction steps on big cubes. **Play step** / **Play all steps** |
 | **History** | Click any move to walk there, forwards or backwards, one animated turn at a time; • is the start, the highlighted move is where you are. ← steps back through the history when no solution is being followed |
 | **Paint** tab | Colour swatches (<kbd>1</kbd>–<kbd>6</kbd>), then click stickers on the cube or the net; <kbd>0</kbd> or <kbd>Esc</kbd> stops painting. With no colour picked, clicking a net sticker cycles its colour |
 | **Fill solved** | Reset the net to a solved cube |
@@ -184,7 +179,7 @@ The dots across the top jump to any lesson, and **Show again** repeats the demon
 | **🎓** | Tutorial menu: notation lessons, quiz and app tour (resume or replay) |
 | **⚙** | Settings: theme and light/dark/system, Check for updates, and About (the version). <kbd>Esc</kbd> closes it |
 
-**Facelet string format:** 54 letters (24 for the 2x2), one per sticker, faces in the order U, R, F, D, L, B, each read row by row as on the unfolded net, using the face letters as colours. A solved 3x3 is `UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB`. Share links use the same string: `#n=3&f=<facelets>`.
+**Facelet string format:** 6·N² letters (24 for the 2x2, 54 for the 3x3, 294 for the 7x7), one per sticker, faces in the order U, R, F, D, L, B, each read row by row as on the unfolded net, using the face letters as colours. A solved 3x3 is `UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB`. Share links use the same string: `#n=<size>&f=<facelets>`.
 
 ## How the solvers work
 
@@ -214,7 +209,24 @@ Inner layers use SiGN notation: `2R` turns only the second layer from the right,
 
 **Next moves on big cubes** rank every single-layer quarter turn by the length of the reduction solution from the resulting position. That measures progress through the reduction, not a proven distance, so every number is marked ≈.
 
-**Mechanism.** The exploded 4x4 shows the Rubik's Revenge ball core: eight raised triangles leave three grooves that the centres' cams ride in, while edges and corners hook onto their neighbours. The 5x5 to 7x7 show the V-Cube design: a solid cross with every piece on a conical stalk ending in a curved foot, the corners reaching nearly to the centre (the 6x6's cross ends in six hidden fixed centres). On odd cubes the edges are paired to their middle piece (midge), so parity there is just the one inner-slice turn.
+On odd cubes the edges are paired to their middle piece (midge), so parity there is just the one inner-slice turn; even cubes take their colour scheme from a corner.
+
+## The 3D cube
+
+The cube is drawn with three.js. Each piece is a hollow shell, open toward the core, with rounded edges and a raised black ridge around a slightly recessed rounded sticker. Pieces of the same shape share one geometry, so even the 7x7 (about 1,050 meshes) orbits smoothly.
+
+**Pillowing.** The 6x6 and 7x7 faces are each a spherical cap through the face's four corners (bulging 0.42 and 0.48 cubie units at the middle). The pieces bend with it, not just the stickers, so the plastic and stickers stay flush. The 2x2 to 5x5 stay flat, like the common real puzzles.
+
+**Exploded view** (**Explode**, or <kbd>G</kbd>). Every piece glides outward along the line from the centre to its home slot, with dashed guide lines back to each slot, ghost outlines of the empty slots and a grid below. **Assemble** reverses smoothly from wherever the animation is. While exploded, orbiting and painting still work, and turns and playback pause with a hint, so the picture never gets out of step with the cube. Every mechanism part is drawn from both sides, so nothing vanishes when you zoom in among them. The mechanism in each size follows the real design:
+
+| Size | Mechanism shown | Based on |
+|---|---|---|
+| 2x2 | Six thin axle spindles meeting at the centre, springs and screws under hidden centre caps, and a foot on each corner clipping under the caps | The common 2x2 design with a hidden 3x3-style core |
+| 3x3 | A fixed core with six arms; hollow centres with a tube the arm enters, the screw and spring inside; edge feet in the track under the centres, corner feet under the edges | The standard 3x3 mechanism |
+| 4x4 | A ball core carrying eight raised spherical triangles that leave three perpendicular grooves; only the centres reach the ball, on cams in the grooves; edges hook onto centres and corners onto edges | Sebestény's Rubik's Revenge, [US 4,421,311](https://patents.google.com/patent/US4421311A); Wikipedia "Rubik's Revenge"; twistypuzzles.com puzzle database |
+| 5x5–7x7 | A solid 3D cross; every piece is a cubic part on a conical stalk ending in a foot that is a piece of a spherical shell; the corners reach nearly to the centre; odd cubes screw their fixed centres to the cross, and the 6x6's cross ends in six hidden fixed centres | Verdes' V-Cube, EP1599261 / US 2007/0057455; Wikipedia "V-Cube 6", "V-Cube 7" and "Professor's Cube"; v-cubes.com and its 2026 catalogue |
+
+The 5x5 stays flat because the common real 5x5 is flat (V-Cube offers pillowed versions of every size "except the V-5"). The research notes are in [PLAN.md §10](PLAN.md).
 
 ## Theming
 
@@ -226,7 +238,7 @@ The look is built in two layers:
 | Components | `src/style.css` | Panels, buttons, tabs, toggles, dialogs, tour and coach cards. These read tokens only (a test fails if they use an undeclared one) |
 | Scene | `src/theme/skins.ts` | The 3D side of each skin: plastic colour and roughness, sticker clear-coat gloss, and ambient, key, sky and rim lights for light and dark |
 
-There are four themes. Pick one in **Settings** (the gear at the top right), or with **Settings…** in the help menu. Settings also holds Check for updates and the version (About). The choice applies instantly and is saved (`cube-solver-skin` and `cube-solver-theme` in `localStorage`).
+There are four themes. Pick one in **Settings** (⚙ at the top right, or **Settings…** in the help menu), along with Light, Dark or System. Settings also holds **Check for updates** and **About** (the version). It is a modal dialog: keyboard and touch friendly, <kbd>Esc</kbd> or a click outside closes it, and the chosen options are marked with a fill and a ✓. The choice applies instantly and is saved (`cube-solver-skin` and `cube-solver-theme` in `localStorage`).
 
 | Theme | Modes | Look |
 |---|---|---|
@@ -235,22 +247,10 @@ There are four themes. Pick one in **Settings** (the gear at the top right), or 
 | **Neon** | Light, dark | Dark: deep surfaces, glowing cyan edges and a faint grid that pair with the exploded view's glow lines. Light: bright clean surfaces with the same glowing cyan/violet edges and grid |
 | **Neubrutalism** | Light, dark | Flat bold colours and thick outlines with hard offset shadows: black on cream in light, light outlines with shadows in cube colours on charcoal in dark |
 
-Each theme also has its own corners, set by tokens per size tier (panel, card, control, chip): Matte uses 2-4px radii with a hairline double-line edge; Aero rounds only the top corners with a gloss band; Neon chamfers panel corners with a glowing line along each cut; Neubrutalism stays nearly square and lets the heavy outline and offset shadow do the work. Focus rings follow each shape. Every theme has light and dark, each with its own 3D lighting and plastic. Light, Dark or System applies to all of them; System follows the OS setting live, without a reload. `?skin=neon` (or `matte`, `aero`, `brutal`) previews a theme without saving it. Every theme defines every token, which a test checks. Under reduced transparency, panels become solid and blur is turned off; reduced motion also removes the Neubrutalism press nudge. Contrast is checked in tests to meet WCAG AA for body text, muted text and text on buttons in every theme. Selects and their native option lists take solid colours from the theme so they stay readable on Windows.
+The title uses the bundled Bungee font, styled per theme. Each theme also has its own corners, set by tokens per size tier (panel, card, control, chip): Matte uses 2-4px radii with a hairline double-line edge; Aero rounds only the top corners with a gloss band; Neon chamfers panel corners with a glowing line along each cut; Neubrutalism stays nearly square and lets the heavy outline and offset shadow do the work. Focus rings follow each shape. Every theme has light and dark, each with its own 3D lighting and plastic. Light, Dark or System applies to all of them; System follows the OS setting live, without a reload. `?skin=neon` (or `matte`, `aero`, `brutal`) previews a theme without saving it. Every theme defines every token, which a test checks. Under reduced transparency, panels become solid and blur is turned off; reduced motion also removes the Neubrutalism press nudge. Contrast is checked in tests to meet WCAG AA for body text, muted text and text on buttons in every theme. Selects and their native option lists take solid colours from the theme so they stay readable on Windows.
 
 <p align="center"><img src="docs/screenshot-theme-picker.png" width="700" alt="Settings: the theme picker with swatch previews of the four themes, light/dark/system, update check and About" /></p>
 <p align="center"><img src="docs/screenshot-brutal.png" width="700" alt="The Neubrutalism theme: flat colour, thick outlines, hard shadows" /></p>
-
-## Brand assets
-
-The logo is original artwork: an isometric cube with inset, rounded stickers on black plastic (like the 3D cube) and a solve arrow. The SVG sources live in `brand/`:
-
-- `brand/icon.svg`: the app icon and header mark (copied to `public/icon.svg`, the favicon).
-- `brand/icon-maskable.svg`: full-bleed version with the mark inside the maskable safe zone.
-- `brand/og-image.html`: the social/OG card, rendered to `public/og-image.png` (1200x630).
-
-PNG sizes (`public/icon-192.png`, `icon-512.png`, `icon-1024.png`, `icon-maskable-512.png`) are rendered from the SVGs. The desktop icons in `src-tauri/icons/` (PNG, `.ico`, `.icns`) come from `npx tauri icon public/icon-1024.png`. README screenshots in `docs/` are taken from the running app.
-
-The title font is [Bungee](https://github.com/djrrb/Bungee) (SIL Open Font License, `src/assets/fonts/Bungee-OFL.txt`), bundled with the app, so it works offline and in the desktop app.
 
 ## Building and packaging
 
@@ -313,6 +313,7 @@ src/
     pdb.ts          pattern databases (corner and edge groups), lower bound
     optimal3.ts     3x3 Optimal (IDA* + PDBs, progress, cancel)
     rank.ts         candidate ranking by distance
+    big/            reduction for 4x4-7x7: core.ts (pieces, orbits), reduce.ts (3-cycle search, parity, phases), analyze.ts
     methods/        common.ts (piece and macro searches), lbl.ts, cfop.ts, roux.ts, zz.ts, index.ts
     analyze.ts      one full analysis: validity, solution, candidates, method (pure, tested)
     worker.ts       Web Worker: loads/builds tables (tableCache.ts, IndexedDB), runs analyze
@@ -320,22 +321,27 @@ src/
   app/
     history.ts      move history with cursor (undo/redo/jump)
     share.ts        facelet string, JSON, URL hash, import parsing
-    drag.ts         drag vector -> layer turn
+    drag.ts         drag vector -> layer turn (any size, in-face motion)
+    pace.ts         paced playback and scramble timing
     update.ts       GitHub release check
   ui/
-    scene.ts        three.js view: meshes, turn animation queue, pointer input
+    scene.ts        three.js view: meshes, mechanisms, turn animation queue, pointer input
+    pieces.ts       hollow piece shells, ridges, inset stickers, spherical pillowing (pure, tested)
+    scroll.ts       keep the current move in view inside its list
     explode.ts      exploded-view maths: easing, offsets, stagger, controller (pure, tested)
-    framing.ts      camera distance that fits the cube for any FOV/aspect (pure, tested)
+    framing.ts      camera framing and zoom limits for any FOV/aspect (pure, tested)
     net.ts          flat net editor
   theme/
-    tokens.css      design tokens per skin (aero light/dark, neon, matte)
+    tokens.css      design tokens per skin: matte, aero, neon, brutal, each light and dark
     skins.ts        scene parameters per skin, skin and theme selection (tested with the tokens)
   tutorial/
     lessons.ts      lesson, quiz and tour content; attempt checking; saved progress (pure, tested)
     tutorial.ts     coach panel, demonstrations, quiz; starts the tour
     spotlight.ts    spotlight tour: hole/dim/card geometry (pure, tested), focus trap, keys
-  main.ts           UI wiring, keyboard, dialogs, error banner
-public/             manifest, service worker, icons
+  assets/fonts/     the bundled title font (Bungee, OFL)
+  main.ts           UI wiring, keyboard, Settings and other dialogs, error banner
+public/             manifest, service worker, icons, social card
+brand/              logo and social card sources
 src-tauri/          Tauri 2 shell (Rust), config, capabilities, icons
 ```
 
@@ -353,14 +359,18 @@ npm run build       # type-check + production build
 ```
 
 The tests cover:
-- Move identities on 2x2 to 5x5, and agreement between the sticker and cubie models for all 18 moves.
+- Move identities on every size from 2x2 to 7x7, and agreement between the sticker and cubie models for all 18 moves.
 - Notation round-trips, and every solvability rule.
 - The 2x2 table: every state reached, maximum distance 14. 200 random 2x2 solves are optimal.
 - Two-phase on random scrambles and the superflip.
 - The optimal 3x3, the pattern-database bound never exceeding a proven optimum, and progress and cancel.
 - Every method breakdown on random cubes.
 - Ranking order and tie-breaking, and the full worker analysis.
-- History, import/export, share URLs, update-check version logic, and drag-to-turn geometry.
+- Big-cube reduction on every size from 4x4 to 7x7: parity, 3-cycle coverage, and full solves played back.
+- History, import/export, share URLs, paced playback, update-check version logic.
+- Drag-to-turn on every size: the expected move for drags on each face, and from five viewing angles that every drag turns the grabbed layer the way it goes.
+- Piece shells, inset stickers and pillowing (only the 6x6 and 7x7, a true sphere through the corners), camera framing and zoom limits.
+- Themes: every skin defines every token, AA contrast in all eight variants, the bundled font, the Settings dialog contents and that every icon exists.
 - The spotlight geometry: 8px padding, the four dim rectangles tiling the screen around the hole, the card beside large targets and below or above small ones, always on screen. Also visible-step filtering, the counter text, and touch wording.
 - The tutorial: every direction the lessons describe is checked against the cube model, along with attempt checking (equivalent sequences, partial progress, wrong moves), quiz answers and grading, that every tour target exists in the page, and loading saved progress, including corrupt data.
 
@@ -376,10 +386,22 @@ The [release workflow](.github/workflows/release.yml) creates the GitHub release
 
 To release by hand from Windows: `npm run desktop`, then `gh release create v<version> --notes-file docs/release-notes/v<version>.md "src-tauri/target/release/bundle/nsis/*.exe" "src-tauri/target/release/bundle/msi/*.msi"`.
 
+## Brand assets
+
+The logo is original artwork: an isometric cube with inset, rounded stickers on black plastic (like the 3D cube) and a solve arrow. The SVG sources live in `brand/`:
+
+- `brand/icon.svg`: the app icon and header mark (copied to `public/icon.svg`, the favicon).
+- `brand/icon-maskable.svg`: full-bleed version with the mark inside the maskable safe zone.
+- `brand/og-image.html`: the social/OG card, rendered to `public/og-image.png` (1200x630).
+
+PNG sizes (`public/icon-192.png`, `icon-512.png`, `icon-1024.png`, `icon-maskable-512.png`) are rendered from the SVGs. The desktop icons in `src-tauri/icons/` (PNG, `.ico`, `.icns`) come from `npx tauri icon public/icon-1024.png`. README screenshots in `docs/` are taken from the running app.
+
+The title font is [Bungee](https://github.com/djrrb/Bungee) (SIL Open Font License, `src/assets/fonts/Bungee-OFL.txt`), bundled with the app, so it works offline and in the desktop app.
+
 ## Roadmap
 
-See [PLAN.md](PLAN.md) and [progress.txt](progress.txt). Next up: stronger optimal-search tables (full corner and larger edge databases, possibly WASM) and full OLL/PLL sets. On the backlog: 4x4/5x5 by reduction, and camera scanning of a real cube.
+See [PLAN.md](PLAN.md) and [progress.txt](progress.txt). Ideas: shorter big-cube solutions (combined 3-cycles, wide-move edge pairing), stronger optimal-search tables, full OLL/PLL sets, and camera scanning of a real cube.
 
 ## License
 
-[MIT](LICENSE) © ccharafeddine. All solver code is original; no GPL code is used. Runtime dependencies: [three.js](https://threejs.org) (MIT) and, in the desktop app, [Tauri](https://tauri.app) (MIT/Apache-2.0).
+[MIT](LICENSE) © ccharafeddine. All solver code is original; no GPL code is used. Runtime dependencies: [three.js](https://threejs.org) (MIT) and, in the desktop app, [Tauri](https://tauri.app) (MIT/Apache-2.0). The title font, Bungee, is under the SIL Open Font License.
