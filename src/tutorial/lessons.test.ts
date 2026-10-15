@@ -88,10 +88,10 @@ describe('quiz', () => {
 });
 
 describe('tour steps', () => {
-  it('are ten, with unique ids and selectors that exist in index.html', async () => {
+  it('are eleven, with unique ids and selectors that exist in index.html', async () => {
     const { readFileSync } = await import('node:fs');
     const html = readFileSync(new URL('../../index.html', import.meta.url), 'utf-8');
-    expect(TOUR).toHaveLength(10);
+    expect(TOUR).toHaveLength(11);
     expect(new Set(TOUR.map((t) => t.id)).size).toBe(TOUR.length);
     for (const t of TOUR) {
       const needle = t.target.startsWith('#') ? `id="${t.target.slice(1)}"` : t.target === '.bar' ? 'class="bar"'
@@ -101,7 +101,7 @@ describe('tour steps', () => {
   });
   it('covers the required areas and mentions spinning and X/Y/Z', () => {
     const ids = TOUR.map((t) => t.id);
-    for (const id of ['cube', 'rotate', 'turn', 'paint', 'actions', 'solve', 'next', 'method', 'history', 'share']) expect(ids).toContain(id);
+    for (const id of ['cube', 'sizes', 'rotate', 'turn', 'paint', 'actions', 'solve', 'next', 'method', 'history', 'share']) expect(ids).toContain(id);
     const rotate = TOUR.find((t) => t.id === 'rotate')!;
     expect(rotate.body).toMatch(/Right-drag or Shift-drag/);
     expect(rotate.body).toMatch(/X, Y and Z/);

@@ -83,3 +83,5 @@ Rules learned building Cube Solver. Read them before changing the build, the sol
 - A support-distance clamp keeps the camera outside the cube, which blocks inspecting the mechanism. One-sided faces already cull from the inside, so a tiny fixed minDistance (0.08) with near 0.01 lets the camera fly in cleanly.
 - Plain-language copy: one idea per sentence, explain a term the first time (move, prime, facelet string), and test sentence length and banned jargon so the copy stays simple.
 - Make scrambles real moves in the history (inverse of a quick solve of a random state) instead of an opaque state, so undo and the timeline can walk through them.
+- Big-cube 3-cycles: searching [a b a', c] for every pure 3-cycle and conjugating them all at once (multi-source BFS) gives ~30% shorter solutions than spreading a single base cycle.
+- Scripted browser checks: wait on a condition that only holds at the true end (history length equals the scramble length), not one every intermediate state satisfies.

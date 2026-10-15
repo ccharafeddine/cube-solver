@@ -1,17 +1,17 @@
 import './style.css';
 import { CubeView, COLORS, COLOR_NAMES } from './ui/scene';
 import { NetEditor } from './ui/net';
-import { applyTurn, colorCounts, isSolved, moveToTurn, solved, turnToMove, type State } from './cube/facelets';
+import { applyTurn, colorCounts, isSolved, layerMove, moveToTurn, solved, turnToMove, type State } from './cube/facelets';
 import { formatMove, invertMoves, parseMoves } from './cube/notation';
 import { solvedCubie, toFacelets, parity, type Cubie } from './cube/cubie';
 import { randomState2 } from './solver/solver2';
-import type { AnalyzeRequest, AnalyzeResponse, Mode } from './solver/protocol';
+import { ENABLED_SIZES, type AnalyzeRequest, type AnalyzeResponse, type Mode, type Size } from './solver/protocol';
 import type { Candidate } from './solver/rank';
 import { METHODS, type MethodId, type Step } from './solver/methods/index';
 import { History, inverseMove } from './app/history';
 import { fromHash, importText, toFaceletString, toHash, toJSON } from './app/share';
 import { checkForUpdate } from './app/update';
-import { playPaced, scrambleMs } from './app/pace';
+import { playPaced, randomMoves, scrambleMs } from './app/pace';
 import { Tutorial } from './tutorial/tutorial';
 import { standardRotation } from './cube/orient';
 import { pickSkin, resolveTheme, modeFor, SCENE_SKINS, SKINS, SKIN_LABELS, SKIN_MODES, type SkinId } from './theme/skins';
@@ -38,10 +38,10 @@ window.addEventListener('error', (e) => showError(e.message || 'unknown error'))
 window.addEventListener('unhandledrejection', (e) => showError(String((e.reason as Error)?.message ?? e.reason)));
 
 // ---------- settings ----------
-interface Settings { n: 2 | 3; mode: Mode; thinkMs: number; method: MethodId; speed: number; topn: string }
+interface Settings { n: Size; mode: Mode; thinkMs: number; method: MethodId; speed: number; topn: string }
 const saved: Partial<Settings> = (() => { try { return JSON.parse(localStorage.getItem('cube-solver-settings') ?? '{}'); } catch { return {}; } })();
 const settings: Settings = {
-  n: saved.n === 2 ? 2 : 3,
+  n: ENABLED_SIZES.includes(saved.n as Size) ? saved.n! : 3,
   mode: saved.mode === 'optimal' ? 'optimal' : 'fast',
   thinkMs: saved.thinkMs ?? 2000,
   method: (METHODS.some((m) => m.id === saved.method) ? saved.method : 'lbl') as MethodId,
@@ -202,7 +202,7 @@ function renderCandidates(cs: Candidate[], current: number) {
 function renderMethod(steps?: Step[]) {
   const el = $('method');
   el.innerHTML = '';
-  if (n !== 3) return;
+  if (n === 2) return;
   if (!steps) { el.innerHTML = '<p class="muted">No step-by-step breakdown for this cube.</p>'; return; }
   if (!steps.length) { el.innerHTML = '<p class="muted">Nothing to do: the cube is solved.</p>'; return; }
   const total = steps.reduce((a, s) => a + qtmOf(s.moves.split(' ')), 0);
@@ -402,7 +402,7 @@ async function jumpHistory(pos: number) {
 }
 
 /** Replace the cube outright (reset, scramble, paint, import). */
-function setBaseline(s: State, size: 2 | 3 = n) {
+function setBaseline(s: State, size: Size = n) {
   sequenceRun++;
   scrambleLen = 0;
   if (size !== n) { n = size; settings.n = n; persist(); view.build(n); net.build(n); syncControls(); }
@@ -441,9 +441,18 @@ function corners(f: State): State {
  * through it turn by turn.
  */
 let scrambleWorker: Worker | null = null;
+const BIG_SCRAMBLE: Record<number, number> = { 4: 40, 5: 60, 6: 80, 7: 100 };
 function scramble() {
   if (turnsBlocked()) return;
   const size = n;
+  if (size > 3) {
+    // Big cubes: random turns of any layer (as WCA scrambles do), 20 per layer pair.
+    const moves = randomMoves(size, BIG_SCRAMBLE[size]).map((r) => formatMove(layerMove({ axis: r.axis as 0 | 1 | 2, layers: [2 * r.layer - (size - 1)], q: r.power }, size)));
+    setBaseline(solved(size));
+    $<HTMLInputElement>('alg').value = moves.join(' ');
+    void playSequence(moves, true);
+    return;
+  }
   const f = toFacelets(size === 2 ? randomState2() : randomCubie3());
   const target = size === 2 ? corners(f) : f;
   setBaseline(solved(size));
@@ -491,12 +500,15 @@ function syncControls() {
     b.classList.toggle('on', on); b.setAttribute('aria-checked', String(on));
   });
   $('mode-group').classList.toggle('hidden', n !== 3);
-  $('method-card').classList.toggle('hidden', n !== 3);
+  $('method-card').classList.toggle('hidden', n === 2);
+  $('method-select').classList.toggle('hidden', n > 3);
   $<HTMLSelectElement>('think').value = String(settings.thinkMs);
   $<HTMLSelectElement>('topn').value = settings.topn;
   $<HTMLSelectElement>('method-select').value = settings.method;
   $<HTMLInputElement>('speed').value = String(settings.speed);
-  $('method-blurb').textContent = METHODS.find((m) => m.id === settings.method)!.blurb;
+  $('method-blurb').textContent = n > 3
+    ? 'Big cubes are solved by reduction: first the centres, then each edge is put together from its pieces, then the cube is solved like a 3x3. If needed, a parity fix comes first.'
+    : METHODS.find((m) => m.id === settings.method)!.blurb;
   document.querySelectorAll<HTMLButtonElement>('.swatch').forEach((b) => {
     const on = Number(b.dataset.color) === paintColor;
     b.classList.toggle('on', on); b.setAttribute('aria-checked', String(on));
@@ -517,7 +529,7 @@ function selectTab(tab: string) {
 }
 
 document.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach((b) => (b.onclick = () => selectTab(b.dataset.tab!)));
-document.querySelectorAll<HTMLButtonElement>('[data-size]').forEach((b) => (b.onclick = () => setBaseline(solved(Number(b.dataset.size) as 2 | 3), Number(b.dataset.size) as 2 | 3)));
+document.querySelectorAll<HTMLButtonElement>('[data-size]').forEach((b) => (b.onclick = () => setBaseline(solved(Number(b.dataset.size)), Number(b.dataset.size) as Size)));
 document.querySelectorAll<HTMLButtonElement>('[data-mode]').forEach((b) => (b.onclick = () => { settings.mode = b.dataset.mode as Mode; persist(); syncControls(); requestAnalysis(); }));
 $<HTMLSelectElement>('think').onchange = (e) => { settings.thinkMs = Number((e.target as HTMLSelectElement).value); persist(); requestAnalysis(); };
 $<HTMLSelectElement>('topn').onchange = (e) => { settings.topn = (e.target as HTMLSelectElement).value; persist(); requestAnalysis(); };
@@ -592,7 +604,7 @@ COLORS.forEach((c, i) => {
 view.onStickerClick = (i) => { if (paintColor !== null) paint(i); };
 view.onDragTurn = (t) => {
   if (paintColor !== null) return;
-  const m = turnToMove(t, n);
+  const m = turnToMove(t, n) ?? (n > 3 && t.layers.length === 1 ? layerMove(t, n) : null);
   if (m) playMove(formatMove(m));
 };
 net.onSticker = paint;
@@ -648,7 +660,7 @@ window.addEventListener('keydown', (e) => {
   if (k === 'ArrowLeft') { e.preventDefault(); playing = false; stepSolutionBack(); return; }
   const paintTab = !document.querySelector('[data-panel="paint"]')!.classList.contains('hidden');
   if (paintTab && /^[0-6]$/.test(k)) { paintColor = k === '0' ? null : Number(k) - 1; syncControls(); return; }
-  if (k === '2' || k === '3') { setBaseline(solved(Number(k) as 2 | 3), Number(k) as 2 | 3); return; }
+  if (ENABLED_SIZES.includes(Number(k) as Size)) { setBaseline(solved(Number(k)), Number(k) as Size); return; }
   const letter = k.length === 1 ? k.toUpperCase() : '';
   if ('URFDLBMES'.includes(letter) && letter) playMove(letter + (e.shiftKey ? "'" : ''));
   else if ('XYZ'.includes(letter) && letter) playMove(letter.toLowerCase() + (e.shiftKey ? "'" : ''));
@@ -661,7 +673,7 @@ $('help-close').onclick = () => $<HTMLDialogElement>('help-dialog').close();
 
 // ---------- tutorial ----------
 /** The cube the user had before the notation lessons took over the view. */
-let beforeLessons: { state: State; n: 2 | 3; moves: string[] } | null = null;
+let beforeLessons: { state: State; n: Size; moves: string[] } | null = null;
 const tutorial: Tutorial = new Tutorial({
   view,
   enterLessons() {

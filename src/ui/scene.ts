@@ -154,8 +154,8 @@ export class CubeView {
         for (let z = -m; z <= m; z += 2) {
           if (Math.max(Math.abs(x), Math.abs(y), Math.abs(z)) !== m) continue;
           const isCentre = [x, y, z].filter((v) => v !== 0).length === 1;
-          // 3x3 centres are hollow shells (seen when exploded); everything else is a solid block.
-          const mesh = n === 3 && isCentre ? this.centreShell([Math.sign(x), Math.sign(y), Math.sign(z)] as Vec3) : new THREE.Mesh(box, body);
+          // Fixed centres of odd cubes are hollow shells (seen when exploded); everything else is a solid block.
+          const mesh = n % 2 === 1 && isCentre ? this.centreShell([Math.sign(x), Math.sign(y), Math.sign(z)] as Vec3) : new THREE.Mesh(box, body);
           mesh.position.set(x, y, z);
           this.addPiece(mesh);
         }
@@ -173,6 +173,7 @@ export class CubeView {
     });
     if (n === 2) this.buildMechanism();
     if (n === 3) this.buildMechanism3();
+    if (n > 3) this.buildMechanismBig(n);
   }
 
   /**
@@ -370,6 +371,72 @@ export class CubeView {
       foot.add(stem, padMesh);
       foot.visible = false;
       this.addPiece(foot, new THREE.Vector3(x, y, z));
+      feet.push(foot);
+    }
+    this.mech = { group, caps: [], feet };
+  }
+
+  /**
+   * Big-cube mechanism, shown when exploded (see PLAN.md, big-cube decisions).
+   * Even cubes (4x4, 6x6): a spherical core; every piece has a foot ending
+   * in a curved pad that rides on the sphere, and the centres are tracked by
+   * it, so nothing has a fixed centre. Odd cubes (5x5, 7x7): a 3x3-style core,
+   * a small hub with six arms out to the fixed centre-centres (hollow shells
+   * with their screw and spring inside), and the same curved feet elsewhere.
+   */
+  private buildMechanismBig(n: number) {
+    const plastic = new THREE.MeshStandardMaterial({ color: 0x8a9099, roughness: 0.72, metalness: 0.02, emissive: 0x1c2430 });
+    const darker = new THREE.MeshStandardMaterial({ color: 0x5c636c, roughness: 0.8, emissive: 0x141a22 });
+    const up = new THREE.Vector3(0, 1, 0);
+    const odd = n % 2 === 1, m = n - 1;
+    const group = new THREE.Group();
+    group.visible = false;
+    // The core fits inside the hollow left by the outer layer (half-width n - 2).
+    const coreR = odd ? 0.9 : 0.92 * (n - 2);
+    group.add(new THREE.Mesh(new THREE.SphereGeometry(coreR, 32, 20), darker));
+    if (odd) {
+      const armLen = m - 0.9;
+      const armGeo = new THREE.CylinderGeometry(0.22, 0.28, armLen, 14);
+      armGeo.translate(0, armLen / 2, 0);
+      for (const dir of AXES) {
+        const arm = new THREE.Mesh(armGeo, darker);
+        arm.quaternion.setFromUnitVectors(up, new THREE.Vector3(...dir));
+        group.add(arm);
+      }
+    } else {
+      // Tracks: a raised ring around the sphere's equator on each axis, which the centre feet ride in.
+      const ring = new THREE.TorusGeometry(coreR * 0.995, 0.06, 6, 48);
+      for (const rot of [[0, 0, 0], [Math.PI / 2, 0, 0], [0, Math.PI / 2, 0]] as const) {
+        const r = new THREE.Mesh(ring, plastic);
+        r.rotation.set(rot[0], rot[1], rot[2]);
+        group.add(r);
+      }
+    }
+    this.root.add(group);
+    // Feet: each piece (but the fixed centres) reaches in to the core with a curved pad, part of the piece.
+    const stemGeo = new THREE.CylinderGeometry(0.12, 0.2, 1, 8);
+    stemGeo.translate(0, 0.5, 0);
+    // A curved pad: a spherical cap, concave toward the core.
+    const padGeo = new THREE.SphereGeometry(1, 16, 6, 0, Math.PI * 2, 0, 0.32);
+    const feet: THREE.Object3D[] = [];
+    for (let x = -m; x <= m; x += 2) for (let y = -m; y <= m; y += 2) for (let z = -m; z <= m; z += 2) {
+      if (Math.max(Math.abs(x), Math.abs(y), Math.abs(z)) !== m) continue;
+      if (odd && [x, y, z].filter((v) => v !== 0).length === 1) continue;
+      const home = new THREE.Vector3(x, y, z);
+      const outward = home.clone().normalize();
+      // The piece's inner face, toward the core, and the core surface below it.
+      const innerD = home.length() - 1, padD = Math.max(coreR + 0.12, 0.5);
+      const foot = new THREE.Group();
+      foot.position.copy(outward.clone().multiplyScalar(padD));
+      foot.quaternion.setFromUnitVectors(up, outward);
+      const stem = new THREE.Mesh(stemGeo, plastic);
+      stem.scale.y = Math.max(0.1, innerD - padD);
+      const pad = new THREE.Mesh(padGeo, plastic);
+      pad.scale.setScalar(padD);
+      pad.position.y = -padD;
+      foot.add(stem, pad);
+      foot.visible = false;
+      this.addPiece(foot, home);
       feet.push(foot);
     }
     this.mech = { group, caps: [], feet };

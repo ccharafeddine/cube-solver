@@ -54,7 +54,7 @@ describe('spotlight geometry', () => {
 describe('tour helpers', () => {
   it('drops steps whose target is not visible', () => {
     const s = activeSteps(TOUR, (t) => t.id !== 'method');
-    expect(s).toHaveLength(9);
+    expect(s).toHaveLength(TOUR.length - 1);
     expect(s.map((t) => t.id)).not.toContain('method');
   });
   it('counts "N of total" and picks touch wording', () => {

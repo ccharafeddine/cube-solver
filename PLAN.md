@@ -156,3 +156,15 @@ The repo's `progress.txt` and `lessons.md` were **not found** on the PC. They ar
 6. **Metric:** quarter-turn metric; a 180° turn counts as two moves.
 7. **Colours / input:** paint-any-sticker colour menu like chess-solver's piece menu. Camera scanning of a real cube is on the backlog as a bottom-bar option showing the scanned cube digitally.
 8. **Stack:** one TypeScript codebase with Vite, three.js and a Web Worker solver, packaged with Tauri for Windows plus a PWA. This replaces React and Electron.
+
+## 10. Big cubes (4x4 to 7x7): decisions for the owner to confirm
+
+Defaults chosen so work could go ahead; each is easy to change.
+
+1. **4x4 mechanism:** a spherical core with raised tracks that the centres ride in (centre-tracked design); every piece has a stem and a curved pad that rests on the sphere. Pieces stay solid blocks for now (hollow piece shells are a follow-up).
+2. **5x5 / 7x7 mechanism:** a 3x3-style core (hub and six arms) holding fixed centre-centres, which are hollow shells with their screw and spring inside, as on the 3x3. Other pieces reach the hub with curved feet.
+3. **6x6 / 7x7 shape:** cubes are drawn flat; slight pillowing of the faces is still to do.
+4. **Solver:** reduction with parity fixed first, then centres and edges by pure commutator 3-cycles found by search, then the 3x3 phase with two-phase on outer turns. Solutions are long (about 320 quarter turns on a 4x4) because each 3-cycle is placed on its own; shortness is not a goal for big cubes.
+5. **Ranked moves on big cubes:** single-layer quarter turns only (no wide turns), ranked by the reduction solution's length from each resulting position, always labelled as an estimate.
+6. **Scrambles on big cubes:** random turns of any single layer (40 for 4x4, 60, 80, 100 for 5x5 to 7x7), not random-state.
+7. **Odd cubes pair wings to their midge;** even cubes put wings straight into their solved slots (so the 3x3 phase only has corners left to move).

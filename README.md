@@ -42,7 +42,7 @@
 ## Features
 
 **Cubes and input**
-- 2x2 and 3x3 cubes in 3D. Drag a sticker to turn its layer, with mouse, pen or touch. Drag the background to look around (or right-drag / Shift-drag from anywhere), and scroll or pinch to zoom.
+- 2x2, 3x3 and 4x4 cubes in 3D. Drag a sticker to turn its layer, with mouse, pen or touch. Drag the background to look around (or right-drag / Shift-drag from anywhere), and scroll or pinch to zoom.
 - Keyboard turns for every face (U R F D L B), the middle slices (M E S) and whole-cube rotations (x y z). Add Shift for counter-clockwise. Small **X Y Z** buttons in the corner of the cube view do the same whole-cube rotations (Shift-click for prime).
 - A move pad with all 36 turns, and a box for typing algorithms in standard notation (`R U R' U'`, `F2`, `M'`, `Rw`, `x`).
 - **Setup:** paint any sticker from the colour menu, either on the 3D cube or on a **flat 2D net editor**. The net is all buttons, so it works from the keyboard and with screen readers.
@@ -124,18 +124,19 @@ Each lesson:
 
 The dots across the top jump to any lesson, and **Show again** repeats the demonstration. The quiz checks what you learned: what a prime does, counting quarter turns, which face M follows, rotations, wide moves, and inverses. Each answer comes with an explanation.
 
-**App tour.** A spotlight box, the target's outline plus 8px, sits over one part of the app at a time, and everything else is heavily dimmed. The box and the step card glide between steps in about 0.3 s, or jump instantly when the system asks for reduced motion. The 10 steps:
+**App tour.** A spotlight box, the target's outline plus 8px, sits over one part of the app at a time, and everything else is heavily dimmed. The box and the step card glide between steps in about 0.3 s, or jump instantly when the system asks for reduced motion. The 11 steps:
 
 1. Your cube
-2. Spinning the view, including the X, Y and Z buttons
-3. Drag-to-turn
-4. Painting and the net editor
-5. Scramble, reset and undo
-6. Solving, with the Fast/Optimal switch
-7. Ranked next moves
-8. Method breakdowns
-9. History
-10. Share and export
+2. Picking a size (and what big cubes do differently)
+3. Spinning the view, including the X, Y and Z buttons
+4. Drag-to-turn
+5. Painting and the net editor
+6. Scramble, reset and undo
+7. Solving, with the Fast/Optimal switch
+8. Ranked next moves
+9. Method breakdowns
+10. History
+11. Share and export
 
 - **Try it in place.** Clicks inside the spotlight reach the real control. A step can ask you to spin the view, drag a sticker or press Scramble, and the tour stays open. The dimmed area is four click-catching rectangles around the hole, not a full-screen blocker.
 - **Navigation.** An "N of 10" counter, plus **Skip**, **Back** and **Next** (**Done** on the last step). The ← → keys move between steps. **Esc** or clicking the dimmed area closes the tour. Nothing advances on its own.
@@ -195,6 +196,24 @@ The dots across the top jump to any lesson, and **Show again** repeats the demon
 | Methods | Per step, IDA* over the moves that method uses (guided by exact per-piece distance tables), or iterative deepening over whole algorithms plus U turns for last-layer steps | Roux's last six edges search M/U on stickers, because M moves centres |
 
 The cube is modelled twice. The sticker model derives every move from 3D geometry, so it works for any size and the renderer uses the same coordinates. The cubie model uses Kociemba's conventions for the solvers. Tests apply every move in both models and check they agree.
+
+
+### Big cubes (4x4)
+
+Big cubes are solved by **reduction**, the way people solve them by hand (`src/solver/big/`):
+
+1. **Fix parity.** Even cubes can have two problems a 3x3 never has. OLL parity is an odd swap of edge pieces (wings); one quarter turn of an inner layer fixes it. PLL parity is an odd corner permutation; one outer turn fixes it. Both are spotted from the start position and fixed first.
+2. **Solve the centres** with pure 3-cycles (commutators that move exactly three centre stickers and nothing else).
+3. **Pair the edges** with pure 3-cycles of wing pieces.
+4. **Solve it like a 3x3** with the two-phase solver, using outer turns only, which keep the centres and edges intact.
+
+The 3-cycles are not hand-written: a short search finds every commutator of the form `[a b a', c]` (single-layer turns) that moves exactly three pieces of one orbit, and conjugating them by setup turns covers every triple of positions, fewest setup turns first. The same code serves every size; the library is built once per size (about 0.2 s for a 4x4). Every solution is checked by playing it back before it is shown.
+
+Inner layers use SiGN notation: `2R` turns only the second layer from the right, `3Rw` the three right layers together.
+
+**Next moves on big cubes** rank every single-layer quarter turn by the length of the reduction solution from the resulting position. That measures progress through the reduction, not a proven distance, so every number is marked ≈.
+
+**Mechanism.** The exploded 4x4 shows a spherical core with three raised tracks the centres ride in, and a foot with a curved pad on every piece, reaching in to the sphere.
 
 ## Theming
 

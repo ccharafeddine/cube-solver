@@ -8,20 +8,21 @@
  */
 import { applyMoves, solved, type State } from '../cube/facelets';
 import { parseMoves } from '../cube/notation';
+import { ENABLED_SIZES, type Size } from '../solver/protocol';
 
 const LETTERS = 'URFDLB';
 
 export const toFaceletString = (s: State) => Array.from(s, (c) => LETTERS[c]).join('');
 
-export function fromFaceletString(text: string): { n: 2 | 3; state: State } | null {
+export function fromFaceletString(text: string): { n: Size; state: State } | null {
   const t = text.trim().toUpperCase();
   if (!/^[URFDLB]+$/.test(t)) return null;
-  const n = t.length === 24 ? 2 : t.length === 54 ? 3 : 0;
+  const n = ENABLED_SIZES.find((k) => 6 * k * k === t.length);
   if (!n) return null;
   return { n, state: Uint8Array.from(t, (ch) => LETTERS.indexOf(ch)) };
 }
 
-export interface Snapshot { n: 2 | 3; state: State; moves?: string[]; solution?: string[] }
+export interface Snapshot { n: Size; state: State; moves?: string[]; solution?: string[] }
 
 export function toJSON(s: Snapshot): string {
   return JSON.stringify({
@@ -30,13 +31,13 @@ export function toJSON(s: Snapshot): string {
   }, null, 2);
 }
 
-export type ImportResult = { ok: true; n: 2 | 3; state: State; moves?: string[] } | { ok: false; error: string };
+export type ImportResult = { ok: true; n: Size; state: State; moves?: string[] } | { ok: false; error: string };
 
 /**
  * Accepts any of: the JSON export, a facelet string, or a move sequence
  * (applied to a solved cube of the current size).
  */
-export function importText(text: string, currentN: 2 | 3): ImportResult {
+export function importText(text: string, currentN: Size): ImportResult {
   const t = text.trim();
   if (!t) return { ok: false, error: 'Nothing to import.' };
   if (t.startsWith('{')) {
@@ -62,7 +63,7 @@ export function importText(text: string, currentN: 2 | 3): ImportResult {
 /** URL hash: #n=3&f=<facelets>. Short, human-readable, and bookmarkable. */
 export const toHash = (n: number, s: State) => `#n=${n}&f=${toFaceletString(s)}`;
 
-export function fromHash(hash: string): { n: 2 | 3; state: State } | null {
+export function fromHash(hash: string): { n: Size; state: State } | null {
   const p = new URLSearchParams(hash.replace(/^#/, ''));
   const f = fromFaceletString(p.get('f') ?? '');
   if (!f || String(f.n) !== (p.get('n') ?? String(f.n))) return null;

@@ -17,7 +17,7 @@
     <header>
       <h1><img src="./icon.svg" alt="" width="28" height="28" /> Cube Solver <small id="version"></small></h1>
       <div class="group" role="radiogroup" aria-label="Cube size">
-        <button data-size="2" role="radio" title="2x2 (key 2)">2x2</button><button data-size="3" role="radio" title="3x3 (key 3)">3x3</button>
+        <button data-size="2" role="radio" title="2x2 (key 2)">2x2</button><button data-size="3" role="radio" title="3x3 (key 3)">3x3</button><button data-size="4" role="radio" title="4x4 (key 4)">4x4</button>
       </div>
       <div class="group" id="mode-group" role="radiogroup" aria-label="Solver mode">
         <button data-mode="fast" role="radio" title="Finds a short solution right away, and keeps making it shorter while it thinks">Fast</button>
@@ -96,7 +96,7 @@
           </div>
         </div>
         <div class="card" id="next-card">
-          <div class="row spread"><h2>Next moves</h2><select id="topn" aria-label="How many candidates"><option value="3">Top 3</option><option value="5" selected>Top 5</option><option value="0">All 12</option></select></div>
+          <div class="row spread"><h2>Next moves</h2><select id="topn" aria-label="How many candidates"><option value="3">Top 3</option><option value="5" selected>Top 5</option><option value="0">All</option></select></div>
           <div id="candidates"></div>
           <p id="cand-note" class="muted"></p>
         </div>
