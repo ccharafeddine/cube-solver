@@ -72,9 +72,12 @@ export function footOffset(home: Vec3): Vec3 {
 }
 /**
  * The 3x3 mechanism, in grid units (the assembled cube spans -3..3). Modelled on
- * a real 3x3: a fixed core with six axle arms; each hollow centre piece is
- * screwed to its arm, with a spring between the screw head and the centre and
- * a snap-on cap over it. Edges and corners have no holes: they are held only by
+ * a real 3x3: a fixed core with six axle arms; each centre is a hollow shell
+ * open toward the core, with a flat outer face whose shallow recess holds a
+ * flush cap, and an inner tube the arm enters. The screw goes from the recess
+ * through the tube into the arm with the spring in the tube under its head;
+ * nothing stands proud of the face. Exploding slides the centre off the arm,
+ * leaving the screw and spring visible. Edges and corners have no holes: they are held only by
  * their inner feet, edge feet in the track under the centres, corner feet under
  * the edges.
  */
@@ -82,16 +85,18 @@ export const MECH3 = {
   coreRadius: 0.72,
   armLength: 1.5,
   armRadius: 0.2,
-  /** Screw head radius at rest, and how far it backs out when exploded. */
-  screwHead: 2.35,
-  screwBackOut: 0.55,
-  screwLength: 1.2,
-  /** The spring sits between the head and the centre's inner seat, this long at rest. */
+  /** The centre shell: outer plate thickness, wall thickness, and the inner tube the arm enters. */
+  plate: 0.16,
+  wall: 0.1,
+  tubeRadius: 0.3,
+  tubeLength: 1.3,
+  /** Screw head distance from the core, seated in the tube just under the plate. The screw stays with the arm. */
+  screwHead: 2.72,
+  screwLength: 1.3,
+  /** The spring sits in the tube under the screw head. */
   springLength: 0.55,
-  /** Cap: radius from the core at rest (just under the sticker), extra lift on explode. */
-  capRest: 2.86,
-  capLift: 0.55,
-  capThickness: 0.12,
+  /** The cap fills the shallow recess in the outer face, flush with it. */
+  capThickness: 0.06,
   /** Distance of foot pads from the core: edge feet in the centres' track, corner feet under the edges. */
   edgePad: 1.0,
   cornerPad: 1.3,
@@ -99,10 +104,12 @@ export const MECH3 = {
 
 /** Distance of a 3x3 centre piece's middle from the core at explode amount `a`. */
 export const centreDistance3 = (a: number) => 2 + 2 * spreadFor(3) * a;
-/** Screw head distance from the core: it backs out a little, much less than the centre moves. */
-export const screwHeadDistance3 = (a: number) => MECH3.screwHead + MECH3.screwBackOut * a;
-/** Cap distance: rides on the centre, then lifts off it. */
-export const capDistance3 = (a: number) => MECH3.capRest + 2 * spreadFor(3) * a + MECH3.capLift * a;
+/** Outer face of a centre plate, a hair under its sticker (at +0.99) so the recess never shows through. */
+export const centreFace3 = (a: number) => centreDistance3(a) + 0.97;
+/** Screw head: fixed to the arm, so it stays put while the centre slides off it. */
+export const screwHeadDistance3 = (_a?: number) => MECH3.screwHead;
+/** Cap: sits in the recess, its top flush with the centre's outer face. */
+export const capDistance3 = (a: number) => centreFace3(a) - MECH3.capThickness / 2;
 
 /**
  * A 3x3 edge or corner foot, relative to the core: `inner` is the piece's

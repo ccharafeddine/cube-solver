@@ -110,7 +110,7 @@ describe('state safety', () => {
   });
 });
 
-import { spreadFor, explodeExtent, MECH, AXES, capPosition, footOffset, MECH3, foot3, centreDistance3, screwHeadDistance3, capDistance3 } from './explode';
+import { spreadFor, explodeExtent, MECH, AXES, capPosition, footOffset, MECH3, foot3, centreDistance3, centreFace3, screwHeadDistance3, capDistance3 } from './explode';
 type Vec3 = [number, number, number];
 
 describe('2x2 explodes further, and the camera knows how far', () => {
@@ -160,20 +160,26 @@ describe('2x2 mechanism layout', () => {
 });
 
 describe('3x3 mechanism layout', () => {
-  it('hides inside the assembled cube', () => {
-    expect(screwHeadDistance3(0)).toBeLessThan(3);
-    expect(capDistance3(0) + MECH3.capThickness / 2).toBeLessThan(3);
+  it('nothing stands proud of a centre face: screw and spring sit inside the tube, the cap is flush', () => {
+    for (const a of [0, 0.5, 1]) {
+      expect(capDistance3(a) + MECH3.capThickness / 2).toBeCloseTo(centreFace3(a));
+      expect(screwHeadDistance3(a)).toBeLessThan(centreFace3(a) - MECH3.plate + 1e-9);
+    }
+    // At rest the head sits in the tube, under the plate, with the spring below it inside the tube.
+    const plateInner = centreFace3(0) - MECH3.plate;
+    expect(screwHeadDistance3(0)).toBeLessThan(plateInner);
+    expect(screwHeadDistance3(0) - MECH3.springLength).toBeGreaterThan(plateInner - MECH3.tubeLength);
     expect(MECH3.armLength).toBeLessThan(2);
     expect(MECH3.coreRadius).toBeLessThan(1);
   });
-  it('on explode the centres move out along their arms, caps lift and screws back out only a little', () => {
-    const moved = (f: (a: number) => number) => f(1) - f(0);
-    expect(moved(centreDistance3)).toBeCloseTo(2 * spreadFor(3));
-    expect(moved(capDistance3)).toBeGreaterThan(moved(centreDistance3));
-    expect(moved(screwHeadDistance3)).toBeGreaterThan(0);
-    expect(moved(screwHeadDistance3)).toBeLessThan(moved(centreDistance3));
-    // The exploded centre clears the screw head, so screw and spring are visible.
-    expect(centreDistance3(1) - 1).toBeGreaterThan(screwHeadDistance3(1) - 0.2);
+  it('the screw reaches from under the plate into the arm', () => {
+    expect(screwHeadDistance3(0) - MECH3.screwLength).toBeLessThan(MECH3.armLength);
+  });
+  it('on explode the centre slides off the arm while the screw stays, so the screw shows', () => {
+    expect(centreDistance3(1) - centreDistance3(0)).toBeCloseTo(2 * spreadFor(3));
+    expect(screwHeadDistance3(1)).toBe(screwHeadDistance3(0));
+    // The shell's open inner side has passed the screw head.
+    expect(centreDistance3(1) - 0.98).toBeGreaterThan(screwHeadDistance3(1));
   });
   it('edge and corner feet point at the core, edges inside corners, outside the core', () => {
     for (const home of [[2, 2, 0], [0, -2, 2], [-2, 0, -2]] as Vec3[]) {

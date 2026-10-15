@@ -149,7 +149,9 @@ export class CubeView {
       for (let y = -m; y <= m; y += 2)
         for (let z = -m; z <= m; z += 2) {
           if (Math.max(Math.abs(x), Math.abs(y), Math.abs(z)) !== m) continue;
-          const mesh = new THREE.Mesh(box, body);
+          const isCentre = [x, y, z].filter((v) => v !== 0).length === 1;
+          // 3x3 centres are hollow shells (seen when exploded); everything else is a solid block.
+          const mesh = n === 3 && isCentre ? this.centreShell([Math.sign(x), Math.sign(y), Math.sign(z)] as Vec3) : new THREE.Mesh(box, body);
           mesh.position.set(x, y, z);
           this.addPiece(mesh);
         }
@@ -167,6 +169,34 @@ export class CubeView {
     });
     if (n === 2) this.buildMechanism();
     if (n === 3) this.buildMechanism3();
+  }
+
+  /**
+   * A 3x3 centre: a flat outer plate with a shallow round recess (the cap
+   * fills it), four side walls, open toward the core, and an inner tube the
+   * core arm enters. Local +y points outward; ~300 triangles.
+   */
+  private centreShell(dir: Vec3): THREE.Group {
+    const M = MECH3, body = this.bodyMat, h = 0.98, face = 0.97, recess = 0.05;
+    const g = new THREE.Group();
+    const base = new THREE.Mesh(new THREE.BoxGeometry(2 * h, M.plate - recess, 2 * h), body);
+    base.position.y = face - recess - (M.plate - recess) / 2;
+    const sq = new THREE.Shape([new THREE.Vector2(-h, -h), new THREE.Vector2(h, -h), new THREE.Vector2(h, h), new THREE.Vector2(-h, h)]);
+    sq.holes.push(new THREE.Path().absarc(0, 0, 0.66, 0, Math.PI * 2, true));
+    const ringGeo = new THREE.ExtrudeGeometry(sq, { depth: recess, bevelEnabled: false, curveSegments: 20 });
+    ringGeo.rotateX(-Math.PI / 2);
+    const ring = new THREE.Mesh(ringGeo, body);
+    ring.position.y = face - recess;
+    const wallH = h + face - M.plate, wy = -h + wallH / 2;
+    const xw = new THREE.BoxGeometry(M.wall, wallH, 2 * h), zw = new THREE.BoxGeometry(2 * h - 2 * M.wall, wallH, M.wall);
+    const walls = [[h - M.wall / 2, 0, xw], [-(h - M.wall / 2), 0, xw], [0, h - M.wall / 2, zw], [0, -(h - M.wall / 2), zw]] as const;
+    g.add(base, ring);
+    for (const [wx, wz, geo] of walls) { const w = new THREE.Mesh(geo, body); w.position.set(wx, wy, wz); g.add(w); }
+    const tube = new THREE.Mesh(new THREE.CylinderGeometry(M.tubeRadius, M.tubeRadius, M.tubeLength, 16, 1, true), body);
+    tube.position.y = face - M.plate - M.tubeLength / 2;
+    g.add(tube);
+    g.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(...dir));
+    return g;
   }
 
   private addPiece(mesh: THREE.Object3D, grid = mesh.position.clone()) {
@@ -274,8 +304,8 @@ export class CubeView {
 
   /**
    * The inside of a real 3x3, revealed when exploded: the fixed core and arms,
-   * a screw and spring per centre (backing out a little), the snap-on centre
-   * caps lifting off, and the inner feet of every edge and corner. Edges and
+   * a screw and spring per centre that stay on the arm while the hollow centre
+   * slides off it, the flush centre caps riding in their recesses, and the inner feet of every edge and corner. Edges and
    * corners have no holes; only centres are screwed down. ~6k triangles.
    */
   private buildMechanism3() {
@@ -292,14 +322,14 @@ export class CubeView {
     const shaftGeo = new THREE.CylinderGeometry(0.07, 0.07, M.screwLength, 8);
     shaftGeo.translate(0, -M.screwLength / 2, 0);
     const headGeo = new THREE.CylinderGeometry(0.2, 0.2, 0.09, 16);
-    // Spring: from just under the head down toward the centre's inner seat.
+    // Spring: in the tube, under the head.
     const turns = 6, pts: THREE.Vector3[] = [];
     for (let i = 0; i <= turns * 16; i++) {
       const t = i / (turns * 16), ang = t * turns * Math.PI * 2;
       pts.push(new THREE.Vector3(Math.cos(ang) * 0.16, -0.06 - t * M.springLength, Math.sin(ang) * 0.16));
     }
     const springGeo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), turns * 16, 0.028, 6, false);
-    const capGeo = new THREE.CylinderGeometry(0.62, 0.66, M.capThickness, 24);
+    const capGeo = new THREE.CylinderGeometry(0.64, 0.64, M.capThickness, 24);
     const movers: { obj: THREE.Object3D; dir: Vec3; dist: (a: number) => number }[] = [];
     for (const dir of AXES) {
       const q = new THREE.Quaternion().setFromUnitVectors(up, new THREE.Vector3(...dir));

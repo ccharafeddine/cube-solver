@@ -74,3 +74,5 @@ Rules learned building Cube Solver. Read them before changing the build, the sol
 - Native <option> popups on Windows ignore gradient backgrounds and inherit colour oddly: always give select and option a solid background-color and color from the theme.
 - Theme previews should use fixed colours, not tokens, so each swatch shows its own theme whatever theme is active.
 - A service worker from a production build on the same port can serve stale bundles to the dev server; unregister in dev.
+
+- Keep hidden inner geometry a hair below the sticker plane (0.97 vs 0.99); coplanar faces z-fight and show through stickers as ghost circles.
