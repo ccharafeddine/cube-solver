@@ -205,8 +205,9 @@ export class CubeView {
    * and an inner foot on every corner. Matte grey plastic, ~4k triangles.
    */
   private buildMechanism() {
-    const plastic = new THREE.MeshStandardMaterial({ color: 0x3a3f45, roughness: 0.78, metalness: 0.02 });
-    const darker = new THREE.MeshStandardMaterial({ color: 0x24282c, roughness: 0.85 });
+    // Mid grey with a faint self-glow so it still reads against the dark exploded backdrop.
+    const plastic = new THREE.MeshStandardMaterial({ color: 0x8a9099, roughness: 0.72, metalness: 0.02, emissive: 0x1c2430 });
+    const darker = new THREE.MeshStandardMaterial({ color: 0x5c636c, roughness: 0.8, emissive: 0x141a22 });
     const metal = new THREE.MeshStandardMaterial({ color: 0xb8bec6, roughness: 0.35, metalness: 0.9 });
     const group = new THREE.Group();
     group.visible = false;
@@ -246,6 +247,8 @@ export class CubeView {
       group.add(cap);
       caps.push({ obj: cap, dir });
     }
+    // The 2x2 spreads far, so the core is drawn larger to stay the centre of attention.
+    group.scale.setScalar(1.35);
     this.root.add(group);
     // Corner feet: part of each corner piece, so they turn and explode with it.
     const stemGeo = new THREE.CylinderGeometry(0.22, 0.3, MECH.footStem, 12);

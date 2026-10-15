@@ -705,4 +705,7 @@ requestAnalysis();
 // Offline support when served as a PWA (not in dev, not inside Tauri).
 if (import.meta.env.PROD && 'serviceWorker' in navigator && location.protocol.startsWith('http') && !('__TAURI_INTERNALS__' in window)) {
   navigator.serviceWorker.register('./sw.js').catch(() => {});
+} else if (import.meta.env.DEV && 'serviceWorker' in navigator) {
+  // A worker left over from a production build on the same port would serve a stale bundle in dev.
+  void navigator.serviceWorker.getRegistrations().then((rs) => rs.forEach((r) => void r.unregister()));
 }
