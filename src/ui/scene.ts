@@ -13,6 +13,7 @@ import { model, type State, type Turn, type Vec3 } from '../cube/facelets';
 import { dragToTurn } from '../app/drag';
 import { DEFAULT_CAMERA } from '../cube/orient';
 import { CUBE_SIZE, cubeRadius, fitDistance, along } from './framing';
+import { SCENE_SKINS, type SceneSkin } from '../theme/skins';
 import { ExplodeController, explodeOffset, staggerDelay } from './explode';
 
 /** Extra zoom-out at full explode; the exploded cube is about 1.6x wider, but the grid frames it. */
@@ -48,10 +49,10 @@ export class CubeView {
     this.controls.enableDamping = true;
     // Right-drag always spins the view (panning is off, so the right button is free).
     this.controls.mouseButtons.RIGHT = THREE.MOUSE.ROTATE;
-    this.scene.add(this.root, new THREE.AmbientLight(0xffffff, 2.2));
-    const sun = new THREE.DirectionalLight(0xffffff, 1.2);
-    sun.position.set(5, 8, 6);
-    this.scene.add(sun);
+    this.sun.position.set(5, 8, 6);
+    this.rim.position.set(-6, 3, -7);
+    this.scene.add(this.root, this.ambient, this.sun, this.sky, this.rim);
+    this.applySkin(this.skin);
     new ResizeObserver(() => this.resize()).observe(host);
     this.resize();
     // The first load uses exactly the reset framing.
@@ -65,6 +66,33 @@ export class CubeView {
   }
 
   /** Camera back to the standard view: slightly above, front-right corner toward you. */
+  // ---------- skin: lights and materials ----------
+  private ambient = new THREE.AmbientLight(0xffffff, 2.2);
+  private sun = new THREE.DirectionalLight(0xffffff, 1.2);
+  private sky = new THREE.HemisphereLight(0xbfe6ff, 0x203040, 0);
+  private rim = new THREE.DirectionalLight(0x9ee7ff, 0);
+  private skin: SceneSkin = SCENE_SKINS.aero.light;
+  private bodyMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.6 });
+
+  /** Apply a skin's lighting and material finish (colours of stickers never change). */
+  applySkin(p: SceneSkin) {
+    this.skin = p;
+    this.ambient.intensity = p.ambient;
+    this.sun.intensity = p.key;
+    this.sky.color.set(p.sky);
+    this.sky.intensity = p.skyIntensity;
+    this.rim.color.set(p.rim);
+    this.rim.intensity = p.rimIntensity;
+    this.bodyMat.color.set(p.body);
+    this.bodyMat.roughness = p.bodyRoughness;
+    for (const m of this.stickerMeshes) {
+      const mat = m.material as THREE.MeshPhysicalMaterial;
+      mat.roughness = p.stickerRoughness;
+      mat.clearcoat = p.stickerClearcoat;
+      mat.clearcoatRoughness = p.stickerClearcoatRoughness;
+    }
+  }
+
   resetView() {
     this.fit = this.fitFor(this.camera.aspect);
     this.controls.target.set(0, 0, 0);
@@ -114,7 +142,7 @@ export class CubeView {
     // Grid coordinates run -(n-1)..n-1 in steps of 2; scale to a ~2.6 unit cube.
     const s = CUBE_SIZE / (2 * n);
     this.root.scale.setScalar(s);
-    const body = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.6 });
+    const body = this.bodyMat;
     const box = new THREE.BoxGeometry(1.96, 1.96, 1.96);
     const m = n - 1;
     for (let x = -m; x <= m; x += 2)
@@ -127,7 +155,8 @@ export class CubeView {
         }
     const plane = new THREE.PlaneGeometry(1.7, 1.7);
     model(n).stickers.forEach((st, i) => {
-      const mat = new THREE.MeshStandardMaterial({ color: COLORS[st.face], roughness: 0.35 });
+      const mat = new THREE.MeshPhysicalMaterial({ color: COLORS[st.face], roughness: this.skin.stickerRoughness,
+        clearcoat: this.skin.stickerClearcoat, clearcoatRoughness: this.skin.stickerClearcoatRoughness });
       const mesh = new THREE.Mesh(plane, mat);
       const [nx, ny, nz] = st.normal;
       mesh.position.set(st.pos[0] + nx * 0.99, st.pos[1] + ny * 0.99, st.pos[2] + nz * 0.99);

@@ -14,6 +14,7 @@ import { fromHash, importText, toFaceletString, toHash, toJSON } from './app/sha
 import { checkForUpdate } from './app/update';
 import { Tutorial } from './tutorial/tutorial';
 import { standardRotation } from './cube/orient';
+import { pickSkin, resolveTheme, SCENE_SKINS } from './theme/skins';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const qtmOf = (ms: string[]) => ms.reduce((a, m) => a + (m.endsWith('2') ? 2 : 1), 0);
@@ -642,15 +643,22 @@ $('tut-close').onclick = () => $<HTMLDialogElement>('tutorial-dialog').close();
 // Offer the tutorial on first launch, but not over a cube opened from a share link.
 if (!fromUrl) tutorial.offer($('onboarding'));
 
-// ---------- theme ----------
-const theme = localStorage.getItem('cube-solver-theme');
-if (theme) document.documentElement.dataset.theme = theme;
+// ---------- theme and skin ----------
+// The skin (Aero for now) and light/dark are CSS variables plus scene parameters.
+const skin = pickSkin(location.search, localStorage.getItem('cube-solver-skin'));
+document.documentElement.dataset.skin = skin;
+const darkQuery = matchMedia('(prefers-color-scheme: dark)');
+function applyTheme() {
+  const t = resolveTheme(localStorage.getItem('cube-solver-theme'), darkQuery.matches);
+  document.documentElement.dataset.theme = t;
+  view.applySkin(SCENE_SKINS[skin][t]);
+  $('theme').setAttribute('aria-label', t === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
+}
+darkQuery.addEventListener('change', applyTheme);
+applyTheme();
 $('theme').onclick = () => {
-  const dark = document.documentElement.dataset.theme
-    ? document.documentElement.dataset.theme === 'dark'
-    : matchMedia('(prefers-color-scheme: dark)').matches;
-  document.documentElement.dataset.theme = dark ? 'light' : 'dark';
-  localStorage.setItem('cube-solver-theme', document.documentElement.dataset.theme);
+  localStorage.setItem('cube-solver-theme', document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+  applyTheme();
 };
 
 // ---------- update check ----------
